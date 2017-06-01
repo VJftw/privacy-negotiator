@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  angular:
+    image: node:8
+    command: node_modules/.bin/ng serve --host=0.0.0.0
+    working_dir: /app
+    volumes:
+      - "./priv-neg:/app"
+    ports:
+      - "4200:4200"

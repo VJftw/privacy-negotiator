@@ -1,4 +1,11 @@
-<h1>
-  {{title}}
-</h1>
-<div class="card-panel blue darken-4">This is a card panel with a blue darken-4 class</div>
+<nav class="blue" role="navigation">
+  <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">PrivNeg</a>
+    <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+  </div>
+</nav>
+
+<div class="section no-pad-bot">
+    <div class="container">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
