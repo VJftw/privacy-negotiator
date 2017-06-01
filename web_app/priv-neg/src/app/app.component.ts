@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FacebookService, InitParams, LoginResponse } from 'ngx-facebook';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +8,5 @@ import { FacebookService, InitParams, LoginResponse } from 'ngx-facebook';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-
+  version = environment.version
 }
