@@ -1,0 +1,4 @@
+FROM scratch
+
+ENV JWT_SECRET changeme
+ENV HTTP_PORT 80
