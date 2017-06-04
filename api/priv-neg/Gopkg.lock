@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/asaskevich/govalidator"
-  packages = ["."]
-  revision = "4918b99a7cb949bb295f3c7bbaf24b577d806e35"
-  version = "v6"
-
-[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "d2709f9f1f31ebcda9651b03077758c1f3a0018c"
@@ -38,22 +32,10 @@
   version = "v1.4.0"
 
 [[projects]]
-  name = "github.com/jinzhu/gorm"
-  packages = ["."]
-  revision = "5174cc5c242a728b435ea2be8a2f7f998e15429b"
-  version = "v1.0"
-
-[[projects]]
   branch = "master"
-  name = "github.com/jinzhu/inflection"
+  name = "github.com/streadway/amqp"
   packages = ["."]
-  revision = "1c35d901db3da928c72a72d8458480cc9ade058f"
-
-[[projects]]
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  revision = "879c5887cd475cd7864858769793b2ceb0d44feb"
-  version = "v1.1.0"
+  revision = "dfe15e36048539f4cda41f240b27a5ca25b9cd46"
 
 [[projects]]
   branch = "master"
@@ -67,21 +49,9 @@
   revision = "fde5e16d32adc7ad637e9cd9ad21d4ebc6192535"
   version = "v0.2.0"
 
-[[projects]]
-  branch = "develop"
-  name = "github.com/vjftw/orchestrate"
-  packages = ["commander/domain/user","commander/middlewares"]
-  revision = "6de735b0c8bc06741fe0163a3647ba691e3b7865"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["bcrypt","blowfish"]
-  revision = "e1a4589e7d3ea14a3352255d04b6f1a418845e5e"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "931f5e2cade444bccbc1e42e7578a4ed398f00ec5212937ea71ab9168b001750"
+  inputs-digest = "d0c990e24d84eb5dc1f6d94e74de8b570137b74499c1cb242170e2c8ba7f020a"
   solver-name = "gps-cdcl"
   solver-version = 1

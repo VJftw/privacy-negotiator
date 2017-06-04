@@ -1,11 +1,9 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	fb "github.com/huandu/facebook"
 	"github.com/unrolled/render"
 )
 
@@ -13,6 +11,8 @@ import (
 type Controller struct {
 	render       *render.Render
 	AuthResolver Resolver `inject:"auth.resolver"`
+	AuthProvider Provider `inject:"auth.provider"`
+	GraphAPI     GraphAPI `inject:"auth.graphAPI"`
 }
 
 func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
@@ -32,11 +32,13 @@ func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, _ := fb.Get("/me", fb.Params{
-		"fields":       "id",
-		"access_token": fbAuth.AccessToken,
-	})
-	fmt.Println("here is my facebook first name:", res["id"])
+	if !c.GraphAPI.ValidateCredentials(fbAuth) {
+		c.render.JSON(w, http.StatusUnauthorized, nil)
+		return
+	}
 
-	c.render.JSON(w, http.StatusUnauthorized, nil)
+	token := c.AuthProvider.NewFromFacebookAuth(fbAuth)
+	c.render.JSON(w, http.StatusCreated, token)
+
+	// Add GetLongLivedToken to queue
 }

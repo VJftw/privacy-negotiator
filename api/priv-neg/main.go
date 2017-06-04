@@ -32,6 +32,8 @@ func NewPrivNegApp() *PrivNegApp {
 		&inject.Object{Name: "logger.ws", Value: wsLogger},
 		&inject.Object{Name: "logger.db", Value: dbLogger},
 		&inject.Object{Name: "auth.resolver", Value: auth.NewResolver()},
+		&inject.Object{Name: "auth.provider", Value: auth.NewProvider()},
+		&inject.Object{Name: "auth.graphAPI", Value: auth.NewGraphAPI()},
 		&inject.Object{Name: "auth.controller", Value: &authController},
 	)
 
