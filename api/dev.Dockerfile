@@ -1,6 +1,4 @@
-FROM alpine
-
-RUN apk --no-cache --update add ca-certificates
+FROM golang
 
 ENV JWT_SECRET changeme
 ENV RABBITMQ_USER changeme
@@ -8,6 +6,6 @@ ENV RABBITMQ_PASS changeme
 ENV RABBITMQ_HOSTNAME changeme
 ENV PORT 80
 
-ADD priv-neg/dist/priv-neg /priv-neg
+RUN curl https://glide.sh/get | sh
 
-ENTRYPOINT ["/priv-neg"]
+RUN go get github.com/pilu/fresh

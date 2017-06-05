@@ -3,16 +3,18 @@ package auth
 import (
 	"net/http"
 
+	"github.com/VJftw/privacy-negotiator/api/priv-neg/queues"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
 
 // Controller - Handles authentication
 type Controller struct {
-	render       *render.Render
-	AuthResolver Resolver `inject:"auth.resolver"`
-	AuthProvider Provider `inject:"auth.provider"`
-	GraphAPI     GraphAPI `inject:"auth.graphAPI"`
+	render                         *render.Render
+	AuthResolver                   Resolver                          `inject:"auth.resolver"`
+	AuthProvider                   Provider                          `inject:"auth.provider"`
+	GraphAPI                       GraphAPI                          `inject:"auth.graphAPI"`
+	GetFacebookLongLivedTokenQueue *queues.GetFacebookLongLivedToken `inject:"queues.getFacebookLongLivedToken"`
 }
 
 func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
@@ -41,4 +43,5 @@ func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
 	c.render.JSON(w, http.StatusCreated, token)
 
 	// Add GetLongLivedToken to queue
+	c.GetFacebookLongLivedTokenQueue.Publish(fbAuth)
 }
