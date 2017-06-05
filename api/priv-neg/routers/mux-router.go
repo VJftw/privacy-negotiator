@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
@@ -30,6 +31,7 @@ func NewMuxRouter(controllers []Routable, logging bool) *MuxRouter {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(negroni.NewRecovery())
+	n.Use(cors.Default())
 
 	n.UseHandler(muxRouter.Router)
 

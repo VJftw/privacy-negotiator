@@ -9,3 +9,5 @@ import:
 - package: github.com/unrolled/render
 - package: github.com/urfave/negroni
   version: ^0.2.0
+- package: github.com/rs/cors
+  version: ^1.0.0
