@@ -7,15 +7,18 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// GetFacebookLongLivedToken - Queue for publishing jobs to get long-lived facebook tokens.
 type GetFacebookLongLivedToken struct {
 	queue   amqp.Queue
 	channel *amqp.Channel
 }
 
+// NewGetFacebookLongLivedToken - Returns an implementation of the queue.
 func NewGetFacebookLongLivedToken() *GetFacebookLongLivedToken {
 	return &GetFacebookLongLivedToken{}
 }
 
+// Setup - Declares the Queue.
 func (q *GetFacebookLongLivedToken) Setup(ch *amqp.Channel) {
 	queue, err := ch.QueueDeclare(
 		"get-facebook-long-lived-token", // name
@@ -30,6 +33,7 @@ func (q *GetFacebookLongLivedToken) Setup(ch *amqp.Channel) {
 	q.channel = ch
 }
 
+// Publish - Adds an item to the queue.
 func (q *GetFacebookLongLivedToken) Publish(i Queueable) {
 	b, err := json.Marshal(i)
 	if err != nil {
@@ -50,6 +54,5 @@ func (q *GetFacebookLongLivedToken) Publish(i Queueable) {
 	failOnError(err, "Failed to publish a message")
 }
 
-func (q *GetFacebookLongLivedToken) Consume() {
-
-}
+// Consume - Does nothing in the API.
+func (q *GetFacebookLongLivedToken) Consume() {}

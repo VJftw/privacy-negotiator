@@ -6,6 +6,7 @@ import (
 	"io"
 )
 
+// Resolver - Transformation into authentication structures.
 type Resolver interface {
 	FromRequest(*FacebookAuth, io.ReadCloser) error
 }
@@ -13,10 +14,12 @@ type Resolver interface {
 type authResolver struct {
 }
 
+// NewResolver - Returns an implementation of Resolver.
 func NewResolver() Resolver {
 	return &authResolver{}
 }
 
+// FromRequest - Validates and Transforms raw request data into a struct of Facebook credentials.
 func (a authResolver) FromRequest(fbAuth *FacebookAuth, b io.ReadCloser) error {
 	var rJSON map[string]interface{}
 

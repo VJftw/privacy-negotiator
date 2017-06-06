@@ -1,7 +1,7 @@
 package auth
 
-// ApiAuth - Used to authenticate with this API.
-type ApiAuth struct {
+// APIAuth - Used to authenticate with this API.
+type APIAuth struct {
 	Token string `json:"authToken"`
 }
 

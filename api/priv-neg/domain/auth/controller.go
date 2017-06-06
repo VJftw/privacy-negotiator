@@ -17,6 +17,7 @@ type Controller struct {
 	GetFacebookLongLivedTokenQueue *queues.GetFacebookLongLivedToken `inject:"queues.getFacebookLongLivedToken"`
 }
 
+// Setup - Sets up the Auth Controller
 func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 	c.render = renderer
 

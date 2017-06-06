@@ -10,12 +10,14 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// DeclarableQueue - Implement this to add Queues.
 type DeclarableQueue interface {
 	Setup(*amqp.Channel)
 	Publish(Queueable)
 	Consume()
 }
 
+// Queueable - Implement this to have queueable structs.
 type Queueable interface {
 }
 

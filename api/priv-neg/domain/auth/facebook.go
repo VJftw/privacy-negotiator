@@ -7,22 +7,24 @@ import (
 	"net/http"
 )
 
+// GraphAPI - Usage of the Facebook Graph API. This should be minimal in the API to reduce latency.
 type GraphAPI interface {
 	ValidateCredentials(*FacebookAuth) bool
+}
+
+// NewGraphAPI - Returns the implementation of GraphAPI.
+func NewGraphAPI() GraphAPI {
+	return &facebookGraphAPI{}
 }
 
 type me struct {
 	ID string `json:"id"`
 }
 
-func NewGraphAPI() GraphAPI {
-	return &facebookGraphApi{}
+type facebookGraphAPI struct {
 }
 
-type facebookGraphApi struct {
-}
-
-func (f *facebookGraphApi) ValidateCredentials(fbAuth *FacebookAuth) bool {
+func (f *facebookGraphAPI) ValidateCredentials(fbAuth *FacebookAuth) bool {
 	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/me?access_token=%s", fbAuth.AccessToken))
 
 	if err != nil {

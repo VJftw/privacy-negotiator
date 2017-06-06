@@ -10,16 +10,19 @@ import (
 	"github.com/urfave/negroni"
 )
 
+// MuxRouter - A GorillaMux router.
 type MuxRouter struct {
 	Router  *mux.Router
 	Render  *render.Render
 	Handler http.Handler
 }
 
+// Routable - Controllers should implement this.
 type Routable interface {
 	Setup(*mux.Router, *render.Render)
 }
 
+// NewMuxRouter - Sets up and returns a new MuxRouter with the given controllers.
 func NewMuxRouter(controllers []Routable, logging bool) *MuxRouter {
 	muxRouter := MuxRouter{}
 
