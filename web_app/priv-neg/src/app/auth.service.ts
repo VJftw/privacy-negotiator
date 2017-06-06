@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
-import { FacebookService, InitParams, LoginResponse } from 'ngx-facebook';
+import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-facebook';
 import { environment } from '../environments/environment';
 
 
@@ -32,7 +32,10 @@ export class AuthService {
   }
 
   public authenticate() {
-    this.fb.login()
+    const options: LoginOptions = {
+      scope: 'user_friends,user_photos'
+    }
+    this.fb.login(options)
       .then((response: LoginResponse) => this.authenticateWithApi(response))
       .catch((error: any) => console.error(error))
     ;
