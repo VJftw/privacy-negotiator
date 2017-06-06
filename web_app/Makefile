@@ -11,3 +11,6 @@ build: install
 	docker run --rm -v ${CURDIR}/priv-neg:/app -e GIT_VERSION=${GIT_VERSION} -w /app node:8 node_modules/.bin/ng build --environment prod
 	# Build Dockerfile
 	docker build -t vjftw/priv-neg:${GIT_VERSION} .
+
+test: install
+	echo "WIP"

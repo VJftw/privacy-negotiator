@@ -1,0 +1,10 @@
+language: generic
+sudo: required
+services:
+  - docker
+env:
+  - COMPONENT=api
+  - COMPONENT=web_app
+  - COMPONENT=worker
+
+script: cd $COMPONENT && make test
