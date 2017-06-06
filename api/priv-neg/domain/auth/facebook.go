@@ -9,7 +9,6 @@ import (
 
 type GraphAPI interface {
 	ValidateCredentials(*FacebookAuth) bool
-	GetLongLivedToken(*FacebookAuth) string
 }
 
 type me struct {
@@ -44,19 +43,4 @@ func (f *facebookGraphApi) ValidateCredentials(fbAuth *FacebookAuth) bool {
 	}
 
 	return false
-}
-
-func (f *facebookGraphApi) GetLongLivedToken(fbAuth *FacebookAuth) string {
-	clientId := ""
-	clientSecret := ""
-	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/oauth/access_token?grant_type=fb_exchange_token&amp;client_id=%s&amp;client_secret=%s&amp;fb_exchange_token=%s",
-		clientId,
-		clientSecret,
-		fbAuth.AccessToken,
-	))
-
-	log.Println(res, err)
-
-	return ""
-
 }
