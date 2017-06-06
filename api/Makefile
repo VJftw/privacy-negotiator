@@ -9,8 +9,6 @@ install:
 	golang \
 	/bin/sh -c "curl https://glide.sh/get | sh && glide install"
 
-	docker build -t vjftw/privacy-negotiator:api-${GIT_VERSION} .
-
 build: install
 	docker run --rm \
 	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/api/ \

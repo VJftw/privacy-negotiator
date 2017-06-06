@@ -12,13 +12,13 @@ import (
 	"github.com/facebookgo/inject"
 )
 
-type PrivNegApp struct {
+type PrivNegApi struct {
 	Graph  *inject.Graph
 	Router *routers.MuxRouter
 }
 
-func NewPrivNegApp() *PrivNegApp {
-	privNegApp := PrivNegApp{
+func NewPrivNegApi() *PrivNegApi {
+	PrivNegApi := PrivNegApi{
 		Graph: &inject.Graph{},
 	}
 
@@ -30,7 +30,7 @@ func NewPrivNegApp() *PrivNegApp {
 	var authController auth.Controller
 	qGetFacebookLongLivedToken := queues.NewGetFacebookLongLivedToken()
 
-	err := privNegApp.Graph.Provide(
+	err := PrivNegApi.Graph.Provide(
 		&inject.Object{Name: "logger.main", Value: mainLogger},
 		&inject.Object{Name: "logger.ws", Value: wsLogger},
 		&inject.Object{Name: "logger.db", Value: dbLogger},
@@ -46,7 +46,7 @@ func NewPrivNegApp() *PrivNegApp {
 		os.Exit(1)
 	}
 
-	if err := privNegApp.Graph.Populate(); err != nil {
+	if err := PrivNegApi.Graph.Populate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -55,18 +55,18 @@ func NewPrivNegApp() *PrivNegApp {
 		&authController,
 	}, true)
 
-	privNegApp.Router = muxRouter
+	PrivNegApi.Router = muxRouter
 
 	// Initialise queues
 	queues.SetupQueues([]queues.DeclarableQueue{
 		qGetFacebookLongLivedToken,
 	}, queueLogger)
 
-	return &privNegApp
+	return &PrivNegApi
 }
 
 func main() {
-	app := NewPrivNegApp()
+	app := NewPrivNegApi()
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), app.Router.Handler))
 }
