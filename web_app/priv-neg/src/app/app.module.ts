@@ -1,19 +1,21 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule }   from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { HttpModule } from '@angular/http';
 
 import { MaterializeModule } from 'angular2-materialize';
 import { FacebookModule } from 'ngx-facebook';
 
 import { AppComponent } from './app.component';
-import {IndexComponent} from './index/index.component';
+import { IndexComponent } from './index/index.component';
+import { PhotosComponent } from './photos/photos.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    IndexComponent
+    IndexComponent,
+    PhotosComponent
   ],
   imports: [
     BrowserModule,
@@ -22,10 +24,9 @@ import {IndexComponent} from './index/index.component';
     MaterializeModule,
     FacebookModule.forRoot(),
     RouterModule.forRoot([
-      {
-        path: '',
-        component: IndexComponent
-      }
+      { path: '', redirectTo: '/start', pathMatch: 'full' },
+      { path: 'start', component: IndexComponent },
+      { path: 'photos', component: PhotosComponent }
     ])
   ],
   providers: [],

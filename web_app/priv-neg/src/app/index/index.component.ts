@@ -1,8 +1,9 @@
 import { AuthService } from '../auth.service';
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'index',
+  selector: 'app-index',
   templateUrl: './index.component.html',
   providers: [
     AuthService
@@ -11,10 +12,12 @@ import { Component } from '@angular/core';
 export class IndexComponent {
 
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router,
   ) {}
 
   loginWithFacebook(): void {
     this.authService.authenticate();
+    this.router.navigate(['photos']);
   }
 }

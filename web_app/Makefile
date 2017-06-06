@@ -13,4 +13,4 @@ build: install
 	docker build -t vjftw/priv-neg:${GIT_VERSION} .
 
 test: install
-	echo "WIP"
+	docker run --rm -v ${CURDIR}/priv-neg:/app -e GIT_VERSION=${GIT_VERSION} -w /app node:8 node_modules/.bin/tslint src/**/*.ts{,x}

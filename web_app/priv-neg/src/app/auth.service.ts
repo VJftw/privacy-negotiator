@@ -14,7 +14,7 @@ export class AuthService {
     private fb: FacebookService,
     private http: Http
   ) {
-    let initParams: InitParams = {
+    const initParams: InitParams = {
       appId: '219608771883029',
       xfbml: true,
       version: 'v2.8'
@@ -34,7 +34,7 @@ export class AuthService {
   public authenticate() {
     const options: LoginOptions = {
       scope: 'user_friends,user_photos'
-    }
+    };
     this.fb.login(options)
       .then((response: LoginResponse) => this.authenticateWithApi(response))
       .catch((error: any) => console.error(error))
@@ -43,7 +43,7 @@ export class AuthService {
 
   private authenticateWithApi(response: LoginResponse): void {
     this.http.post(
-      environment.apiEndpoint + "/v1/auth",
+      environment.apiEndpoint + '/v1/auth',
       JSON.stringify(response.authResponse),
       {headers: new Headers({'Content-Type': 'application/json'})}
     ).toPromise()
