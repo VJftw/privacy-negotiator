@@ -12,16 +12,19 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// GetFacebookLongLivedToken - Queue for publishing jobs to get long-lived facebook tokens.
 type GetFacebookLongLivedToken struct {
 	queue       amqp.Queue
 	channel     *amqp.Channel
 	UserManager user.Manager `inject:"user.manager"`
 }
 
+// NewGetFacebookLongLivedToken - Returns an implementation of the queue.
 func NewGetFacebookLongLivedToken() *GetFacebookLongLivedToken {
 	return &GetFacebookLongLivedToken{}
 }
 
+// Setup - Declares the Queue.
 func (q *GetFacebookLongLivedToken) Setup(ch *amqp.Channel) {
 	queue, err := ch.QueueDeclare(
 		"get-facebook-long-lived-token", // name
@@ -37,9 +40,10 @@ func (q *GetFacebookLongLivedToken) Setup(ch *amqp.Channel) {
 	q.Consume()
 }
 
-func (q *GetFacebookLongLivedToken) Publish(i Queueable) {
-}
+// Publish - Does nothing in the Worker.
+func (q *GetFacebookLongLivedToken) Publish(i Queueable) {}
 
+// Consume - Processes items from the Queue.
 func (q *GetFacebookLongLivedToken) Consume() {
 	msgs, err := q.channel.Consume(
 		q.queue.Name, // queue
@@ -72,7 +76,7 @@ func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
 
 	log.Printf("Started processing for %s\n", user.FacebookUserID)
 
-	respLongLived := GetLongLivedToken(user)
+	respLongLived := getLongLivedToken(user)
 
 	user.LongLivedToken = respLongLived.AccessToken
 	duration, _ := time.ParseDuration(fmt.Sprintf("%ds", respLongLived.Expires))
@@ -84,7 +88,7 @@ func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
 	log.Printf("Processed GetFacebookLongLivedToken for %s in %s\n", user.FacebookUserID, elapsed)
 }
 
-func GetLongLivedToken(fbUser *user.FacebookUser) *facebookResponseLongLived {
+func getLongLivedToken(fbUser *user.FacebookUser) *facebookResponseLongLived {
 	clientID := os.Getenv("FACEBOOK_APP_ID")
 	clientSecret := os.Getenv("FACEBOOK_APP_SECRET")
 	res, _ := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s",

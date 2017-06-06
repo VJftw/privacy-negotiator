@@ -2,6 +2,7 @@ package user
 
 import "time"
 
+// FacebookUser - The FacebookUser entity.
 type FacebookUser struct {
 	FacebookUserID  string    `json:"userId" gorm:"primary_key"`
 	CreatedAt       time.Time `json:"-"`

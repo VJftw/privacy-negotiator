@@ -11,12 +11,14 @@ import (
 	"github.com/facebookgo/inject"
 )
 
+// PrivNegWorker - The Privacy Negotiation API app
 type PrivNegWorker struct {
 	Graph *inject.Graph
 }
 
+// NewPrivNegWorker - Returns a new Privacy Negotiation API app
 func NewPrivNegWorker() *PrivNegWorker {
-	PrivNegWorker := PrivNegWorker{
+	privNegWorker := PrivNegWorker{
 		Graph: &inject.Graph{},
 	}
 
@@ -32,7 +34,7 @@ func NewPrivNegWorker() *PrivNegWorker {
 
 	qGetFacebookLongLivedToken := queues.NewGetFacebookLongLivedToken()
 
-	err := PrivNegWorker.Graph.Provide(
+	err := privNegWorker.Graph.Provide(
 		&inject.Object{Name: "logger.main", Value: mainLogger},
 		&inject.Object{Name: "logger.db", Value: dbLogger},
 		&inject.Object{Name: "logger.queue", Value: queueLogger},
@@ -45,7 +47,7 @@ func NewPrivNegWorker() *PrivNegWorker {
 		os.Exit(1)
 	}
 
-	if err := PrivNegWorker.Graph.Populate(); err != nil {
+	if err := privNegWorker.Graph.Populate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -53,7 +55,7 @@ func NewPrivNegWorker() *PrivNegWorker {
 	// Initialise queues
 	queues.StartQueue(qGetFacebookLongLivedToken, queueLogger)
 
-	return &PrivNegWorker
+	return &privNegWorker
 }
 
 func main() {
