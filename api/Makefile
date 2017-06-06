@@ -19,3 +19,19 @@ build: install
 	/bin/sh -c "go build -a -installsuffix cgo -o dist/priv-neg"
 
 	docker build -t vjftw/privacy-negotiator:api-${GIT_VERSION} .
+
+build-dev:
+	docker build -t vjftw/privacy-negotiator:api-dev -f dev.Dockerfile .
+
+test: build-dev
+	$(eval NOVENDOR=$(shell docker run --rm \
+	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/api/ \
+	--workdir /go/src/github.com/VJftw/privacy-negotiator/api/priv-neg \
+	vjftw/privacy-negotiator:api-dev \
+	glide novendor))
+
+	docker run --rm \
+	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/api/ \
+	--workdir /go/src/github.com/VJftw/privacy-negotiator/api/priv-neg \
+	vjftw/privacy-negotiator:api-dev \
+	golint -set_exit_status ${NOVENDOR}
