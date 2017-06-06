@@ -2,8 +2,8 @@ GIT_VERSION = $(shell git describe --always)
 
 install:
 	docker run --rm \
-	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/api/ \
-	--workdir /go/src/github.com/VJftw/privacy-negotiator/api/priv-neg \
+	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/worker/ \
+	--workdir /go/src/github.com/VJftw/privacy-negotiator/worker/priv-neg \
  	--env CGO_ENABLED=0 \
  	--env GOOS=linux \
 	golang \
@@ -11,11 +11,27 @@ install:
 
 build: install
 	docker run --rm \
-	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/api/ \
-	--workdir /go/src/github.com/VJftw/privacy-negotiator/api/priv-neg \
+	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/worker/ \
+	--workdir /go/src/github.com/VJftw/privacy-negotiator/worker/priv-neg \
  	--env CGO_ENABLED=0 \
  	--env GOOS=linux \
 	golang \
 	/bin/sh -c "go build -a -installsuffix cgo -o dist/priv-neg"
 
 	docker build -t vjftw/privacy-negotiator:worker-${GIT_VERSION} .
+
+build-dev:
+	docker build -t vjftw/privacy-negotiator:worker-dev -f dev.Dockerfile .
+
+test: build-dev
+	$(eval NOVENDOR=$(shell docker run --rm \
+	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/worker/ \
+	--workdir /go/src/github.com/VJftw/privacy-negotiator/worker/priv-neg \
+	vjftw/privacy-negotiator:worker-dev \
+	glide novendor))
+
+	docker run --rm \
+	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/worker/ \
+	--workdir /go/src/github.com/VJftw/privacy-negotiator/worker/priv-neg \
+	vjftw/privacy-negotiator:worker-dev \
+	golint -set_exit_status ${NOVENDOR}
