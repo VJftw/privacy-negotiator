@@ -10,7 +10,8 @@ build: install
 	# Build Production environment
 	docker run --rm -v ${CURDIR}/priv-neg:/app -e GIT_VERSION=${GIT_VERSION} -w /app node:8 node_modules/.bin/ng build --environment prod
 	# Build Dockerfile
-	docker build -t vjftw/priv-neg:${GIT_VERSION} .
+	docker build -t vjftw/privacy-negotiator:web-${GIT_VERSION} .
+	docker tag vjftw/privacy-negotiator:web-${GIT_VERSION} vjftw/privacy-negotiator:web-latest
 
 test: install
 	docker run --rm -v ${CURDIR}/priv-neg:/app -e GIT_VERSION=${GIT_VERSION} -w /app node:8 node_modules/.bin/tslint src/**/*.ts{,x}

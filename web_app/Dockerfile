@@ -11,5 +11,6 @@ COPY docker/init.sh /etc/cont-init.d/set_api
 RUN chmod 554 /etc/cont-init.d/set_api
 
 ENV API_ENDPOINT ""
+ENV FB_APP_ID ""
 
 COPY priv-neg/dist /usr/share/nginx/html

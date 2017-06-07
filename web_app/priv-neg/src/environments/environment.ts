@@ -6,5 +6,6 @@
 export const environment = {
   production: false,
   version: 'dev',
-  apiEndpoint: 'http://localhost'
+  apiEndpoint: 'http://localhost',
+  fbAppId: '219608771883029'
 };

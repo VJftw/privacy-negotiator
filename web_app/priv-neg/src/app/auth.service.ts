@@ -21,9 +21,9 @@ export class AuthService implements CanActivate {
 
   ) {
     const initParams: InitParams = {
-      appId: '219608771883029',
+      appId: environment.fbAppId,
       xfbml: true,
-      version: 'v2.8'
+      version: 'v2.9'
     };
 
     fb.init(initParams);
