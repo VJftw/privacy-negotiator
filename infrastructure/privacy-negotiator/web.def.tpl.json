@@ -1,9 +1,9 @@
 [
   {
-    "name": "chit-chat_${environment}",
-    "image": "monarchsofcoding/chitchat:release-${backend_version}",
+    "name": "web_${environment}",
+    "image": "vjftw/privacy-negotiator:web-${version}",
     "essential": true,
-    "memoryReservation": 256,
+    "memoryReservation": 128,
     "portMappings": [
       {
         "containerPort": 80
@@ -12,59 +12,24 @@
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
-        "awslogs-group": "${environment}.chit-chat-container-logs",
+        "awslogs-group": "${environment}.web-container-logs",
         "awslogs-region": "${cloudwatch_region}",
-        "awslogs-stream-prefix": "chit-chat"
+        "awslogs-stream-prefix": "web"
       }
     },
-    "command": [
-      "foreground"
-    ],
     "environment": [
       {
         "Name": "WEAVE_CIDR",
         "Value": "net:${weave_cidr}"
       },
       {
-        "Name": "SECRET_KEY_BASE",
-        "Value": "${secret_key_base}"
+        "Name": "API_ENDPOINT",
+        "Value": "${api_endpoint}"
       },
       {
-        "Name": "GUARDIAN_SECRET_KEY",
-        "Value": "${guadian_secret_key}"
+        "Name": "FB_APP_ID",
+        "Value": "${fb_app_id}"
       },
-      {
-        "Name": "DATABASE_HOSTNAME",
-        "Value": "postgres_${environment}"
-      },
-      {
-        "Name": "DATABASE_PORT",
-        "Value": "5432"
-      },
-      {
-        "Name": "DATABASE_USERNAME",
-        "Value": "${database_username}"
-      },
-      {
-        "Name": "DATABASE_PASSWORD",
-        "Value": "${database_password}"
-      },
-      {
-        "Name": "DATABASE_NAME",
-        "Value": "${database_name}"
-      },
-      {
-        "Name": "PORT",
-        "Value": "80"
-      },
-      {
-        "Name": "MIX_ENV",
-        "Value": "prod"
-      },
-      {
-        "Name": "NODE_COOKIE",
-        "Value": "${node_cookie}"
-      }
     ]
   }
 ]

@@ -21,43 +21,36 @@ data "aws_subnet" "app_cluster" {
 }
 
 data "aws_route53_zone" "organisation" {
-  name = "monarchsofcoding.com."
+  name = "vjpatel.me."
 }
 
-### ECS ChitChat App containers
-data "template_file" "ecs_chit-chat_def" {
-  template = "${file("${path.module}/chit-chat-def.tpl.json")}"
+### ECS PrivNeg Web containers
+data "template_file" "ecs_def_web" {
+  template = "${file("${path.module}/web.def.tpl.json")}"
 
   vars {
-    node_cookie        = "${var.secret_key_base}"
-    secret_key_base    = "${var.secret_key_base}"
-    guadian_secret_key = "${var.guardian_secret_key}"
-    environment        = "${var.environment}"
-    database_username  = "chit-chat_${var.environment}"
-    database_password  = "${var.database_password}"
-    database_name      = "chit-chat_${var.environment}"
+    fb_app_id    = "${var.facebook_app_id}"
+    api_endpoint = "${var.api_endpoint}"
 
-    domain = "${var.domain}"
+    version = "${var.version}"
 
-    backend_version = "${var.container_version}"
-
-    cloudwatch_log_group = "${aws_cloudwatch_log_group.chit_chat.arn}"
+    cloudwatch_log_group = "${aws_cloudwatch_log_group.web.arn}"
     cloudwatch_region    = "${var.aws_region}"
 
     weave_cidr = "${var.weave_cidr}"
   }
 }
 
-resource "aws_ecs_task_definition" "chit_chat" {
-  family                = "chit-chat_${var.environment}"
-  container_definitions = "${data.template_file.ecs_chit-chat_def.rendered}"
+resource "aws_ecs_task_definition" "web" {
+  family                = "web_${var.environment}"
+  container_definitions = "${data.template_file.ecs_def_web.rendered}"
 }
 
 resource "aws_ecs_service" "chat_chat" {
-  name            = "chit-chat_${var.environment}"
+  name            = "web_${var.environment}"
   cluster         = "${var.cluster_name}"
-  task_definition = "${aws_ecs_task_definition.chit_chat.arn}"
-  desired_count   = "${var.num_of_containers}"
+  task_definition = "${aws_ecs_task_definition.web.arn}"
+  desired_count   = "2"
   iam_role        = "${aws_iam_role.ecs_service.arn}"
 
   placement_strategy {
@@ -66,56 +59,26 @@ resource "aws_ecs_service" "chat_chat" {
   }
 
   load_balancer {
-    target_group_arn = "${aws_alb_target_group.front_end.id}"
-    container_name   = "chit-chat_${var.environment}"
+    target_group_arn = "${aws_alb_target_group.web.id}"
+    container_name   = "web_${var.environment}"
     container_port   = "80"
   }
 
   depends_on = [
     "aws_iam_role_policy.ecs_service",
-    "aws_alb_listener.front_end",
+    "aws_alb_listener.web",
   ]
 }
 
-#### Log Group for ChitChat App
-resource "aws_cloudwatch_log_group" "chit_chat" {
-  name = "${var.environment}.chit-chat-container-logs"
+#### Log Group for Web
+resource "aws_cloudwatch_log_group" "web" {
+  name = "${var.environment}.web-container-logs"
 
   retention_in_days = 7
 
   tags {
-    Name        = "Chit Chat"
+    Name        = "Web"
     Environment = "${var.environment}"
-  }
-}
-
-### ECS Postgres containers
-data "template_file" "ecs_postgres_def" {
-  template = "${file("${path.module}/postgres-def.tpl.json")}"
-
-  vars {
-    db_username = "chit-chat_${var.environment}"
-    db_password = "${var.database_password}"
-    db_name     = "chit-chat_${var.environment}"
-    environment = "${var.environment}"
-    weave_cidr = "${var.weave_cidr}"
-  }
-}
-
-resource "aws_ecs_task_definition" "postgres" {
-  family                = "postgres_${var.environment}"
-  container_definitions = "${data.template_file.ecs_postgres_def.rendered}"
-}
-
-resource "aws_ecs_service" "postgres" {
-  name            = "postgres_${var.environment}"
-  cluster         = "${var.cluster_name}"
-  task_definition = "${aws_ecs_task_definition.postgres.arn}"
-  desired_count   = 1
-
-  placement_strategy {
-    type  = "binpack"
-    field = "cpu"
   }
 }
 
@@ -125,14 +88,14 @@ resource "aws_route53_record" "domain" {
   type    = "A"
 
   alias {
-    name                   = "${aws_alb.front_end.dns_name}"
-    zone_id                = "${aws_alb.front_end.zone_id}"
+    name                   = "${aws_alb.web.dns_name}"
+    zone_id                = "${aws_alb.web.zone_id}"
     evaluate_target_health = false
   }
 }
 
-resource "aws_alb" "front_end" {
-  name            = "chit-chat-${var.environment}-alb"
+resource "aws_alb" "web" {
+  name            = "web-${var.environment}-alb"
   subnets         = ["${data.aws_subnet.app_cluster.*.id}"]
   security_groups = ["${aws_security_group.alb_sg.id}"]
 
@@ -141,8 +104,8 @@ resource "aws_alb" "front_end" {
   }
 }
 
-resource "aws_alb_target_group" "front_end" {
-  name     = "chit-chat-${var.environment}-tg"
+resource "aws_alb_target_group" "web" {
+  name     = "web-${var.environment}-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = "${data.aws_vpc.app_cluster.id}"
@@ -161,7 +124,7 @@ resource "aws_security_group" "alb_sg" {
   description = "Controls access to and from the ALB"
 
   vpc_id = "${data.aws_vpc.app_cluster.id}"
-  name   = "chit-chat.${var.environment}.alb-sg"
+  name   = "web.${var.environment}.alb-sg"
 
   ingress {
     protocol    = "tcp"
@@ -189,7 +152,7 @@ resource "aws_security_group" "alb_sg" {
 }
 
 resource "aws_iam_role" "ecs_service" {
-  name = "chit-chat.${var.environment}.ecs_role"
+  name = "web.${var.environment}.ecs_role"
 
   assume_role_policy = <<EOF
 {
@@ -209,7 +172,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "ecs_service" {
-  name = "chit-chat.${var.environment}.ecs_policy"
+  name = "web.${var.environment}.ecs_policy"
   role = "${aws_iam_role.ecs_service.name}"
 
   policy = <<EOF
@@ -233,31 +196,31 @@ resource "aws_iam_role_policy" "ecs_service" {
 EOF
 }
 
-data "aws_acm_certificate" "chit_chat" {
-  domain   = "chitchat.monarchsofcoding.com"
+data "aws_acm_certificate" "privneg" {
+  domain   = "privacy-negotiator.vjpatel.me"
   statuses = ["ISSUED"]
 }
 
-resource "aws_alb_listener" "front_end" {
-  load_balancer_arn = "${aws_alb.front_end.id}"
+resource "aws_alb_listener" "web" {
+  load_balancer_arn = "${aws_alb.web.id}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${aws_alb_target_group.front_end.id}"
+    target_group_arn = "${aws_alb_target_group.web.id}"
     type             = "forward"
   }
 }
 
-resource "aws_alb_listener" "front_end_ssl" {
-  load_balancer_arn = "${aws_alb.front_end.id}"
+resource "aws_alb_listener" "web_ssl" {
+  load_balancer_arn = "${aws_alb.web.id}"
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2015-05"
-  certificate_arn   = "${data.aws_acm_certificate.chit_chat.arn}"
+  certificate_arn   = "${data.aws_acm_certificate.privneg.arn}"
 
   default_action {
-    target_group_arn = "${aws_alb_target_group.front_end.id}"
+    target_group_arn = "${aws_alb_target_group.web.id}"
     type             = "forward"
   }
 }
