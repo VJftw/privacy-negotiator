@@ -3,16 +3,22 @@ import { Headers, Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-facebook';
 import { environment } from '../environments/environment';
+import { Router, CanActivate } from '@angular/router';
+
 
 
 @Injectable()
-export class AuthService {
+export class AuthService implements CanActivate {
 
   private authToken: string;
+  public shortAccessToken: string;
+  public userId: string;
 
   constructor(
-    private fb: FacebookService,
-    private http: Http
+    public fb: FacebookService,
+    private http: Http,
+    private router: Router,
+
   ) {
     const initParams: InitParams = {
       appId: '219608771883029',
@@ -23,36 +29,53 @@ export class AuthService {
     fb.init(initParams);
   }
 
+  public canActivate(): boolean {
+    if (this.isAuthenticated()) {
+      return true;
+    }
+    this.router.navigate(['']);
+    return false;
+  }
+
   public isAuthenticated(): boolean {
     if (this.authToken) {
       return true;
     }
-
+    console.log('Not logged in');
     return false;
   }
 
-  public authenticate() {
+  public authenticate(): Promise<any> {
     const options: LoginOptions = {
       scope: 'user_friends,user_photos'
     };
-    this.fb.login(options)
-      .then((response: LoginResponse) => this.authenticateWithApi(response))
+
+    return this.fb.login(options)
+      .then((response: LoginResponse) => {
+        this.shortAccessToken = response.authResponse.accessToken;
+        this.userId = response.authResponse.userID;
+        this.authenticateWithApi(response)
+          .then(() => {
+            this.router.navigate(['/photos']);
+          });
+      })
       .catch((error: any) => console.error(error))
     ;
   }
 
-  private authenticateWithApi(response: LoginResponse): void {
-    this.http.post(
+  public authenticateWithApi(response: LoginResponse): Promise<any> {
+    return this.http.post(
       environment.apiEndpoint + '/v1/auth',
       JSON.stringify(response.authResponse),
       {headers: new Headers({'Content-Type': 'application/json'})}
     ).toPromise()
-    .then(res => this.storeAuthToken(res))
+    .then(res => this.storeAuthToken(res.json()))
     .catch(this.handleError)
     ;
   }
 
   private storeAuthToken(response) {
+    console.log('Logged in.');
     this.authToken = response.authToken;
   }
 

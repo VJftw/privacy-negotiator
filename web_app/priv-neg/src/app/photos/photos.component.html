@@ -1,1 +1,7 @@
-AAAAAAAA
+<button class="btn-large waves-effect waves-light blue" (click)="getTaggedPhotos()">Get Tagged Photos!</button>
+
+<div class="row">
+  <div class="col m6 l3" *ngFor="let photo of photos">
+    <img src="{{photo.picture}}" />
+  </div>
+</div>

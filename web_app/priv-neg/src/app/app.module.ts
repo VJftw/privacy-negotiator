@@ -11,6 +11,9 @@ import { AppComponent } from './app.component';
 import { IndexComponent } from './index/index.component';
 import { PhotosComponent } from './photos/photos.component';
 
+import { FacebookService } from 'ngx-facebook';
+import { AuthService } from './auth.service';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -26,10 +29,13 @@ import { PhotosComponent } from './photos/photos.component';
     RouterModule.forRoot([
       { path: '', redirectTo: '/start', pathMatch: 'full' },
       { path: 'start', component: IndexComponent },
-      { path: 'photos', component: PhotosComponent }
+      { path: 'photos', component: PhotosComponent, canActivate: [AuthService] }
     ])
   ],
-  providers: [],
+  providers: [
+    AuthService,
+    FacebookService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
