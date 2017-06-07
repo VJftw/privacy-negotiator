@@ -72,69 +72,51 @@ resource "aws_route_table_association" "a" {
 }
 
 ## Compute
-// resource "aws_autoscaling_group" "app_cluster" {
-//   name                 = "${var.cluster_name}.asg"
-//   vpc_zone_identifier  = ["${aws_subnet.app.*.id}"]
-//   min_size             = "1"
-//   desired_capacity     = "2"
-//   max_size             = "5"
-//   launch_configuration = "${aws_launch_configuration.app.name}"
-//
-//   tag {
-//     key                 = "Name"
-//     value               = "${var.cluster_name}.ecs"
-//     propagate_at_launch = true
-//   }
-//
-//   tag {
-//     key                 = "cluster"
-//     value               = "${var.cluster_name}"
-//     propagate_at_launch = true
-//   }
-// }
-
 resource "aws_spot_fleet_request" "cheap_compute" {
-  iam_fleet_role      = "${aws_iam_role.fleet.arn}"
-  spot_price          = "1.00"
-  allocation_strategy = "lowestPrice"
-  target_capacity     = 3
-  valid_until         = "2019-11-04T20:44:20Z"
+  iam_fleet_role                      = "${aws_iam_role.fleet.arn}"
+  spot_price                          = "1.00"
+  allocation_strategy                 = "diversified"
+  target_capacity                     = 3
+  valid_until                         = "2019-11-04T20:44:20Z"
   terminate_instances_with_expiration = true
 
   launch_specification {
-    instance_type          = "m4.large"
-    ami                    = "ami-95f8d2f3"
-    spot_price             = "0.03"
-    user_data              = "${data.template_file.user_data.rendered}"
-    iam_instance_profile   = "${aws_iam_instance_profile.app.name}"
-    availability_zone      = "eu-west-1a"
-    subnet_id              = "${aws_subnet.app.0.id}"
-    vpc_security_group_ids = ["${aws_security_group.instance_sg.id}"]
-    key_name               = "spotfleet"
+    instance_type               = "m4.large"
+    ami                         = "ami-13c8f475"
+    spot_price                  = "0.03"
+    user_data                   = "${data.template_file.user_data.rendered}"
+    iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
+    availability_zone           = "eu-west-1a"
+    subnet_id                   = "${aws_subnet.app.0.id}"
+    vpc_security_group_ids      = ["${aws_security_group.instance_sg.id}"]
+    key_name                    = "test"
+    associate_public_ip_address = true
   }
 
   launch_specification {
-    instance_type          = "m4.large"
-    ami                    = "ami-95f8d2f3"
-    spot_price             = "0.03"
-    user_data              = "${data.template_file.user_data.rendered}"
-    iam_instance_profile   = "${aws_iam_instance_profile.app.name}"
-    availability_zone      = "eu-west-1b"
-    subnet_id              = "${aws_subnet.app.1.id}"
-    vpc_security_group_ids = ["${aws_security_group.instance_sg.id}"]
-    key_name               = "spotfleet"
+    instance_type               = "m4.large"
+    ami                         = "ami-13c8f475"
+    spot_price                  = "0.03"
+    user_data                   = "${data.template_file.user_data.rendered}"
+    iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
+    availability_zone           = "eu-west-1b"
+    subnet_id                   = "${aws_subnet.app.1.id}"
+    vpc_security_group_ids      = ["${aws_security_group.instance_sg.id}"]
+    key_name                    = "test"
+    associate_public_ip_address = true
   }
 
   launch_specification {
-    instance_type          = "m4.large"
-    ami                    = "ami-95f8d2f3"
-    spot_price             = "0.03"
-    user_data              = "${data.template_file.user_data.rendered}"
-    iam_instance_profile   = "${aws_iam_instance_profile.app.name}"
-    availability_zone      = "eu-west-1c"
-    subnet_id              = "${aws_subnet.app.2.id}"
-    vpc_security_group_ids = ["${aws_security_group.instance_sg.id}"]
-    key_name               = "spotfleet"
+    instance_type               = "m4.large"
+    ami                         = "ami-13c8f475"
+    spot_price                  = "0.03"
+    user_data                   = "${data.template_file.user_data.rendered}"
+    iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
+    availability_zone           = "eu-west-1c"
+    subnet_id                   = "${aws_subnet.app.2.id}"
+    vpc_security_group_ids      = ["${aws_security_group.instance_sg.id}"]
+    key_name                    = "test"
+    associate_public_ip_address = true
   }
 }
 
@@ -148,26 +130,6 @@ data "template_file" "user_data" {
     ecs_agent_version = "latest"
   }
 }
-
-// resource "aws_launch_configuration" "app" {
-//   security_groups = [
-//     "${aws_security_group.instance_sg.id}",
-//   ]
-//
-//   image_id                    = "ami-25adf356"
-//   instance_type               = "m4.large"
-//   associate_public_ip_address = true
-//   iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
-//   user_data                   = "${data.template_file.user_data.rendered}"
-//
-//   lifecycle {
-//     create_before_destroy = true
-//   }
-//
-//   depends_on = [
-//     "aws_ecs_cluster.app",
-//   ]
-// }
 
 resource "aws_iam_instance_profile" "app" {
   name = "${var.cluster_name}.ecs-instprofile"
@@ -262,7 +224,10 @@ resource "aws_iam_role" "app_instance" {
       "Sid": "",
       "Effect": "Allow",
       "Principal": {
-        "Service": "ec2.amazonaws.com"
+        "Service": [
+          "ec2.amazonaws.com",
+          "spotfleet.amazonaws.com"
+        ]
       },
       "Action": "sts:AssumeRole"
     }
