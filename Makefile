@@ -43,3 +43,13 @@ cluster-apply: cluster-plan
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 	hashicorp/terraform:0.9.7 \
 	apply
+
+cluster-destroy: cluster-init
+	docker run --rm \
+	--volume ${CURDIR}:/app \
+	--workdir /app/infrastructure/cluster \
+	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	hashicorp/terraform:0.9.7 \
+	destroy --force
