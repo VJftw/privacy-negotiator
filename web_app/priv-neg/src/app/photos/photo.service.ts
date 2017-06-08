@@ -10,7 +10,7 @@ export class PhotoService {
   ) {}
 
   public getTaggedPhotosForUser(userId: string, offset = null): Promise<any> {
-    let uri = '/' + userId + '/photos?fields=id,source';
+    let uri = '/' + userId + '/photos?fields=id,created_time,from,source,album';
 
     if (offset) {
       uri += '&after=' + offset;
