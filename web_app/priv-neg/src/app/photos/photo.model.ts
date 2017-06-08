@@ -1,11 +1,24 @@
 export class Photo {
 
-  public id;
-  public createdTime;
-  public from;
-  public source;
+  protected id;
+  protected createdTime;
+  protected from;
+  protected images;
 
   public album;
+  public privacy;
 
-  public sharedPosts;
+  protected sharedPosts;
+
+  public static fromGraphAPI(obj): Photo {
+    const p = new Photo();
+
+    p.id = obj.id;
+    p.createdTime = obj.created_time;
+    p.from = obj.from;
+    p.images = obj.images;
+    p.album = obj.album;
+
+    return p;
+  }
 }

@@ -10,11 +10,19 @@ export class PhotoService {
   ) {}
 
   public getTaggedPhotosForUser(userId: string, offset = null): Promise<any> {
-    let uri = '/' + userId + '/photos?fields=id,created_time,from,source,album';
+    let uri = '/' + userId + '/photos?fields=id,created_time,from,target,images,album';
 
     if (offset) {
       uri += '&after=' + offset;
     }
+
+    return this.fb.api(uri)
+      .catch(e => console.error(e))
+    ;
+  }
+
+  public getPrivacyForAnAlbum(albumId: string): Promise<any> {
+    const uri = '/' + albumId + '?fields=id,privacy';
 
     return this.fb.api(uri)
       .catch(e => console.error(e))
