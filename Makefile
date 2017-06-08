@@ -1,5 +1,6 @@
 GIT_VERSION = $(shell git describe --always)
 AWS_DEFAULT_REGION ?= eu-west-1
+ENVIRONMENT ?= beta
 
 build:
 	cd web_app && make build
@@ -53,3 +54,43 @@ cluster-destroy: cluster-init
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 	hashicorp/terraform:0.9.7 \
 	destroy --force
+
+deploy-init: tf-fmt
+	docker run --rm \
+	--volume ${CURDIR}:/app \
+	--workdir /app/infrastructure/env/${ENVIRONMENT} \
+	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	hashicorp/terraform:0.9.7 \
+	init
+
+deploy-plan: deploy-init
+	docker run --rm \
+	--volume ${CURDIR}:/app \
+	--workdir /app/infrastructure/env/${ENVIRONMENT} \
+	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	hashicorp/terraform:0.9.7 \
+	plan
+
+deploy-apply: build deploy-plan
+	docker run --rm \
+	--volume ${CURDIR}:/app \
+	--workdir /app/infrastructure/env/${ENVIRONMENT} \
+	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	hashicorp/terraform:0.9.7 \
+	apply
+
+	# Upload static Web to Cloudfront
+	docker run --rm \
+	--volume ${CURDIR}:/app \
+	--workdir /app/web_app/priv-neg \
+	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	anigeo/awscli:latest \
+	s3 cp dist/. s3://privneg-web-${ENVIRONMENT} --acl public-read --recursive --cache-control max-age=120
