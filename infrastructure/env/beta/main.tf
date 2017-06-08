@@ -1,3 +1,12 @@
+terraform {
+  backend "s3" {
+    encrypt = true
+    bucket  = "privneg-terraform"
+    key     = "beta/terraform.tfstate"
+    region  = "eu-west-1"
+  }
+}
+
 module "main" {
   source = "../../privacy-negotiator"
 
