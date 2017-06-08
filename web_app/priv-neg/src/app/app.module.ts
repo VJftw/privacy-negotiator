@@ -11,6 +11,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { AppComponent } from './app.component';
 import { IndexComponent } from './index/index.component';
 import { PhotosComponent } from './photos/photos.component';
+import { CommunitiesComponent } from './communities/communities.component';
 
 import { FacebookService } from 'ngx-facebook';
 import { AuthService } from './auth.service';
@@ -19,7 +20,8 @@ import { AuthService } from './auth.service';
   declarations: [
     AppComponent,
     IndexComponent,
-    PhotosComponent
+    PhotosComponent,
+    CommunitiesComponent
   ],
   imports: [
     BrowserModule,
@@ -31,7 +33,8 @@ import { AuthService } from './auth.service';
     RouterModule.forRoot([
       { path: '', redirectTo: '/start', pathMatch: 'full' },
       { path: 'start', component: IndexComponent },
-      { path: 'photos', component: PhotosComponent, canActivate: [AuthService] }
+      { path: 'photos', component: PhotosComponent, canActivate: [AuthService] },
+      { path: 'communities', component: CommunitiesComponent, canActivate: [AuthService] }
     ], { useHash: true })
   ],
   providers: [
