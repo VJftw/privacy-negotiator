@@ -1,5 +1,5 @@
 import { AuthService } from '../auth.service';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-facebook';
 import { Photo } from './photo.model';
 import { PhotoService } from './photo.service';
@@ -12,7 +12,7 @@ import { PhotoService } from './photo.service';
     PhotoService
   ]
 })
-export class PhotosComponent {
+export class PhotosComponent implements OnInit {
 
   public photos: Photo[];
   private offset: string;
@@ -23,6 +23,10 @@ export class PhotosComponent {
     private photoService: PhotoService
   ) {
     this.photos = [];
+  }
+
+  ngOnInit() {
+    this.getTaggedPhotos();
   }
 
   getTaggedPhotos() {

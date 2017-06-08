@@ -6,6 +6,7 @@ import { HttpModule } from '@angular/http';
 
 import { MaterializeModule } from 'angular2-materialize';
 import { FacebookModule } from 'ngx-facebook';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 import { AppComponent } from './app.component';
 import { IndexComponent } from './index/index.component';
@@ -22,6 +23,7 @@ import { AuthService } from './auth.service';
   ],
   imports: [
     BrowserModule,
+    InfiniteScrollModule,
     FormsModule,
     HttpModule,
     MaterializeModule,
