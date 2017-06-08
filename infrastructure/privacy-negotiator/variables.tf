@@ -18,14 +18,29 @@ variable "domain" {
   description = "The domain name for the service (environment)"
 }
 
-// variable "container_version" {
-//   type        = "string"
-//   description = "The version of the container to deploy"
-// }
-
 variable "weave_cidr" {
   type = "string"
   description = "The Weave subnet to join. This should be unique across applications/environments"
+}
+
+variable "version" {
+  type        = "string"
+  description = "The version of the application(containers) to deploy"
+}
+
+variable "jwt_secret" {
+  type = "string"
+  description = "The JWT secret"
+}
+
+variable "rabbitmq_user" {
+  type = "string"
+  description = "The username for RabbitMQ"
+}
+
+variable "rabbitmq_pass" {
+  type = "string"
+  description = "The password for RabbitMQ"
 }
 
 variable "aws_availability_zones" {

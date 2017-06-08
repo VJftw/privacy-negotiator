@@ -19,6 +19,7 @@ build: install
 	/bin/sh -c "go build -a -installsuffix cgo -o dist/priv-neg"
 
 	docker build -t vjftw/privacy-negotiator:api-${GIT_VERSION} .
+	docker tag vjftw/privacy-negotiator:api-${GIT_VERSION} vjftw/privacy-negotiator:api-latest
 
 build-dev:
 	docker build -t vjftw/privacy-negotiator:api-dev -f dev.Dockerfile .

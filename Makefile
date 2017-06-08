@@ -5,9 +5,7 @@ DOMAIN ?= beta.privacy-negotiator.vjpatel.me
 
 build:
 	cd web_app && make build
-
-test:
-	echo "HELLO"
+	cd api && make build
 
 tf-fmt:
 	docker run --rm \
@@ -73,16 +71,23 @@ deploy-plan: deploy-init
 	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	--env TF_VAR_version=${GIT_VERSION} \
 	hashicorp/terraform:0.9.7 \
 	plan
 
 deploy-apply: build deploy-plan
+	# Push API images
+	docker push vjftw/privacy-negotiator:api-${GIT_VERSION}
+	docker push vjftw/privacy-negotiator:api-latest
+
+	# Terraform Apply
 	docker run --rm \
 	--volume ${CURDIR}:/app \
 	--workdir /app/infrastructure/env/${ENVIRONMENT} \
 	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	--env TF_VAR_version=${GIT_VERSION} \
 	hashicorp/terraform:0.9.7 \
 	apply
 

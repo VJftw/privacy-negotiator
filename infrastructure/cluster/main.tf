@@ -76,7 +76,7 @@ resource "aws_spot_fleet_request" "cheap_compute" {
   iam_fleet_role                      = "${aws_iam_role.fleet.arn}"
   spot_price                          = "1.00"
   allocation_strategy                 = "diversified"
-  target_capacity                     = 3
+  target_capacity                     = 2
   valid_until                         = "2019-11-04T20:44:20Z"
   terminate_instances_with_expiration = true
 

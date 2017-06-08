@@ -1,0 +1,38 @@
+[
+  {
+    "name": "rabbitmq_${environment}",
+    "image": "rabbitmq:management",
+    "essential": true,
+    "memoryReservation": 256,
+    "portMappings": [
+      {
+        "containerPort": 5672
+      },
+      {
+        "containerPort": 15672
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${environment}.rabbitmq-container-logs",
+        "awslogs-region": "${cloudwatch_region}",
+        "awslogs-stream-prefix": "rabbitmq"
+      }
+    },
+    "environment": [
+      {
+        "Name": "WEAVE_CIDR",
+        "Value": "net:${weave_cidr}"
+      },
+      {
+        "Name": "RABBITMQ_DEFAULT_USER",
+        "Value": "${rabbitmq_user}"
+      },
+      {
+        "Name": "RABBITMQ_DEFAULT_PASS",
+        "Value": "${rabbitmq_pass}"
+      }
+    ]
+  }
+]

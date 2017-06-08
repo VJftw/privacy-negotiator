@@ -1,0 +1,43 @@
+[
+  {
+    "name": "api_${environment}",
+    "image": "vjftw/privacy-negotiator:api-${version}",
+    "essential": true,
+    "memoryReservation": 128,
+    "portMappings": [
+      {
+        "containerPort": 80
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${environment}.api-container-logs",
+        "awslogs-region": "${cloudwatch_region}",
+        "awslogs-stream-prefix": "api"
+      }
+    },
+    "environment": [
+      {
+        "Name": "WEAVE_CIDR",
+        "Value": "net:${weave_cidr}"
+      },
+      {
+        "Name": "JWT_SECRET",
+        "Value": "${jwt_secret}"
+      },
+      {
+        "Name": "RABBITMQ_USER",
+        "Value": "${rabbitmq_user}"
+      },
+      {
+        "Name": "RABBITMQ_PASS",
+        "Value": "${rabbitmq_pass}"
+      },
+      {
+        "Name": "RABBITMQ_HOSTNAME",
+        "Value": "${rabbitmq_hostname}"
+      }
+    ]
+  }
+]

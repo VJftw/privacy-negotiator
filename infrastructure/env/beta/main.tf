@@ -9,10 +9,14 @@ module "main" {
   environment = "beta"
   domain      = "beta.privacy-negotiator.vjpatel.me"
 
-  // container_version = "${var.container_version}"
+  version = "${var.version}"
   weave_cidr = "10.32.101.0/24"
 
   // facebook_app_id = "${var.facebook_app_id}"
   // facebook_app_secret = "${var.facebook_app_secret}"
+
+  jwt_secret = "${var.jwt_secret}"
+  rabbitmq_user = "${var.rabbitmq_user}"
+  rabbitmq_pass = "${var.rabbitmq_pass}"
 
 }

@@ -3,6 +3,12 @@ provider "aws" {
   region = "us-east-1"
 }
 
+data "aws_acm_certificate" "web" {
+  provider = "aws.us-east-1"
+  domain   = "${var.domain}"
+  statuses = ["ISSUED"]
+}
+
 resource "aws_s3_bucket" "web" {
   bucket = "${var.domain}"
   acl    = "public-read"
@@ -88,10 +94,4 @@ resource "aws_route53_record" "web" {
     zone_id                = "${aws_cloudfront_distribution.web_distribution.hosted_zone_id}"
     evaluate_target_health = true
   }
-}
-
-data "aws_acm_certificate" "web" {
-  provider = "aws.us-east-1"
-  domain   = "${var.domain}"
-  statuses = ["ISSUED"]
 }
