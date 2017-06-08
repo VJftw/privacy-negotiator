@@ -8,6 +8,9 @@ import { PhotoService } from './photo.service';
 @Component({
   selector: 'app-photos',
   templateUrl: './photos.component.html',
+  styles: [`.card img {
+    max-width:100%;
+max-height:100%;}`],
   providers: [
     PhotoService
   ]

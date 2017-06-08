@@ -2,7 +2,17 @@
 		    [infiniteScrollDistance]="0"
 		    [infiniteScrollThrottle]="300"
 		    (scrolled)="getTaggedPhotos()">
-  <div class="col m6 l3" *ngFor="let photo of photos">
-    <img src="{{photo.picture}}" />
-  </div>
-</div>
+       <div class="col s12 m6 l3" *ngFor="let photo of photos">
+         <div class="card small">
+           <div class="card-image">
+             <img src="{{photo.source}}">
+           </div>
+           <div class="card-content">
+             <p>{{photo.id}}</p>
+           </div>
+           <div class="card-action">
+             <a href="#">This is a link</a>
+           </div>
+         </div>
+       </div>
+     </div>
