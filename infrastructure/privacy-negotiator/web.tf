@@ -4,12 +4,12 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "web" {
-  bucket = "privneg-web-${var.environment}"
+  bucket = "${var.domain}"
   acl    = "public-read"
 
   website {
     index_document = "index.html"
-    error_document = "error.html"
+    error_document = "index.html"
   }
 
   tags {
@@ -37,7 +37,7 @@ resource "aws_cloudfront_distribution" "web_distribution" {
     custom_origin_config {
       http_port = 80
       https_port = 443
-      origin_protocol_policy = "https-only"
+      origin_protocol_policy = "http-only"
       origin_ssl_protocols = ["TLSv1.2"]
     }
   }

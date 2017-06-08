@@ -1,6 +1,7 @@
 GIT_VERSION = $(shell git describe --always)
 AWS_DEFAULT_REGION ?= eu-west-1
 ENVIRONMENT ?= beta
+DOMAIN ?= beta.privacy-negotiator.vjpatel.me
 
 build:
 	cd web_app && make build
@@ -93,4 +94,4 @@ deploy-apply: build deploy-plan
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 	anigeo/awscli:latest \
-	s3 cp dist/. s3://privneg-web-${ENVIRONMENT} --acl public-read --recursive --cache-control max-age=120
+	s3 cp dist/. s3://${DOMAIN} --acl public-read --recursive --cache-control max-age=120

@@ -30,7 +30,7 @@ import { AuthService } from './auth.service';
       { path: '', redirectTo: '/start', pathMatch: 'full' },
       { path: 'start', component: IndexComponent },
       { path: 'photos', component: PhotosComponent, canActivate: [AuthService] }
-    ])
+    ], { useHash: true })
   ],
   providers: [
     AuthService,
