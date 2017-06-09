@@ -58,8 +58,8 @@ services:
       POSTGRES_USER: privneg
       POSTGRES_DBNAME: privneg
       POSTGRES_PASSWORD: privneg
-      FACEBOOK_APP_ID: 219608771883029
-      FACEBOOK_APP_SECRET: 5197faca64d13a80646cd315e9376679
+      FACEBOOK_APP_ID: 431282593918092
+      FACEBOOK_APP_SECRET: 5208ed76bd97a1f30533bda1478bc594
     depends_on:
       - queue
       - db
