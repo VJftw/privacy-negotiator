@@ -5,7 +5,7 @@ DOMAIN ?= beta.privacy-negotiator.vjpatel.me
 
 build:
 	cd web_app && make build
-	cd api && make build
+	cd backend && make build
 
 tf-fmt:
 	docker run --rm \
