@@ -15,6 +15,7 @@ data "template_file" "ecs_def_api" {
     rabbitmq_user = "${var.rabbitmq_user}"
     rabbitmq_pass = "${var.rabbitmq_pass}"
     rabbitmq_hostname = "rabbitmq_${var.environment}"
+    redis_host = "redis_${var.environment}"
   }
 }
 

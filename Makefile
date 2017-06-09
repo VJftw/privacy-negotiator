@@ -86,8 +86,8 @@ deploy-plan: deploy-init
 
 deploy-apply: build deploy-plan
 	# Push API images
-	docker push vjftw/privacy-negotiator:api-${GIT_VERSION}
-	docker push vjftw/privacy-negotiator:api-latest
+	docker push vjftw/privacy-negotiator:backend-${GIT_VERSION}
+	docker push vjftw/privacy-negotiator:backend-latest
 
 	# Terraform Apply
 	docker run --rm \

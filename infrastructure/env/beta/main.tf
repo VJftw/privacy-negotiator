@@ -21,11 +21,13 @@ module "main" {
   version = "${var.version}"
   weave_cidr = "10.32.101.0/24"
 
-  // facebook_app_id = "${var.facebook_app_id}"
-  // facebook_app_secret = "${var.facebook_app_secret}"
-
   jwt_secret = "${var.jwt_secret}"
   rabbitmq_user = "${var.rabbitmq_user}"
   rabbitmq_pass = "${var.rabbitmq_pass}"
 
+  postgres_user = "${var.postgres_user}"
+  postgres_password = "${var.postgres_password}"
+
+  facebook_app_id = "${var.facebook_app_id}"
+  facebook_app_secret = "${var.facebook_app_secret}"
 }

@@ -1,6 +1,6 @@
 [
   {
-    "name": "api_${environment}",
+    "name": "worker_${environment}",
     "image": "vjftw/privacy-negotiator:backend-${version}",
     "essential": true,
     "memoryReservation": 128,
@@ -12,9 +12,9 @@
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
-        "awslogs-group": "${environment}.api-container-logs",
+        "awslogs-group": "${environment}.worker-container-logs",
         "awslogs-region": "${cloudwatch_region}",
-        "awslogs-stream-prefix": "api"
+        "awslogs-stream-prefix": "worker"
       }
     },
     "environment": [
@@ -24,11 +24,7 @@
       },
       {
         "Name": "TYPE",
-        "Value": "API"
-      },
-      {
-        "Name": "JWT_SECRET",
-        "Value": "${jwt_secret}"
+        "Value": "WORKER"
       },
       {
         "Name": "RABBITMQ_USER",
@@ -43,8 +39,32 @@
         "Value": "${rabbitmq_hostname}"
       },
       {
+        "Name": "POSTGRES_HOST",
+        "Value": "${postgres_host}"
+      },
+      {
+        "Name": "POSTGRES_USER",
+        "Value": "${postgres_user}"
+      },
+      {
+        "Name": "POSTGRES_DBNAME",
+        "Value": "${postgres_dbname}"
+      },
+      {
+        "Name": "POSTGRES_PASSWORD",
+        "Value": "${postgres_password}"
+      },
+      {
         "Name": "REDIS_HOST",
         "Value": "${redis_host}"
+      },
+      {
+        "Name": "FACEBOOK_APP_ID",
+        "Value": "${facebook_app_id}"
+      },
+      {
+        "Name": "FACEBOOK_APP_SECRET",
+        "Value": "${facebook_app_secret}"
       }
     ]
   }

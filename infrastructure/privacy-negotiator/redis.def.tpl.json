@@ -1,0 +1,27 @@
+[
+  {
+    "name": "redis_${environment}",
+    "image": "redis",
+    "essential": true,
+    "memoryReservation": 512,
+    "portMappings": [
+      {
+        "containerPort": 6379
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${environment}.redis-container-logs",
+        "awslogs-region": "${cloudwatch_region}",
+        "awslogs-stream-prefix": "redis"
+      }
+    },
+    "environment": [
+      {
+        "Name": "WEAVE_CIDR",
+        "Value": "net:${weave_cidr}"
+      }
+    ]
+  }
+]

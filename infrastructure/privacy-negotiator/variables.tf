@@ -43,6 +43,26 @@ variable "rabbitmq_pass" {
   description = "The password for RabbitMQ"
 }
 
+variable "postgres_user" {
+  type = "string"
+  description = "The host for Postgres"
+}
+
+variable "postgres_password" {
+  type = "string"
+  description = "The password for Postgres"
+}
+
+variable "facebook_app_id" {
+  type = "string"
+  description = "The ID for the Facebook App"
+}
+
+variable "facebook_app_secret" {
+  type = "string"
+  description = "The secret for the Facebook App"
+}
+
 variable "aws_availability_zones" {
   default = "list"
 }
