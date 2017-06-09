@@ -5,13 +5,13 @@
        <div class="col s12 m6 l4" *ngFor="let photo of photos">
          <div class="card small sticky-action">
            <div class="card-image waves-effect waves-block waves-light">
-             <img class="activator" src="{{photo.images[0].source}}">
+             <img class="activator" src="{{photo.url}}">
              <span class="card-title"></span>
            </div>
            <div class="card-content">
              at: {{photo.createdTime}}<br />
-             by: {{photo.from.name}}<br />
-             album: {{photo.album.id}}
+             by: {{photo.uploader.name}}<br />
+             album: {{photo.albumId}}
            </div>
            <div class="card-action">
            </div>

@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
+import { Photo } from './photo.model';
 
 
 @Injectable()
 export class PhotoService {
+
+  protected offset: string;
 
   constructor(
     private fb: FacebookService
@@ -17,6 +20,24 @@ export class PhotoService {
     }
 
     return this.fb.api(uri)
+      .catch(e => console.error(e))
+    ;
+  }
+
+  public getTaggedPhotosForUsera(userId: string): Promise<Photo[]> {
+    let uri = '/' + userId + '/photos?fields=id,created_time,from,target,images,album';
+
+    if (this.offset) {
+      uri += '&after=' + this.offset;
+    }
+
+    return this.fb.api(uri)
+      .then(response => {
+        if (response.paging) {
+          this.offset = response.paging.cursors.after;
+        }
+        return response.data as Photo[];
+      })
       .catch(e => console.error(e))
     ;
   }

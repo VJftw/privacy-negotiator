@@ -18,8 +18,8 @@ import { PhotoService } from './photo.service';
 })
 export class PhotosComponent implements OnInit {
 
-  public photos: Photo[];
-  private offset: string;
+  protected photos: Photo[];
+  protected lock: boolean;
 
   constructor(
     private authService: AuthService,
@@ -27,6 +27,7 @@ export class PhotosComponent implements OnInit {
     private photoService: PhotoService
   ) {
     this.photos = [];
+    this.lock = false;
   }
 
   ngOnInit() {
@@ -34,35 +35,23 @@ export class PhotosComponent implements OnInit {
   }
 
   getTaggedPhotos() {
-    if (this.offset) {
-      this.photoService.getTaggedPhotosForUser(
-        this.authService.userId,
-        this.offset
-      ).then(res => {
-        this.updatePhotos(res);
-      });
-    } else {
-      this.photoService.getTaggedPhotosForUser(
+    if (!this.lock) {
+      this.lock = true;
+      this.photoService.getTaggedPhotosForUsera(
         this.authService.userId
-      ).then(res => {
-        this.updatePhotos(res);
-      });
+      ).then(photos => this.updatePhotos(photos));
+      this.lock = false;
     }
   }
 
   private updatePhotos(res) {
     console.log(res);
-    // this.photos = this.photos.concat(res.data);
-    for (const photo of res.data) {
+    for (const photo of res) {
       if (photo.album) {
-        const p = Photo.fromGraphAPI(photo);
-        this.photoService.getPrivacyForAnAlbum(p.album.id).then(resp => console.log(resp));
-        this.photos.push(Photo.fromGraphAPI(photo));
+        const p = Photo.fromFBPhoto(photo);
+        // this.photoService.getPrivacyForAnAlbum(p.album.id).then(resp => console.log(resp));
+        this.photos.push(Photo.fromFBPhoto(photo));
       }
-    }
-
-    if (res.paging) {
-      this.offset = res.paging.cursors.after;
     }
   }
 }

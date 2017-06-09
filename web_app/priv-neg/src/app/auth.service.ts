@@ -84,3 +84,8 @@ export class AuthService implements CanActivate {
     return Promise.reject(error.message || error);
   }
 }
+
+export class FBUser {
+  id: string;
+  name: string;
+}

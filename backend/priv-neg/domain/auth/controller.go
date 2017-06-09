@@ -16,6 +16,7 @@ type Controller struct {
 	AuthProvider                   Provider                          `inject:"auth.provider"`
 	GraphAPI                       GraphAPI                          `inject:"auth.graphAPI"`
 	GetFacebookLongLivedTokenQueue *queues.GetFacebookLongLivedToken `inject:"queues.getFacebookLongLivedToken"`
+	UserManager                    user.Managable                    `inject:"user.manager"`
 }
 
 // Setup - Sets up the Auth Controller
@@ -28,22 +29,25 @@ func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 }
 
 func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
-	fbAuth := &user.FacebookUser{}
+	fbUser := &user.FacebookUser{}
 
-	err := c.AuthResolver.FromRequest(fbAuth, r.Body)
+	err := c.AuthResolver.FromRequest(fbUser, r.Body)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	if !c.GraphAPI.ValidateCredentials(fbAuth) {
+	if !c.GraphAPI.ValidateCredentials(fbUser) {
 		c.render.JSON(w, http.StatusUnauthorized, nil)
 		return
 	}
 
-	token := c.AuthProvider.NewFromFacebookAuth(fbAuth)
+	token := c.AuthProvider.NewFromFacebookAuth(fbUser)
 	c.render.JSON(w, http.StatusCreated, token)
 
 	// Add GetLongLivedToken to queue
-	c.GetFacebookLongLivedTokenQueue.Publish(fbAuth)
+	c.GetFacebookLongLivedTokenQueue.Publish(fbUser)
+
+	// Save to Redis
+	c.UserManager.Save(fbUser)
 }
