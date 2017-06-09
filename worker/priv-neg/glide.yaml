@@ -1,6 +1,0 @@
-package: github.com/VJftw/privacy-negotiator/worker/priv-neg
-import:
-- package: github.com/facebookgo/inject
-- package: github.com/streadway/amqp
-- package: github.com/jinzhu/gorm
-  version: ^1.0.0

@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/VJftw/privacy-negotiator/worker/priv-neg/domain/user"
-	"github.com/VJftw/privacy-negotiator/worker/priv-neg/persisters"
-	"github.com/VJftw/privacy-negotiator/worker/priv-neg/queues"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
 	"github.com/facebookgo/inject"
 )
 
@@ -25,6 +25,7 @@ func NewPrivNegWorker() *PrivNegWorker {
 	mainLogger := log.New(os.Stdout, "[main] ", log.Lshortfile)
 	dbLogger := log.New(os.Stdout, "[database] ", log.Lshortfile)
 	queueLogger := log.New(os.Stdout, "[queue] ", log.Lshortfile)
+	cacheLogger := log.New(os.Stdout, "[cache] ", log.Lshortfile)
 
 	// Initialise persisters to pass into managers
 	gormDB := persisters.NewGORMDB(
@@ -32,13 +33,18 @@ func NewPrivNegWorker() *PrivNegWorker {
 		&user.FacebookUser{},
 	)
 
+	redisCache := persisters.NewRedisDB(cacheLogger)
+
 	qGetFacebookLongLivedToken := queues.NewGetFacebookLongLivedToken()
 
 	err := privNegWorker.Graph.Provide(
 		&inject.Object{Name: "logger.main", Value: mainLogger},
 		&inject.Object{Name: "logger.db", Value: dbLogger},
 		&inject.Object{Name: "logger.queue", Value: queueLogger},
-		&inject.Object{Name: "user.manager", Value: user.NewManager(gormDB)},
+		&inject.Object{Name: "logger.cache", Value: cacheLogger},
+		&inject.Object{Name: "persister.db", Value: gormDB},
+		&inject.Object{Name: "persister.cache", Value: redisCache},
+		&inject.Object{Name: "user.manager", Value: user.NewWorkerManager()},
 		&inject.Object{Name: "queues.getFacebookLongLivedToken", Value: qGetFacebookLongLivedToken},
 	)
 
@@ -53,11 +59,13 @@ func NewPrivNegWorker() *PrivNegWorker {
 	}
 
 	// Initialise queues
-	queues.StartQueue(qGetFacebookLongLivedToken, queueLogger)
+	queues.SetupQueues([]queues.DeclarableQueue{
+		qGetFacebookLongLivedToken,
+	}, queueLogger)
+
+	queues.Consume([]queues.DeclarableQueue{
+		qGetFacebookLongLivedToken,
+	}, queueLogger)
 
 	return &privNegWorker
-}
-
-func main() {
-	NewPrivNegWorker()
 }

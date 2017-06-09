@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/VJftw/privacy-negotiator/worker/priv-neg/queues"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
 	"github.com/jinzhu/gorm"
 	// postgres
 	_ "github.com/jinzhu/gorm/dialects/postgres"

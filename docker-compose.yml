@@ -19,38 +19,47 @@ services:
       POSTGRES_PASSWORD: privneg
       POSTGRES_DB: privneg
 
+  # Redis
+  cache:
+    image: redis
+
   # Golang API
   api:
     build:
-      context: ./api/
+      context: ./backend/
       dockerfile: dev.Dockerfile
-    command: /bin/sh -c "glide install && fresh"
+    command: fresh
     volumes:
-      - "./api:/go/src/github.com/VJftw/privacy-negotiator/api/"
-    working_dir: /go/src/github.com/VJftw/privacy-negotiator/api/priv-neg
+      - "./backend:/go/src/github.com/VJftw/privacy-negotiator/backend/"
+    working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
+      TYPE: API
       JWT_SECRET: development
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg
+      REDIS_HOST: redis
       PORT: 80
     ports:
       - "80:80"
     depends_on:
       - queue
+      - cache
     links:
       - "queue:rabbit"
+      - "cache:redis"
 
   # Golang Worker
   worker:
     build:
-      context: ./worker/
+      context: ./backend/
       dockerfile: dev.Dockerfile
-    command: /bin/sh -c "glide install && fresh"
+    command: fresh
     volumes:
-      - "./worker:/go/src/github.com/VJftw/privacy-negotiator/worker/"
-    working_dir: /go/src/github.com/VJftw/privacy-negotiator/worker/priv-neg
+      - "./backend:/go/src/github.com/VJftw/privacy-negotiator/backend/"
+    working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
+      TYPE: WORKER
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg
@@ -58,14 +67,17 @@ services:
       POSTGRES_USER: privneg
       POSTGRES_DBNAME: privneg
       POSTGRES_PASSWORD: privneg
+      REDIS_HOST: redis
       FACEBOOK_APP_ID: 431282593918092
       FACEBOOK_APP_SECRET: 5208ed76bd97a1f30533bda1478bc594
     depends_on:
       - queue
       - db
+      - cache
     links:
       - "queue:rabbit"
       - "db:postgres"
+      - "cache:redis"
 
   # Angular 4 Web App
   web:

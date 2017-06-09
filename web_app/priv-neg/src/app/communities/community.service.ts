@@ -10,7 +10,7 @@ export class CommunityService {
   ) {}
 
   public getFriendsForUser(userId: string, offset = null): Promise<any> {
-    let uri = '/' + userId + '/friends?fields=fields=birthday,name,picture{height}';
+    let uri = '/' + userId + '/friends?fields=id,name,picture{url}';
 
     if (offset) {
       uri += '&after=' + offset;

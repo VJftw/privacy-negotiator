@@ -28,9 +28,9 @@ func failOnError(err error, msg string) {
 	}
 }
 
-// SetupQueues - Sets up the given Queues.
+// SetupQueues - Sets up the given Queue.
 func SetupQueues(queues []DeclarableQueue, logger *log.Logger) {
-	if !waitForService(fmt.Sprintf("%s:%s", os.Getenv("RABBITMQ_HOSTNAME"), "5672"), logger) {
+	if !WaitForService(fmt.Sprintf("%s:%s", os.Getenv("RABBITMQ_HOSTNAME"), "5672"), logger) {
 		panic("Could not find RabbitMQ..")
 	}
 	conn, err := amqp.Dial(
@@ -49,10 +49,18 @@ func SetupQueues(queues []DeclarableQueue, logger *log.Logger) {
 	for _, queue := range queues {
 		queue.Setup(ch)
 	}
-
 }
 
-func waitForService(address string, logger *log.Logger) bool {
+// Consume - Starts a given Queue Consumer
+func Consume(queues []DeclarableQueue, logger *log.Logger) {
+	// logger.Printf("Starting consumer for %s", queue.GetName())
+	for _, queue := range queues {
+		queue.Consume()
+	}
+}
+
+// WaitForService - Waits for a given service on TCP port to be ready.
+func WaitForService(address string, logger *log.Logger) bool {
 
 	for i := 0; i < 12; i++ {
 		conn, err := net.Dial("tcp", address)

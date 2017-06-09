@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/VJftw/privacy-negotiator/worker/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/streadway/amqp"
 )
 
@@ -16,7 +16,8 @@ import (
 type GetFacebookLongLivedToken struct {
 	queue       amqp.Queue
 	channel     *amqp.Channel
-	UserManager user.Manager `inject:"user.manager"`
+	UserManager user.Managable `inject:"user.manager"`
+	Logger      *log.Logger    `inject:"logger.queue"`
 }
 
 // NewGetFacebookLongLivedToken - Returns an implementation of the queue.
@@ -37,11 +38,28 @@ func (q *GetFacebookLongLivedToken) Setup(ch *amqp.Channel) {
 	failOnError(err, "Failed to declare a queue")
 	q.queue = queue
 	q.channel = ch
-	q.Consume()
 }
 
 // Publish - Does nothing in the Worker.
-func (q *GetFacebookLongLivedToken) Publish(i Queueable) {}
+func (q *GetFacebookLongLivedToken) Publish(i Queueable) {
+	b, err := json.Marshal(i)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	err = q.channel.Publish(
+		"",           // exchange
+		q.queue.Name, // routing key
+		false,        // mandatory
+		false,        // immediate
+		amqp.Publishing{
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "application/json",
+			Body:         b,
+		})
+	failOnError(err, "Failed to publish a message")
+}
 
 // Consume - Processes items from the Queue.
 func (q *GetFacebookLongLivedToken) Consume() {
@@ -64,7 +82,7 @@ func (q *GetFacebookLongLivedToken) Consume() {
 		}
 	}()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	q.Logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }
 
@@ -74,7 +92,7 @@ func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
 	user := q.UserManager.New()
 	json.Unmarshal(d.Body, user)
 
-	log.Printf("Started processing for %s\n", user.FacebookUserID)
+	q.Logger.Printf("Started processing for %s\n", user.FacebookUserID)
 
 	respLongLived := getLongLivedToken(user)
 
@@ -85,7 +103,7 @@ func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
 	q.UserManager.Save(user)
 
 	elapsed := time.Since(start)
-	log.Printf("Processed GetFacebookLongLivedToken for %s in %s\n", user.FacebookUserID, elapsed)
+	q.Logger.Printf("Processed GetFacebookLongLivedToken for %s in %s\n", user.FacebookUserID, elapsed)
 }
 
 func getLongLivedToken(fbUser *user.FacebookUser) *facebookResponseLongLived {

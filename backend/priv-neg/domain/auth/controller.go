@@ -3,7 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"github.com/VJftw/privacy-negotiator/api/priv-neg/queues"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
@@ -27,7 +28,7 @@ func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 }
 
 func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
-	fbAuth := &FacebookAuth{}
+	fbAuth := &user.FacebookUser{}
 
 	err := c.AuthResolver.FromRequest(fbAuth, r.Body)
 	if err != nil {

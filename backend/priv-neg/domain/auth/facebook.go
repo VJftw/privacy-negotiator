@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 )
 
 // GraphAPI - Usage of the Facebook Graph API. This should be minimal in the API to reduce latency.
 type GraphAPI interface {
-	ValidateCredentials(*FacebookAuth) bool
+	ValidateCredentials(*user.FacebookUser) bool
 }
 
 // NewGraphAPI - Returns the implementation of GraphAPI.
@@ -24,8 +26,8 @@ type me struct {
 type facebookGraphAPI struct {
 }
 
-func (f *facebookGraphAPI) ValidateCredentials(fbAuth *FacebookAuth) bool {
-	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/me?access_token=%s", fbAuth.AccessToken))
+func (f *facebookGraphAPI) ValidateCredentials(fbAuth *user.FacebookUser) bool {
+	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/me?access_token=%s", fbAuth.ShortLivedToken))
 
 	if err != nil {
 		log.Printf("Error: %s", err)
@@ -40,7 +42,7 @@ func (f *facebookGraphAPI) ValidateCredentials(fbAuth *FacebookAuth) bool {
 		return false
 	}
 
-	if me.ID == fbAuth.UserID {
+	if me.ID == fbAuth.FacebookUserID {
 		return true
 	}
 

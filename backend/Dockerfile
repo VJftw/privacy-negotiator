@@ -2,10 +2,17 @@ FROM alpine
 
 RUN apk --no-cache --update add ca-certificates
 
+ENV TYPE API
+
 ENV RABBITMQ_USER changeme
 ENV RABBITMQ_PASS changeme
 ENV RABBITMQ_HOSTNAME changeme
 
+# API only
+ENV JWT_SECRET changeme
+ENV PORT 80
+
+# Worker only
 ENV POSTGRES_HOST changeme
 ENV POSTGRES_USER changeme
 ENV POSTGRES_DBNAME changeme
