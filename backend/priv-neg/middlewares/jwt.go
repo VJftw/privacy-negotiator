@@ -11,17 +11,19 @@ import (
 	"github.com/unrolled/render"
 )
 
+// JWT -
 type JWT struct {
 	render *render.Render
 }
 
+// NewJWT -
 func NewJWT(renderer *render.Render) *JWT {
 	return &JWT{
 		render: renderer,
 	}
 }
 
-// JWT -
+// ServeHTTP -
 func (m *JWT) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	tokenString, err := fromAuthHeader(r)
 	if err != nil {
