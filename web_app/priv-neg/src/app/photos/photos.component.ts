@@ -11,6 +11,7 @@ import { PhotoService } from './photo.service';
     .card-image img {
      max-height: 150px;
      max-width: 100%;
+     object-fit: cover;
    }
    .blur {-webkit-filter: grayscale(100%);filter: grayscale(100%);}
   `],
