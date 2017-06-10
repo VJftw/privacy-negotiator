@@ -31,29 +31,19 @@ export class PhotosComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.getTaggedPhotos();
+    this.updateTaggedPhotos();
   }
 
   getTaggedPhotos() {
+    return this.photoService.getPhotos()
+  }
+
+  updateTaggedPhotos() {
     if (!this.lock) {
       this.lock = true;
-      this.photoService.getTaggedPhotosForUsera(
-        this.authService.userId
-      ).then(photos => {
-        this.updatePhotos(photos);
-        this.lock = false;
-      });
+      this.photoService.updateTaggedPhotosForUser(this.authService.getUser())
+        .then(() => this.lock = false);
     }
   }
 
-  private updatePhotos(res) {
-    console.log(res);
-    for (const photo of res) {
-      if (photo.album) {
-        const p = Photo.fromFBPhoto(photo);
-        // this.photoService.getPrivacyForAnAlbum(p.album.id).then(resp => console.log(resp));
-        this.photos.push(Photo.fromFBPhoto(photo));
-      }
-    }
-  }
 }

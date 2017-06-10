@@ -11,8 +11,7 @@ import { Router, CanActivate } from '@angular/router';
 export class AuthService implements CanActivate {
 
   private authToken: string;
-  public shortAccessToken: string;
-  public userId: string;
+  private fbUser: FBUser;
 
   constructor(
     public fb: FacebookService,
@@ -45,6 +44,10 @@ export class AuthService implements CanActivate {
     return false;
   }
 
+  public getUser(): FBUser {
+    return this.fbUser;
+  }
+
   public authenticate(): Promise<any> {
     const options: LoginOptions = {
       scope: 'user_friends,user_photos,user_posts'
@@ -52,8 +55,9 @@ export class AuthService implements CanActivate {
 
     return this.fb.login(options)
       .then((response: LoginResponse) => {
-        this.shortAccessToken = response.authResponse.accessToken;
-        this.userId = response.authResponse.userID;
+        this.fbUser = new FBUser();
+        this.fbUser.shortAccessToken = response.authResponse.accessToken;
+        this.fbUser.id = response.authResponse.userID;
         this.authenticateWithApi(response)
           .then(() => {
             this.router.navigate(['/photos']);
@@ -88,4 +92,5 @@ export class AuthService implements CanActivate {
 export class FBUser {
   id: string;
   name: string;
+  shortAccessToken: string;
 }
