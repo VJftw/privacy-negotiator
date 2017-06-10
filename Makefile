@@ -1,4 +1,4 @@
-GIT_VERSION = $(or ${TRAVIS_COMMIT}, $(shell git describe --always))
+GIT_VERSION = $(shell git describe --always)
 AWS_DEFAULT_REGION ?= eu-west-1
 ENVIRONMENT ?= beta
 DOMAIN ?= beta.privacy-negotiator.vjpatel.me

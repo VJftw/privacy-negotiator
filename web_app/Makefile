@@ -1,4 +1,4 @@
-GIT_VERSION = $(or ${TRAVIS_COMMIT}, $(shell git describe --always))
+GIT_VERSION = $(shell git describe --always)
 ENVIRONMENT ?= beta
 
 install:
