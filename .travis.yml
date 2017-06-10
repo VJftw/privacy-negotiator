@@ -6,13 +6,12 @@ env:
   global:
     - secure: "O5+rAToQpze2lML31lCcpTOTSWIpTba+P6QPkMYLMt3qQeJIMZVRiYbFgs1I3lMgrpsIuJZ5luHhODUv3wJ3C2tUhllllmH/0EmvP+LcoBAKuz51PKfGSNkUcikLBSUis1ysHsjE7VdVilw+p7BoqfBV+7Y7u/tPUTojlKA0n3i2+UPxgiNO+4av7LeC0wVmndv24usJ/S/02dmteu9SYYrkQLkwIbDVqCZGPAp0C7jdMHlOaTgZfp4+/mBXgCF8+wyWppfWUNvNUjVXFbR9YKk5F7RlOKefLrCOzWNCX4eOFtlzct2WVQirdM761bD+lkGNYvGk9rNQh4i2K9etPRGdyF2ptKElDJ6Eb11NpcqHauAKJm3+d905mtVX7BeZXrtFP6CEVhQxqCzNkrzyvndONIYKt3mTuLb+dZ0v9uQBSpKRTLVZ4SVo7ZO8QhBSe7BP5S/l0eMaUnUgDgVxGRYC3QSFB1mFpZJCgpw5qUoBitQuUIJgAzLyYWlEfcJib8RDyrIFdE9LT4ooIARzu0KfOesoeh5byHJTmj0k4n7jMyyUWqCdJWvMp6o8E6zTcwkKQdKFxiZR7WHW3dLaCYnCs8t/vyFJTTDE69nxmaqhp5PHDsP9OmwVPDKCtib5nG/V0v4DeRXx6LZ5TcLohs69gWZgFI/FnpupfXtRHdY="
     - secure: "fCKeitToOZGfghqYm4adzVlJuWSzZgInUJftJr2BuCBOm3zzxFjqW8I1l26KCkvpwFNWgp9QKbw3QwSUm1C/IoQeqNnM/IhE/sgVKcwfd0Lqtk/bAT5OiH5EfbOwftsWtuv7qHkdIdWqV31A81c+Pg+fYYUGDGDz4f6eCO261WWcpMzbKest1f+0eDJj3c0vrhE9GA+nOJFgId4xETCLO8/BPwerWtHgyXGqPfVUEsKz1kV4tSanbru64CMzy/sHt0cOqXO7t0Mf20yE5r/9Ln0BHIKrffuo5pENf3ZY6hxmRtgBL+hMnk2o66SNXnIHzbab0kkzH8eGBoPZuJMF4yPoK78X0xhS1Ij6M2qP5tRluaoZVEAIgsHpZ/iut3ckhrywiYYCyaG6g4v1t06bjSyoyOJd44DGTDiCADWV+tWQTRIpJqpabum9+d5BFJADjbDOFQEkIJfhMY37VQ/b4eIn5c6BxFueUGUwK4BVSn5LsnryRI1cl8LF2KR5ELXlxhZL6rRmLVY3cqKA3j9S4NKSkXF3meeB3g67jznNjJKctDr7q8yrZnt+g0uVmGvHBQ2HeJsUdUsG0whj6Lcy1P6K0wKBQJD8/2FOQq+3mwkDAixVZNoicwPARUvkdtkAl5V/dhFmJVmm1lrCHr/7XC54eJxtfJ9z1yYbbEXgvF4="
-  matrix:
-    - COMPONENT=backend
-    - COMPONENT=web_app
 
 jobs:
   include:
     - stage: test
-      script: cd ${TRAVIS_BUILD_DIR}/${COMPONENT} && make test
+      script: cd ${TRAVIS_BUILD_DIR}/backend && make test
+    - stage: test
+      script: cd ${TRAVIS_BUILD_DIR}/web_app && make test
     - stage: deploy
       script: make deploy
