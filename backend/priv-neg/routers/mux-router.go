@@ -2,8 +2,6 @@ package routers
 
 // MuxRouter - The application router
 import (
-	"net/http"
-
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/unrolled/render"
@@ -14,7 +12,7 @@ import (
 type MuxRouter struct {
 	Router  *mux.Router
 	Render  *render.Render
-	Handler http.Handler
+	Negroni *negroni.Negroni
 }
 
 // Routable - Controllers should implement this.
@@ -24,25 +22,26 @@ type Routable interface {
 
 // NewMuxRouter - Sets up and returns a new MuxRouter with the given controllers.
 func NewMuxRouter(controllers []Routable, logging bool) *MuxRouter {
-	muxRouter := MuxRouter{}
+	muxRouter := &MuxRouter{}
 
 	muxRouter.Render = render.New()
 	muxRouter.Router = mux.NewRouter()
 
-	n := negroni.New()
-	if logging {
-		n.Use(negroni.NewLogger())
-	}
-	n.Use(negroni.NewRecovery())
-	n.Use(cors.Default())
+	muxRouter.Negroni = negroni.Classic()
+	muxRouter.Negroni.Use(cors.New(cors.Options{
+		AllowedHeaders: []string{
+			"Authorization",
+			"Content-Type",
+		},
+	}))
 
-	n.UseHandler(muxRouter.Router)
-
-	muxRouter.Handler = n
+	// muxRouter.Handler = n
 
 	for _, controller := range controllers {
 		controller.Setup(muxRouter.Router, muxRouter.Render)
 	}
 
-	return &muxRouter
+	muxRouter.Negroni.UseHandler(muxRouter.Router)
+
+	return muxRouter
 }

@@ -1,6 +1,5 @@
 import { AuthService } from '../auth.service';
 import { Component, OnInit } from '@angular/core';
-import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-facebook';
 import { Photo } from './photo.model';
 import { PhotoService } from './photo.service';
 
@@ -8,25 +7,25 @@ import { PhotoService } from './photo.service';
 @Component({
   selector: 'app-photos',
   templateUrl: './photos.component.html',
-  styles: [`.card-image img {
+  styles: [`
+    .card-image img {
      max-height: 150px;
      max-width: 100%;
-  }`],
+   }
+   .blur {-webkit-filter: grayscale(100%);filter: grayscale(100%);}
+  `],
   providers: [
     PhotoService
   ]
 })
 export class PhotosComponent implements OnInit {
 
-  protected photos: Photo[];
   protected lock: boolean;
 
   constructor(
     private authService: AuthService,
-    private fb: FacebookService,
     private photoService: PhotoService
   ) {
-    this.photos = [];
     this.lock = false;
   }
 
@@ -34,15 +33,16 @@ export class PhotosComponent implements OnInit {
     this.updateTaggedPhotos();
   }
 
-  getTaggedPhotos() {
-    return this.photoService.getPhotos()
+  getTaggedPhotos(): Photo[] {
+    return this.photoService.getPhotos();
   }
 
   updateTaggedPhotos() {
     if (!this.lock) {
       this.lock = true;
       this.photoService.updateTaggedPhotosForUser(this.authService.getUser())
-        .then(() => this.lock = false);
+        .then(() => this.lock = false)
+      ;
     }
   }
 

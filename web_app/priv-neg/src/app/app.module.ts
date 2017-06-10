@@ -14,6 +14,7 @@ import { PhotosComponent } from './photos/photos.component';
 import { CommunitiesComponent } from './communities/communities.component';
 
 import { FacebookService } from 'ngx-facebook';
+import { APIService } from './api.service';
 import { AuthService } from './auth.service';
 
 @NgModule({
@@ -38,6 +39,7 @@ import { AuthService } from './auth.service';
     ], { useHash: true })
   ],
   providers: [
+    APIService,
     AuthService,
     FacebookService
   ],

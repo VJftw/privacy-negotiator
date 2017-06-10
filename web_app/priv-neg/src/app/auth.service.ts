@@ -4,18 +4,16 @@ import 'rxjs/add/operator/toPromise';
 import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-facebook';
 import { environment } from '../environments/environment';
 import { Router, CanActivate } from '@angular/router';
-
-
+import { APIService } from './api.service';
 
 @Injectable()
 export class AuthService implements CanActivate {
 
-  private authToken: string;
   private fbUser: FBUser;
 
   constructor(
     public fb: FacebookService,
-    private http: Http,
+    private apiService: APIService,
     private router: Router,
 
   ) {
@@ -37,10 +35,10 @@ export class AuthService implements CanActivate {
   }
 
   public isAuthenticated(): boolean {
-    if (this.authToken) {
-      return true;
+    if (this.fbUser) {
+      return true && this.apiService.isAuthenticated();
     }
-    console.log('Not logged in');
+    console.log('Not authenticated with Facebook.');
     return false;
   }
 
@@ -55,6 +53,7 @@ export class AuthService implements CanActivate {
 
     return this.fb.login(options)
       .then((response: LoginResponse) => {
+        console.log('Authenticated with Facebook.');
         this.fbUser = new FBUser();
         this.fbUser.shortAccessToken = response.authResponse.accessToken;
         this.fbUser.id = response.authResponse.userID;
@@ -67,20 +66,13 @@ export class AuthService implements CanActivate {
     ;
   }
 
-  public authenticateWithApi(response: LoginResponse): Promise<any> {
-    return this.http.post(
-      environment.apiEndpoint + '/v1/auth',
-      JSON.stringify(response.authResponse),
-      {headers: new Headers({'Content-Type': 'application/json'})}
-    ).toPromise()
-    .then(res => this.storeAuthToken(res.json()))
-    .catch(this.handleError)
-    ;
-  }
-
-  private storeAuthToken(response) {
-    console.log('Logged in.');
-    this.authToken = response.authToken;
+  public authenticateWithApi(loginResponse: LoginResponse): Promise<any> {
+    return this.apiService.post(
+      '/v1/auth',
+      loginResponse.authResponse
+    ).then(
+      authResponse => this.apiService.setAuthorization(authResponse.json().authToken)
+    );
   }
 
   private handleError(error: any): Promise<any> {

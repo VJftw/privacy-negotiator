@@ -27,6 +27,7 @@ export class Photo {
   url: string;
   albumId: string;
   uploader: FBUser;
+  negotiable = false;
 
   public static fromFBPhoto(fp: FBPhoto): Photo {
     const p = new Photo();

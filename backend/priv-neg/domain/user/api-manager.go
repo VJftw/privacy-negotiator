@@ -44,18 +44,19 @@ func (m APIManager) Save(u *FacebookUser) error {
 func (m APIManager) FindByFacebookID(facebookID string) (*FacebookUser, error) {
 	user := &FacebookUser{}
 
-	userJSON, _ := m.Redis.Do(
+	userJSON, _ := redis.Bytes(m.Redis.Do(
 		"GET",
 		fmt.Sprintf("user:%s", facebookID),
-	)
+	))
 
 	if userJSON != nil {
-		str, _ := userJSON.(string)
-		json.Unmarshal([]byte(str), user)
+		json.Unmarshal(userJSON, user)
+		m.CacheLogger.Printf("Got user:%s\n", user.FacebookUserID)
 
 		return user, nil
 	}
 
+	m.CacheLogger.Printf("Could not find user:%s\n", facebookID)
 	return nil, errors.New("Not found")
 
 }

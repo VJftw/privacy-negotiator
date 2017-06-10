@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
@@ -26,6 +27,7 @@ func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 	router.
 		HandleFunc("/v1/auth", c.authHandler).
 		Methods("POST")
+	log.Println("Set up Auth controller.")
 }
 
 func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {

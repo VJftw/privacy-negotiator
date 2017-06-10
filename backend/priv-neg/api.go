@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
@@ -33,6 +34,7 @@ func NewPrivNegAPI() {
 	cacheLogger := log.New(os.Stdout, "[cache] ", log.Lshortfile)
 
 	var authController auth.Controller
+	var userController user.Controller
 	qGetFacebookLongLivedToken := queues.NewGetFacebookLongLivedToken()
 
 	redisCache := persisters.NewRedisDB(cacheLogger)
@@ -47,6 +49,7 @@ func NewPrivNegAPI() {
 		&inject.Object{Name: "auth.provider", Value: auth.NewProvider()},
 		&inject.Object{Name: "auth.graphAPI", Value: auth.NewGraphAPI()},
 		&inject.Object{Name: "auth.controller", Value: &authController},
+		&inject.Object{Name: "user.controller", Value: &userController},
 		&inject.Object{Name: "user.manager", Value: user.NewAPIManager()},
 		&inject.Object{Name: "persister.cache", Value: redisCache},
 		&inject.Object{Name: "queues.getFacebookLongLivedToken", Value: qGetFacebookLongLivedToken},
@@ -64,6 +67,7 @@ func NewPrivNegAPI() {
 
 	muxRouter := routers.NewMuxRouter([]routers.Routable{
 		&authController,
+		&userController,
 	}, true)
 
 	privNegAPI.Router = muxRouter
@@ -74,5 +78,14 @@ func NewPrivNegAPI() {
 	}, queueLogger)
 
 	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), privNegAPI.Router.Handler))
+	// privNegAPI.Router.Handler.Run(fmt.Sprintf(":%s", port))
+
+	s := &http.Server{
+		Addr:           fmt.Sprintf(":%s", port),
+		Handler:        privNegAPI.Router.Negroni,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	log.Fatal(s.ListenAndServe())
 }

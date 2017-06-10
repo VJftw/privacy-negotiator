@@ -25,20 +25,7 @@ export class CommunitiesComponent implements OnInit {
   }
 
   getFriends() {
-    if (this.offset) {
-      this.communityService.getFriendsForUser(
-        this.authService.userId,
-        this.offset
-      ).then(res => {
-        console.log(res);
-      });
-    } else {
-      this.communityService.getFriendsForUser(
-        this.authService.userId
-      ).then(res => {
-        console.log(res);
-      });
-    }
+
   }
 
 }
