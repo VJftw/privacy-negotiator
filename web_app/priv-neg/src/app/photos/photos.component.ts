@@ -39,8 +39,10 @@ export class PhotosComponent implements OnInit {
       this.lock = true;
       this.photoService.getTaggedPhotosForUsera(
         this.authService.userId
-      ).then(photos => this.updatePhotos(photos));
-      this.lock = false;
+      ).then(photos => {
+        this.updatePhotos(photos);
+        this.lock = false;
+      });
     }
   }
 
