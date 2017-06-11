@@ -3,19 +3,19 @@ data "template_file" "ecs_def_api" {
   template = "${file("${path.module}/api.def.tpl.json")}"
 
   vars {
-    environment        = "${var.environment}"
-    domain = "${var.domain}"
-    version = "${var.version}"
-    weave_cidr = "${var.weave_cidr}"
+    environment = "${var.environment}"
+    domain      = "${var.domain}"
+    version     = "${var.version}"
+    weave_cidr  = "${var.weave_cidr}"
 
     cloudwatch_log_group = "${aws_cloudwatch_log_group.api.arn}"
     cloudwatch_region    = "${var.aws_region}"
 
-    jwt_secret = "${var.jwt_secret}"
-    rabbitmq_user = "${var.rabbitmq_user}"
-    rabbitmq_pass = "${var.rabbitmq_pass}"
+    jwt_secret        = "${var.jwt_secret}"
+    rabbitmq_user     = "${var.rabbitmq_user}"
+    rabbitmq_pass     = "${var.rabbitmq_pass}"
     rabbitmq_hostname = "rabbitmq_${var.environment}"
-    redis_host = "redis_${var.environment}"
+    redis_host        = "redis_${var.environment}"
   }
 }
 
@@ -25,11 +25,12 @@ resource "aws_ecs_task_definition" "api" {
 }
 
 resource "aws_ecs_service" "api" {
-  name            = "api_${var.environment}"
-  cluster         = "${var.cluster_name}"
-  task_definition = "${aws_ecs_task_definition.api.arn}"
-  desired_count   = 4
-  iam_role        = "${aws_iam_role.ecs_service.arn}"
+  name                               = "api_${var.environment}"
+  cluster                            = "${var.cluster_name}"
+  task_definition                    = "${aws_ecs_task_definition.api.arn}"
+  desired_count                      = 4
+  iam_role                           = "${aws_iam_role.ecs_service.arn}"
+  deployment_minimum_healthy_percent = 50
 
   placement_strategy {
     type  = "spread"
@@ -89,11 +90,11 @@ resource "aws_alb_target_group" "api" {
   vpc_id   = "${data.aws_vpc.app_cluster.id}"
 
   health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 3
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
     timeout             = 3
     protocol            = "HTTP"
-    interval            = 5
+    interval            = 30
     matcher             = "200,404"
   }
 }
