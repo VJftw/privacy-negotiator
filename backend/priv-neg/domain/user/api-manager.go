@@ -33,7 +33,7 @@ func (m APIManager) Save(u *FacebookUser) error {
 		fmt.Sprintf("user:%s", u.FacebookUserID),
 		jsonUser,
 	)
-	m.CacheLogger.Printf("Saved user:%s\n", u.FacebookUserID)
+	m.CacheLogger.Printf("Saved user:%s", u.FacebookUserID)
 
 	// Should add to Queue
 
@@ -51,12 +51,12 @@ func (m APIManager) FindByFacebookID(facebookID string) (*FacebookUser, error) {
 
 	if userJSON != nil {
 		json.Unmarshal(userJSON, user)
-		m.CacheLogger.Printf("Got user:%s\n", user.FacebookUserID)
+		m.CacheLogger.Printf("Got user:%s", user.FacebookUserID)
 
 		return user, nil
 	}
 
-	m.CacheLogger.Printf("Could not find user:%s\n", facebookID)
+	m.CacheLogger.Printf("Could not find user:%s", facebookID)
 	return nil, errors.New("Not found")
 
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
@@ -23,7 +22,6 @@ func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 	c.render = renderer
 
 	router.Handle("/v1/users", negroni.New(
-		cors.Default(),
 		middlewares.NewJWT(renderer),
 		negroni.Wrap(http.HandlerFunc(c.getUsersHandler)),
 	)).Methods("GET")

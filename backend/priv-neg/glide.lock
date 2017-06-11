@@ -1,5 +1,5 @@
-hash: 8a00b0b8b39f3d3cde1ae926e594076f778f451a864d6dead211447f68302ad4
-updated: 2017-06-09T18:46:47.09491569+01:00
+hash: 6e0adb42a58814410a55132d30ec40323e8de2562d3c1fab3a51a9495d1551c1
+updated: 2017-06-11T12:07:07.942901491+01:00
 imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
@@ -16,6 +16,8 @@ imports:
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: bcd8bc72b08df0f70df986b97f95590779502d31
+- name: github.com/gorilla/websocket
+  version: 3ab3a8b8831546bd18fd182c20687ca853b2bb13
 - name: github.com/jinzhu/gorm
   version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
   subpackages:
@@ -28,17 +30,11 @@ imports:
   - hstore
   - oid
 - name: github.com/rs/cors
-  version: a62a804a8a009876ca59105f7899938a1349f4b3
-- name: github.com/rs/xhandler
-  version: ed27b6fd65218132ee50cd95f38474a3d8a2cd12
+  version: 8dd4211afb5d08dbb39a533b9bb9e4b486351df6
 - name: github.com/streadway/amqp
   version: 23eb59d9850310665357758b78f8993692e8dabb
 - name: github.com/unrolled/render
   version: 1442182abc1e7397c8c0c862829bd00e9b670a96
 - name: github.com/urfave/negroni
   version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
-- name: golang.org/x/net
-  version: 59a0b19b5533c7977ddeb86b017bf507ed407b12
-  subpackages:
-  - context
 testImports: []

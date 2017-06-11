@@ -35,9 +35,9 @@ func (m WorkerManager) Save(u *FacebookUser) error {
 		fmt.Sprintf("user:%s", u.FacebookUserID),
 		jsonUser,
 	)
-	m.CacheLogger.Printf("Saved user:%s\n", u.FacebookUserID)
+	m.CacheLogger.Printf("Saved user:%s", u.FacebookUserID)
 	m.Gorm.Save(u)
-	m.DbLogger.Printf("Saved user %s\n", u.FacebookUserID)
+	m.DbLogger.Printf("Saved user %s", u.FacebookUserID)
 
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers/websocket"
 	"github.com/facebookgo/inject"
 )
 
@@ -35,6 +36,7 @@ func NewPrivNegAPI() {
 
 	var authController auth.Controller
 	var userController user.Controller
+	var websocketController websocket.Controller
 	qGetFacebookLongLivedToken := queues.NewGetFacebookLongLivedToken()
 
 	redisCache := persisters.NewRedisDB(cacheLogger)
@@ -50,6 +52,7 @@ func NewPrivNegAPI() {
 		&inject.Object{Name: "auth.graphAPI", Value: auth.NewGraphAPI()},
 		&inject.Object{Name: "auth.controller", Value: &authController},
 		&inject.Object{Name: "user.controller", Value: &userController},
+		&inject.Object{Name: "websocket.controller", Value: &websocketController},
 		&inject.Object{Name: "user.manager", Value: user.NewAPIManager()},
 		&inject.Object{Name: "persister.cache", Value: redisCache},
 		&inject.Object{Name: "queues.getFacebookLongLivedToken", Value: qGetFacebookLongLivedToken},
@@ -68,6 +71,7 @@ func NewPrivNegAPI() {
 	muxRouter := routers.NewMuxRouter([]routers.Routable{
 		&authController,
 		&userController,
+		&websocketController,
 	}, true)
 
 	privNegAPI.Router = muxRouter

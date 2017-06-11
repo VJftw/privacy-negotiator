@@ -1,13 +1,13 @@
 package middlewares
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/context"
 	"github.com/unrolled/render"
 )
 
@@ -23,9 +23,17 @@ func NewJWT(renderer *render.Render) *JWT {
 	}
 }
 
+type key string
+
+const requestFBUserID key = "fbUserID"
+
 // ServeHTTP -
 func (m *JWT) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	tokenString, err := fromAuthHeader(r)
+	if err != nil {
+		tokenString, err = fromQueryString(r)
+	}
+
 	if err != nil {
 		m.render.JSON(rw, http.StatusUnauthorized, nil)
 		return
@@ -45,14 +53,24 @@ func (m *JWT) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.Handl
 		return
 	}
 
+	ctx := r.Context()
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// fmt.Println(claims)
-		context.Set(r, "fbUserID", claims["fbUserID"])
+		ctx = context.WithValue(ctx, requestFBUserID, claims["fbUserID"])
 	} else {
 		fmt.Println(err)
 		return
 	}
-	next(rw, r)
+	next(rw, r.WithContext(ctx))
+}
+
+func fromQueryString(r *http.Request) (string, error) {
+	authToken := r.URL.Query().Get("authToken")
+	if authToken == "" {
+		return "", errors.New("Missing authToken")
+	}
+
+	return authToken, nil
 }
 
 // FromAuthHeader is a "TokenExtractor" that takes a give request and extracts
@@ -70,4 +88,9 @@ func fromAuthHeader(r *http.Request) (string, error) {
 	}
 
 	return authHeaderParts[1], nil
+}
+
+// AuthTokenFromContext - returns the auth token association with a context.
+func AuthTokenFromContext(ctx context.Context) string {
+	return ctx.Value(requestFBUserID).(string)
 }

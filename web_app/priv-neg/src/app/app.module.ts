@@ -15,6 +15,7 @@ import { CommunitiesComponent } from './communities/communities.component';
 
 import { FacebookService } from 'ngx-facebook';
 import { APIService } from './api.service';
+import { WebSocketService } from './websocket.service';
 import { AuthService } from './auth.service';
 
 @NgModule({
@@ -40,6 +41,7 @@ import { AuthService } from './auth.service';
   ],
   providers: [
     APIService,
+    WebSocketService,
     AuthService,
     FacebookService
   ],

@@ -8,18 +8,27 @@ import { APIService } from '../api.service';
 @Injectable()
 export class PhotoService {
 
-  protected photos: Photo[];
+  protected photos: Map<string, Photo>;
   protected offset: string;
 
   constructor(
     private fb: FacebookService,
     private apiService: APIService
   ) {
-    this.photos = [];
+    this.photos = new Map();
   }
 
   public getPhotos(): Photo[] {
-    return this.photos;
+    return Array.from(this.photos.values());
+  }
+
+  public updatePhoto(photo: Photo) {
+    this.photos.set(photo.id, photo);
+    // send PUT request to API
+  }
+
+  public getPhotoById(photoId: string): Photo {
+    return this.photos.get(photoId);
   }
 
   public updateTaggedPhotosForUser(fbUser: FBUser): Promise<Photo[]> {
@@ -36,12 +45,6 @@ export class PhotoService {
         }
         const fbPhotos = response.data as FBPhoto[];
         this.processFBPhotos(fbPhotos);
-        // for (const fbPhoto of fbPhotos) {
-        //   if (fbPhoto.album) {
-        //     const photo = Photo.fromFBPhoto(fbPhoto);
-        //     this.photos.push(photo);
-        //   }
-        // }
       })
       .catch(e => console.error(e))
     ;
@@ -81,18 +84,9 @@ export class PhotoService {
           photo.negotiable = true;
         }
         photos.push(photo);
+        this.photos.set(photo.id, photo);
       }
-      console.log(photos);
-
-      this.photos = this.photos.concat(photos);
+      console.log(this.photos);
     });
-  }
-
-  public getPrivacyForAnAlbum(albumId: string): Promise<any> {
-    const uri = '/' + albumId + '?fields=id,privacy';
-
-    return this.fb.api(uri)
-      .catch(e => console.error(e))
-    ;
   }
 }

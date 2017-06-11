@@ -2,19 +2,32 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 import { environment } from '../environments/environment';
+import { WebSocketService } from './websocket.service';
 
 @Injectable()
 export class APIService {
 
   private headers = new Headers({'Content-Type': 'application/json'});
+  private websocket: WebSocket;
 
   constructor(
-    private http: Http
-  ) {}
+    private http: Http,
+    private webSocketService: WebSocketService
+  ) {
+
+  }
 
   public setAuthorization(authToken: string) {
     console.log('Authenticated with API:' + authToken);
     this.headers.set('Authorization', 'bearer ' + authToken);
+    // connect to WebSocket
+    this.websocket = new WebSocket(environment.apiEndpoint.replace('http', 'ws') + '/v1/ws?authToken=' + authToken);
+
+    this.websocket.addEventListener('open', this.webSocketService.onOpen);
+    this.websocket.addEventListener('message', this.webSocketService.onMessage);
+    this.websocket.addEventListener('close', this.webSocketService.onClose);
+    this.websocket.addEventListener('error', this.webSocketService.onError);
+
   }
 
   public isAuthenticated(): boolean {

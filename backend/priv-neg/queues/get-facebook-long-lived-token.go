@@ -92,7 +92,7 @@ func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
 	user := q.UserManager.New()
 	json.Unmarshal(d.Body, user)
 
-	q.Logger.Printf("Started processing for %s\n", user.FacebookUserID)
+	q.Logger.Printf("Started processing for %s", user.FacebookUserID)
 
 	respLongLived := getLongLivedToken(user)
 
@@ -103,7 +103,7 @@ func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
 	q.UserManager.Save(user)
 
 	elapsed := time.Since(start)
-	q.Logger.Printf("Processed GetFacebookLongLivedToken for %s in %s\n", user.FacebookUserID, elapsed)
+	q.Logger.Printf("Processed GetFacebookLongLivedToken for %s in %s", user.FacebookUserID, elapsed)
 }
 
 func getLongLivedToken(fbUser *user.FacebookUser) *facebookResponseLongLived {
