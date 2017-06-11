@@ -14,6 +14,7 @@ import (
 
 // Controller - WebSocket
 type Controller struct {
+	logger *log.Logger
 	render *render.Render
 }
 
@@ -23,12 +24,17 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-// Setup - Sets up the Auth Controller
-func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
-	c.render = renderer
+func NewController(webSocketLogger *log.Logger, renderer *render.Render) *Controller {
+	return &Controller{
+		logger: webSocketLogger,
+		render: renderer,
+	}
+}
 
+// Setup - Sets up the Auth Controller
+func (c Controller) Setup(router *mux.Router) {
 	router.Handle("/v1/ws", negroni.New(
-		middlewares.NewJWT(renderer),
+		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.websocketHandler)),
 	)).Methods("GET")
 
@@ -38,7 +44,7 @@ func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 
 func (c Controller) websocketHandler(w http.ResponseWriter, r *http.Request) {
 
-	log.Printf("[websocket] Authenticated %s", middlewares.FBUserIDFromContext(r.Context()))
+	c.logger.Printf("Authenticated %s", middlewares.FBUserIDFromContext(r.Context()))
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

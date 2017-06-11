@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/jinzhu/gorm"
 	// postgres
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -14,7 +14,7 @@ import (
 // NewGORMDB - Initialises a connection to a GORM storage
 func NewGORMDB(logger *log.Logger, models ...interface{}) *gorm.DB {
 
-	if !queues.WaitForService(fmt.Sprintf("%s:%s", os.Getenv("POSTGRES_HOST"), "5432"), logger) {
+	if !utils.WaitForService(fmt.Sprintf("%s:%s", os.Getenv("POSTGRES_HOST"), "5432"), logger) {
 		panic("Could not find database")
 	}
 

@@ -11,13 +11,16 @@ import (
 
 // APIManager - Implementation of Managable.
 type APIManager struct {
-	Redis       redis.Conn  `inject:"persister.cache"`
-	CacheLogger *log.Logger `inject:"logger.cache"`
+	redis       redis.Conn
+	cacheLogger *log.Logger
 }
 
 // NewAPIManager - Returns an implementation of Manager.
-func NewAPIManager() Managable {
-	return &APIManager{}
+func NewAPIManager(cacheLogger *log.Logger, redis redis.Conn) Managable {
+	return &APIManager{
+		redis:       redis,
+		cacheLogger: cacheLogger,
+	}
 }
 
 // New - Returns a new Category.
@@ -28,12 +31,12 @@ func (m APIManager) New() *Category {
 // Save - Saves the model across storages
 func (m APIManager) Save(c *Category) error {
 	jsonUser, _ := json.Marshal(c)
-	m.Redis.Do(
+	m.redis.Do(
 		"SET",
 		fmt.Sprintf("category:%s", c.ID),
 		jsonUser,
 	)
-	m.CacheLogger.Printf("Saved category:%s", c.ID)
+	m.cacheLogger.Printf("Saved category:%s", c.ID)
 
 	// Should add to Queue
 
@@ -44,19 +47,19 @@ func (m APIManager) Save(c *Category) error {
 func (m APIManager) FindByID(ID string) (*Category, error) {
 	user := &Category{}
 
-	userJSON, _ := redis.Bytes(m.Redis.Do(
+	userJSON, _ := redis.Bytes(m.redis.Do(
 		"GET",
 		fmt.Sprintf("category:%s", ID),
 	))
 
 	if userJSON != nil {
 		json.Unmarshal(userJSON, user)
-		m.CacheLogger.Printf("Got category:%s", user.ID)
+		m.cacheLogger.Printf("Got category:%s", user.ID)
 
 		return user, nil
 	}
 
-	m.CacheLogger.Printf("Could not find category:%s", ID)
+	m.cacheLogger.Printf("Could not find category:%s", ID)
 	return nil, errors.New("Not found")
 
 }

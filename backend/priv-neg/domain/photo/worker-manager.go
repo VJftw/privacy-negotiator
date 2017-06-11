@@ -11,15 +11,25 @@ import (
 
 // WorkerManager - Implementation of Managable.
 type WorkerManager struct {
-	Gorm        *gorm.DB    `inject:"persister.db"`
-	DbLogger    *log.Logger `inject:"logger.db"`
-	Redis       redis.Conn  `inject:"persister.cache"`
-	CacheLogger *log.Logger `inject:"logger.cache"`
+	dbLogger    *log.Logger
+	gorm        *gorm.DB
+	cacheLogger *log.Logger
+	redis       redis.Conn
 }
 
 // NewWorkerManager - Returns an implementation of Manager.
-func NewWorkerManager() Managable {
-	return &WorkerManager{}
+func NewWorkerManager(
+	dbLogger *log.Logger,
+	gorm *gorm.DB,
+	cacheLogger *log.Logger,
+	redis redis.Conn,
+) Managable {
+	return &WorkerManager{
+		dbLogger:    dbLogger,
+		gorm:        gorm,
+		cacheLogger: cacheLogger,
+		redis:       redis,
+	}
 }
 
 // New - Returns a new FacebookPhoto.
@@ -30,14 +40,14 @@ func (m WorkerManager) New() *FacebookPhoto {
 // Save - Saves the model across storages
 func (m WorkerManager) Save(u *FacebookPhoto) error {
 	jsonUser, _ := json.Marshal(u)
-	m.Redis.Do(
+	m.redis.Do(
 		"SET",
 		fmt.Sprintf("photo:%s", u.FacebookPhotoID),
 		jsonUser,
 	)
-	m.CacheLogger.Printf("Saved photo:%s", u.FacebookPhotoID)
-	m.Gorm.Save(u)
-	m.DbLogger.Printf("Saved photo %s", u.FacebookPhotoID)
+	m.cacheLogger.Printf("Saved photo:%s", u.FacebookPhotoID)
+	m.gorm.Save(u)
+	m.dbLogger.Printf("Saved photo %s", u.FacebookPhotoID)
 
 	return nil
 }
@@ -47,7 +57,7 @@ func (m WorkerManager) FindByID(facebookID string) (*FacebookPhoto, error) {
 	user := &FacebookPhoto{}
 
 	// Check cache first.
-	userJSON, _ := m.Redis.Do(
+	userJSON, _ := m.redis.Do(
 		"GET",
 		fmt.Sprintf("photo:%s", facebookID),
 	)

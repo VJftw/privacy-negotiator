@@ -5,25 +5,34 @@ import (
 	"net/http"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
 
 // Controller - Handles authentication
 type Controller struct {
-	render                         *render.Render
-	AuthResolver                   Resolver                          `inject:"auth.resolver"`
-	AuthProvider                   Provider                          `inject:"auth.provider"`
-	GraphAPI                       GraphAPI                          `inject:"auth.graphAPI"`
-	GetFacebookLongLivedTokenQueue *queues.GetFacebookLongLivedToken `inject:"queues.getFacebookLongLivedToken"`
-	UserManager                    user.Managable                    `inject:"user.manager"`
+	logger      *log.Logger
+	render      *render.Render
+	authQueue   *AuthQueue
+	userManager user.Managable
+}
+
+func NewController(
+	controllerLogger *log.Logger,
+	renderer *render.Render,
+	authQueue *AuthQueue,
+	userManager user.Managable,
+) *Controller {
+	return &Controller{
+		logger:      controllerLogger,
+		render:      renderer,
+		authQueue:   authQueue,
+		userManager: userManager,
+	}
 }
 
 // Setup - Sets up the Auth Controller
-func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
-	c.render = renderer
-
+func (c Controller) Setup(router *mux.Router) {
 	router.
 		HandleFunc("/v1/auth", c.authHandler).
 		Methods("POST")
@@ -33,23 +42,23 @@ func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
 	fbUser := &user.FacebookUser{}
 
-	err := c.AuthResolver.FromRequest(fbUser, r.Body)
+	err := FromRequest(fbUser, r.Body)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	if !c.GraphAPI.ValidateCredentials(fbUser) {
+	if !ValidateCredentials(fbUser) {
 		c.render.JSON(w, http.StatusUnauthorized, nil)
 		return
 	}
 
-	token := c.AuthProvider.NewFromFacebookAuth(fbUser)
+	token := NewFromFacebookAuth(fbUser)
 	c.render.JSON(w, http.StatusCreated, token)
 
 	// Add GetLongLivedToken to queue
-	c.GetFacebookLongLivedTokenQueue.Publish(fbUser)
+	c.authQueue.Publish(fbUser)
 
 	// Save to Redis
-	c.UserManager.Save(fbUser)
+	c.userManager.Save(fbUser)
 }

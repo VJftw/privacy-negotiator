@@ -11,15 +11,25 @@ import (
 
 // WorkerManager - Implementation of Managable.
 type WorkerManager struct {
-	Gorm        *gorm.DB    `inject:"persister.db"`
-	DbLogger    *log.Logger `inject:"logger.db"`
-	Redis       redis.Conn  `inject:"persister.cache"`
-	CacheLogger *log.Logger `inject:"logger.cache"`
+	dbLogger    *log.Logger
+	gorm        *gorm.DB
+	cacheLogger *log.Logger
+	redis       redis.Conn
 }
 
 // NewWorkerManager - Returns an implementation of Manager.
-func NewWorkerManager() Managable {
-	return &WorkerManager{}
+func NewWorkerManager(
+	dbLogger *log.Logger,
+	gorm *gorm.DB,
+	cacheLogger *log.Logger,
+	redis redis.Conn,
+) Managable {
+	return &WorkerManager{
+		dbLogger:    dbLogger,
+		gorm:        gorm,
+		cacheLogger: cacheLogger,
+		redis:       redis,
+	}
 }
 
 // New - Returns a new Category.
@@ -30,14 +40,14 @@ func (m WorkerManager) New() *Category {
 // Save - Saves the model across storages
 func (m WorkerManager) Save(u *Category) error {
 	jsonUser, _ := json.Marshal(u)
-	m.Redis.Do(
+	m.redis.Do(
 		"SET",
 		fmt.Sprintf("category:%s", u.ID),
 		jsonUser,
 	)
-	m.CacheLogger.Printf("Saved category:%s", u.ID)
-	m.Gorm.Save(u)
-	m.DbLogger.Printf("Saved category %s", u.ID)
+	m.cacheLogger.Printf("Saved category:%s", u.ID)
+	m.gorm.Save(u)
+	m.dbLogger.Printf("Saved category %s", u.ID)
 
 	return nil
 }
@@ -47,7 +57,7 @@ func (m WorkerManager) FindByID(ID string) (*Category, error) {
 	user := &Category{}
 
 	// Check cache first.
-	userJSON, _ := m.Redis.Do(
+	userJSON, _ := m.redis.Do(
 		"GET",
 		fmt.Sprintf("category:%s", ID),
 	)

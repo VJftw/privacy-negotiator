@@ -12,21 +12,33 @@ import (
 
 // Controller - Handles photos
 type Controller struct {
+	logger          *log.Logger
 	render          *render.Render
-	CategoryManager Managable `inject:"category.manager"`
+	categoryManager Managable `inject:"category.manager"`
+}
+
+func NewController(
+	controllerLogger *log.Logger,
+	renderer *render.Render,
+	categoryManager Managable,
+) *Controller {
+	return &Controller{
+		logger:          controllerLogger,
+		render:          renderer,
+		categoryManager: categoryManager,
+	}
 }
 
 // Setup - Sets up the Auth Controller
-func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
-	c.render = renderer
+func (c Controller) Setup(router *mux.Router) {
 
 	router.Handle("/v1/categories", negroni.New(
-		middlewares.NewJWT(renderer),
+		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.getCategoriesHandler)),
 	)).Methods("GET")
 
 	router.Handle("/v1/categories", negroni.New(
-		middlewares.NewJWT(renderer),
+		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.postCategoriesHandler)),
 	)).Methods("POST")
 
@@ -48,7 +60,7 @@ func (c Controller) postCategoriesHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	c.CategoryManager.Save(category)
+	c.categoryManager.Save(category)
 
 	c.render.JSON(w, http.StatusCreated, nil)
 }

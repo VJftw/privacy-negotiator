@@ -13,16 +13,27 @@ import (
 
 // Controller - Handles users
 type Controller struct {
+	logger      *log.Logger
 	render      *render.Render
-	UserManager Managable `inject:"user.manager"`
+	userManager Managable
+}
+
+func NewController(
+	controllerLogger *log.Logger,
+	renderer *render.Render,
+	userManager Managable,
+) *Controller {
+	return &Controller{
+		logger:      controllerLogger,
+		render:      renderer,
+		userManager: userManager,
+	}
 }
 
 // Setup - Sets up the Auth Controller
-func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
-	c.render = renderer
-
+func (c Controller) Setup(router *mux.Router) {
 	router.Handle("/v1/users", negroni.New(
-		middlewares.NewJWT(renderer),
+		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.getUsersHandler)),
 	)).Methods("GET")
 
@@ -40,7 +51,7 @@ func (c Controller) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	returnIds := []string{}
 	// Find batch fb user ids on redis.
 	for _, facebookUserID := range ids {
-		_, err := c.UserManager.FindByID(facebookUserID)
+		_, err := c.userManager.FindByID(facebookUserID)
 		if err == nil {
 			returnIds = append(returnIds, facebookUserID)
 		}

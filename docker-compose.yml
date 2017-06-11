@@ -49,7 +49,7 @@ services:
       - "queue:rabbit"
       - "cache:redis"
 
-  # Golang Worker
+  # Golang Worker - Auth queue
   worker:
     build:
       context: ./backend/
@@ -60,6 +60,7 @@ services:
     working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
       TYPE: WORKER
+      QUEUE: auth-queue
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg

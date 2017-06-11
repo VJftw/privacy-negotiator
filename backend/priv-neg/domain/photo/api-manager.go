@@ -11,13 +11,16 @@ import (
 
 // APIManager - Implementation of Managable.
 type APIManager struct {
-	Redis       redis.Conn  `inject:"persister.cache"`
-	CacheLogger *log.Logger `inject:"logger.cache"`
+	redis       redis.Conn
+	cacheLogger *log.Logger
 }
 
 // NewAPIManager - Returns an implementation of Manager.
-func NewAPIManager() Managable {
-	return &APIManager{}
+func NewAPIManager(cacheLogger *log.Logger, redis redis.Conn) Managable {
+	return &APIManager{
+		redis:       redis,
+		cacheLogger: cacheLogger,
+	}
 }
 
 // New - Returns a new FacebookPhoto.
@@ -26,37 +29,35 @@ func (m APIManager) New() *FacebookPhoto {
 }
 
 // Save - Saves the model across storages
-func (m APIManager) Save(u *FacebookPhoto) error {
-	jsonUser, _ := json.Marshal(u)
-	m.Redis.Do(
+func (m APIManager) Save(p *FacebookPhoto) error {
+	jsonPhoto, _ := json.Marshal(p)
+	m.redis.Do(
 		"SET",
-		fmt.Sprintf("photo:%s", u.FacebookPhotoID),
-		jsonUser,
+		fmt.Sprintf("photo:%s", p.FacebookPhotoID),
+		jsonPhoto,
 	)
-	m.CacheLogger.Printf("Saved photo:%s", u.FacebookPhotoID)
-
-	// Should add to Queue
+	m.cacheLogger.Printf("Saved photo:%s", p.FacebookPhotoID)
 
 	return nil
 }
 
 // FindByID - Returns a FacebookPhoto given an Id
 func (m APIManager) FindByID(facebookID string) (*FacebookPhoto, error) {
-	user := &FacebookPhoto{}
+	photo := &FacebookPhoto{}
 
-	userJSON, _ := redis.Bytes(m.Redis.Do(
+	photoJSON, _ := redis.Bytes(m.redis.Do(
 		"GET",
 		fmt.Sprintf("photo:%s", facebookID),
 	))
 
-	if userJSON != nil {
-		json.Unmarshal(userJSON, user)
-		m.CacheLogger.Printf("Got photo:%s", user.FacebookPhotoID)
+	if photoJSON != nil {
+		json.Unmarshal(photoJSON, photo)
+		m.cacheLogger.Printf("Got photo:%s", photo.FacebookPhotoID)
 
-		return user, nil
+		return photo, nil
 	}
 
-	m.CacheLogger.Printf("Could not find photo:%s", facebookID)
+	m.cacheLogger.Printf("Could not find photo:%s", facebookID)
 	return nil, errors.New("Not found")
 
 }

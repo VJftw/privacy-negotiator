@@ -4,7 +4,7 @@ package photo
 type FacebookPhoto struct {
 	FacebookPhotoID string   `json:"id" gorm:"primary_key"`
 	Uploader        string   `json:"uploader"`
-	TaggedUsers     []string `json:"taggedUsers"`
+	TaggedUsers     []string `json:"taggedUsers" gorm:"type:varchar(64)[]"`
 
 	Pending bool `json:"pending"`
 }

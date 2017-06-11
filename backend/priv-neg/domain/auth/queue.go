@@ -1,4 +1,4 @@
-package queues
+package auth
 
 import (
 	"encoding/json"
@@ -9,24 +9,28 @@ import (
 	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
 )
 
-// GetFacebookLongLivedToken - Queue for publishing jobs to get long-lived facebook tokens.
-type GetFacebookLongLivedToken struct {
+// AuthQueue - Queue for publishing jobs to get long-lived facebook tokens.
+type AuthQueue struct {
 	queue       amqp.Queue
 	channel     *amqp.Channel
-	UserManager user.Managable `inject:"user.manager"`
-	Logger      *log.Logger    `inject:"logger.queue"`
+	userManager user.Managable
+	logger      *log.Logger
 }
 
-// NewGetFacebookLongLivedToken - Returns an implementation of the queue.
-func NewGetFacebookLongLivedToken() *GetFacebookLongLivedToken {
-	return &GetFacebookLongLivedToken{}
+// NewAuthQueue - Returns an implementation of the queue.
+func NewAuthQueue(queueLogger *log.Logger, userManager user.Managable) *AuthQueue {
+	return &AuthQueue{
+		logger:      queueLogger,
+		userManager: userManager,
+	}
 }
 
 // Setup - Declares the Queue.
-func (q *GetFacebookLongLivedToken) Setup(ch *amqp.Channel) {
+func (q *AuthQueue) Setup(ch *amqp.Channel) {
 	queue, err := ch.QueueDeclare(
 		"get-facebook-long-lived-token", // name
 		true,  // durable
@@ -35,13 +39,13 @@ func (q *GetFacebookLongLivedToken) Setup(ch *amqp.Channel) {
 		false, // no-wait
 		nil,   // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
+	utils.FailOnError(err, "Failed to declare a queue")
 	q.queue = queue
 	q.channel = ch
 }
 
 // Publish - Does nothing in the Worker.
-func (q *GetFacebookLongLivedToken) Publish(i Queueable) {
+func (q *AuthQueue) Publish(i utils.Queueable) {
 	b, err := json.Marshal(i)
 	if err != nil {
 		log.Println(err)
@@ -58,11 +62,11 @@ func (q *GetFacebookLongLivedToken) Publish(i Queueable) {
 			ContentType:  "application/json",
 			Body:         b,
 		})
-	failOnError(err, "Failed to publish a message")
+	utils.FailOnError(err, "Failed to publish a message")
 }
 
 // Consume - Processes items from the Queue.
-func (q *GetFacebookLongLivedToken) Consume() {
+func (q *AuthQueue) Consume() {
 	msgs, err := q.channel.Consume(
 		q.queue.Name, // queue
 		"",           // consumer
@@ -72,7 +76,7 @@ func (q *GetFacebookLongLivedToken) Consume() {
 		false,        // no-wait
 		nil,          // args
 	)
-	failOnError(err, "Failed to register a consumer")
+	utils.FailOnError(err, "Failed to register a consumer")
 
 	forever := make(chan bool)
 
@@ -82,17 +86,17 @@ func (q *GetFacebookLongLivedToken) Consume() {
 		}
 	}()
 
-	q.Logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	q.logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }
 
-func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
+func (q *AuthQueue) process(d amqp.Delivery) {
 	start := time.Now()
 
-	user := q.UserManager.New()
+	user := q.userManager.New()
 	json.Unmarshal(d.Body, user)
 
-	q.Logger.Printf("Started processing for %s", user.FacebookUserID)
+	q.logger.Printf("Started processing for %s", user.FacebookUserID)
 
 	respLongLived := getLongLivedToken(user)
 
@@ -100,10 +104,10 @@ func (q *GetFacebookLongLivedToken) process(d amqp.Delivery) {
 	duration, _ := time.ParseDuration(fmt.Sprintf("%ds", respLongLived.Expires))
 	user.TokenExpires = time.Now().Add(duration)
 
-	q.UserManager.Save(user)
+	q.userManager.Save(user)
 
 	elapsed := time.Since(start)
-	q.Logger.Printf("Processed GetFacebookLongLivedToken for %s in %s", user.FacebookUserID, elapsed)
+	q.logger.Printf("Processed AuthQueue for %s in %s", user.FacebookUserID, elapsed)
 }
 
 func getLongLivedToken(fbUser *user.FacebookUser) *facebookResponseLongLived {

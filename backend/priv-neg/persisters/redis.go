@@ -5,14 +5,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/garyburd/redigo/redis"
 )
 
 // NewRedisDB - Returns a new redis connection.
 func NewRedisDB(logger *log.Logger) redis.Conn {
 
-	if !queues.WaitForService(fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), "6379"), logger) {
+	if !utils.WaitForService(fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), "6379"), logger) {
 		panic("Could not find Redis.")
 	}
 

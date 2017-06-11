@@ -13,15 +13,26 @@ import (
 
 // Controller - Handles photos
 type Controller struct {
+	logger       *log.Logger
 	render       *render.Render
-	PhotoManager Managable `inject:"photo.manager"`
+	photoManager Managable
 }
 
-func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
-	c.render = renderer
+func NewController(
+	controllerLogger *log.Logger,
+	renderer *render.Render,
+	photoManager Managable,
+) *Controller {
+	return &Controller{
+		logger:       controllerLogger,
+		render:       renderer,
+		photoManager: photoManager,
+	}
+}
 
+func (c Controller) Setup(router *mux.Router) {
 	router.Handle("/v1/photos", negroni.New(
-		middlewares.NewJWT(renderer),
+		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.getPhotosHandler)),
 	)).Methods("GET")
 
@@ -39,17 +50,23 @@ func (c Controller) getPhotosHandler(w http.ResponseWriter, r *http.Request) {
 	returnPhotos := []*FacebookPhoto{}
 	// Find batch fb photo ids on redis.
 	for _, facebookPhotoID := range ids {
-		facebookPhoto, err := c.PhotoManager.FindByID(facebookPhotoID)
+		facebookPhoto, err := c.photoManager.FindByID(facebookPhotoID)
 		if err == nil {
 			returnPhotos = append(returnPhotos, facebookPhoto)
 		}
 	}
 
 	c.render.JSON(w, http.StatusOK, returnPhotos)
-
 }
 
-func (c Controller) putPhotosHandler(w http.ResponseWriter, r *http.Request) {
-	fbUserID := middlewares.FBUserIDFromContext(r.Context())
+func (c Controller) postPhotoHandler(w http.ResponseWriter, r *http.Request) {
+	photo, err := FromRequest(r)
+	if err != nil {
+		c.render.JSON(w, http.StatusBadRequest, nil)
+		return
+	}
 
+	c.photoManager.Save(photo)
+
+	c.render.JSON(w, http.StatusCreated, photo)
 }
