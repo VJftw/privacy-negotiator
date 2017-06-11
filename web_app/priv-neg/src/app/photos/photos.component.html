@@ -1,24 +1,29 @@
 <div class="search-results row" infiniteScroll
-		    [infiniteScrollDistance]="0"
-		    [infiniteScrollThrottle]="300"
-		    (scrolled)="updateTaggedPhotos()">
-       <div class="col s12 m6 l4" *ngFor="let photo of getTaggedPhotos()">
-         <div class="card small sticky-action" [ngClass]="{'grey': !photo.negotiable }">
-           <div class="card-image waves-effect waves-block waves-light">
-             <img class="activator" [ngClass]="{'blur': !photo.negotiable }"  src="{{photo.url}}">
-             <span class="card-title"></span>
-           </div>
-           <div class="card-content">
-             at: {{photo.createdTime}}<br />
-             by: {{photo.uploader.name}}<br />
-             album: {{photo.albumId}}
-           </div>
-           <div class="card-action">
-           </div>
-           <div class="card-reveal">
-             <span class="card-title grey-text text-darken-4">{{photo.id}}<i class="material-icons right">close</i></span>
+[infiniteScrollDistance]="0"
+[infiniteScrollThrottle]="300"
+(scrolled)="updateTaggedPhotos()">
+  <div class="col s12 m6 l4" *ngFor="let photo of getTaggedPhotos()">
+    <div class="card small sticky-action" [ngClass]="{'grey': !photo.negotiable }">
+      <div class="card-image waves-effect waves-block waves-light">
+        <img class="activator" [ngClass]="{'blur': !photo.negotiable }"  src="{{photo.url}}">
+        <span class="card-title"></span>
+      </div>
+      <div class="card-content">
+        at: {{photo.createdTime}}<br />
+        by: {{photo.uploader.name}}<br />
+        album: {{photo.albumId}}
+      </div>
+      <div class="card-action">
+      </div>
+      <div class="card-reveal">
+        <span class="card-title grey-text text-darken-4">{{photo.id}}<i class="material-icons right">close</i></span>
 
-           </div>
-         </div>
-       </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="lock" class="progress">
+    <div class="indeterminate"></div>
+  </div>
+
 </div>

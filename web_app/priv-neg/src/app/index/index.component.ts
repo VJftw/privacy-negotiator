@@ -8,11 +8,16 @@ import { LoginResponse } from 'ngx-facebook';
 })
 export class IndexComponent {
 
+  protected loading: boolean;
+
   constructor(
     private authService: AuthService,
-  ) {}
+  ) {
+    this.loading = false;
+  }
 
   loginWithFacebook(): void {
+    this.loading = true;
     this.authService.authenticate();
   }
 }
