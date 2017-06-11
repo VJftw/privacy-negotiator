@@ -18,6 +18,7 @@ type Controller struct {
 	photoManager Managable
 }
 
+// NewController - Returns a new controller for photos.
 func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,
@@ -30,6 +31,7 @@ func NewController(
 	}
 }
 
+// Setup - Sets up the routes for photos.
 func (c Controller) Setup(router *mux.Router) {
 	router.Handle("/v1/photos", negroni.New(
 		middlewares.NewJWT(c.render),

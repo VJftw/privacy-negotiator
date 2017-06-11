@@ -13,7 +13,8 @@ type me struct {
 	ID string `json:"id"`
 }
 
-func ValidateCredentials(fbAuth *user.FacebookUser) bool {
+// ValidateFacebookCredentials - Validates given Facebook credentials with the Graph API.
+func ValidateFacebookCredentials(fbAuth *user.FacebookUser) bool {
 	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/me?access_token=%s", fbAuth.ShortLivedToken))
 
 	if err != nil {

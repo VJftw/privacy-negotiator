@@ -24,6 +24,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
+// NewController - Returns a new controller for websockets.
 func NewController(webSocketLogger *log.Logger, renderer *render.Render) *Controller {
 	return &Controller{
 		logger: webSocketLogger,

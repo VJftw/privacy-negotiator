@@ -12,6 +12,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// SyncQueue - Queue for syncing Photo state.
 type SyncQueue struct {
 	logger       *log.Logger
 	photoManager Managable
@@ -20,6 +21,7 @@ type SyncQueue struct {
 	channel      *amqp.Channel
 }
 
+// NewSyncQueue - Returns a new queue for syncing photos.
 func NewSyncQueue(
 	logger *log.Logger,
 	photoManager Managable,
@@ -47,6 +49,7 @@ func (q *SyncQueue) Setup(ch *amqp.Channel) {
 	q.channel = ch
 }
 
+// Publish - Publishes a message to the queue.
 func (q *SyncQueue) Publish(i utils.Queueable) {
 	b, err := json.Marshal(i)
 	if err != nil {

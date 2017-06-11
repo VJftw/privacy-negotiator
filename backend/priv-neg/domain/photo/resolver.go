@@ -8,32 +8,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
 )
 
-func MultipleFromRequest(r *http.Request) (*[]FacebookPhoto, error) {
-	photos := []FacebookPhoto{}
-
-	var rJSON []map[string]interface{}
-
-	err := json.NewDecoder(r.Body).Decode(&rJSON)
-	if err != nil {
-		return nil, err
-	}
-
-	fbUserID := middlewares.FBUserIDFromContext(r.Context())
-
-	for _, photoJSON := range rJSON {
-		if _, ok := photoJSON["id"]; ok {
-			photo := FacebookPhoto{
-				FacebookPhotoID: photoJSON["id"].(string),
-				Uploader:        fbUserID,
-				Pending:         true,
-			}
-			photos = append(photos, photo)
-		}
-	}
-
-	return &photos, nil
-}
-
+// FromRequest - Returns a Photo from a http request.
 func FromRequest(r *http.Request) (*FacebookPhoto, error) {
 	photo := &FacebookPhoto{}
 

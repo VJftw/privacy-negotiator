@@ -13,14 +13,15 @@ import (
 type Controller struct {
 	logger      *log.Logger
 	render      *render.Render
-	authQueue   *AuthQueue
+	authQueue   *LongAuthQueue
 	userManager user.Managable
 }
 
+// NewController - returns a new Controller for Authentication.
 func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,
-	authQueue *AuthQueue,
+	authQueue *LongAuthQueue,
 	userManager user.Managable,
 ) *Controller {
 	return &Controller{
@@ -48,7 +49,7 @@ func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !ValidateCredentials(fbUser) {
+	if !ValidateFacebookCredentials(fbUser) {
 		c.render.JSON(w, http.StatusUnauthorized, nil)
 		return
 	}

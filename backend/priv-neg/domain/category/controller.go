@@ -17,6 +17,7 @@ type Controller struct {
 	categoryManager Managable `inject:"category.manager"`
 }
 
+// NewController - Returns a new controller for categories.
 func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,

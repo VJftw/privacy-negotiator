@@ -13,8 +13,8 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// AuthQueue - Queue for publishing jobs to get long-lived facebook tokens.
-type AuthQueue struct {
+// LongAuthQueue - Queue for getting long-lived facebook tokens.
+type LongAuthQueue struct {
 	queue       amqp.Queue
 	channel     *amqp.Channel
 	userManager user.Managable
@@ -22,15 +22,15 @@ type AuthQueue struct {
 }
 
 // NewAuthQueue - Returns an implementation of the queue.
-func NewAuthQueue(queueLogger *log.Logger, userManager user.Managable) *AuthQueue {
-	return &AuthQueue{
+func NewAuthQueue(queueLogger *log.Logger, userManager user.Managable) *LongAuthQueue {
+	return &LongAuthQueue{
 		logger:      queueLogger,
 		userManager: userManager,
 	}
 }
 
 // Setup - Declares the Queue.
-func (q *AuthQueue) Setup(ch *amqp.Channel) {
+func (q *LongAuthQueue) Setup(ch *amqp.Channel) {
 	queue, err := ch.QueueDeclare(
 		"get-facebook-long-lived-token", // name
 		true,  // durable
@@ -45,7 +45,7 @@ func (q *AuthQueue) Setup(ch *amqp.Channel) {
 }
 
 // Publish - Does nothing in the Worker.
-func (q *AuthQueue) Publish(i utils.Queueable) {
+func (q *LongAuthQueue) Publish(i utils.Queueable) {
 	b, err := json.Marshal(i)
 	if err != nil {
 		log.Println(err)
@@ -66,7 +66,7 @@ func (q *AuthQueue) Publish(i utils.Queueable) {
 }
 
 // Consume - Processes items from the Queue.
-func (q *AuthQueue) Consume() {
+func (q *LongAuthQueue) Consume() {
 	msgs, err := q.channel.Consume(
 		q.queue.Name, // queue
 		"",           // consumer
@@ -90,7 +90,7 @@ func (q *AuthQueue) Consume() {
 	<-forever
 }
 
-func (q *AuthQueue) process(d amqp.Delivery) {
+func (q *LongAuthQueue) process(d amqp.Delivery) {
 	start := time.Now()
 
 	user := q.userManager.New()

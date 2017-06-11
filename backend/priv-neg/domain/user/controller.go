@@ -18,6 +18,7 @@ type Controller struct {
 	userManager Managable
 }
 
+// NewController - returns a new controller for users.
 func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,
