@@ -1,4 +1,4 @@
-package user
+package category
 
 import (
 	"encoding/json"
@@ -20,43 +20,43 @@ func NewAPIManager() Managable {
 	return &APIManager{}
 }
 
-// New - Returns a new FacebookUser.
-func (m APIManager) New() *FacebookUser {
-	return &FacebookUser{}
+// New - Returns a new Category.
+func (m APIManager) New() *Category {
+	return &Category{}
 }
 
 // Save - Saves the model across storages
-func (m APIManager) Save(u *FacebookUser) error {
-	jsonUser, _ := json.Marshal(u)
+func (m APIManager) Save(c *Category) error {
+	jsonUser, _ := json.Marshal(c)
 	m.Redis.Do(
 		"SET",
-		fmt.Sprintf("user:%s", u.FacebookUserID),
+		fmt.Sprintf("category:%s", c.ID),
 		jsonUser,
 	)
-	m.CacheLogger.Printf("Saved user:%s", u.FacebookUserID)
+	m.CacheLogger.Printf("Saved category:%s", c.ID)
 
 	// Should add to Queue
 
 	return nil
 }
 
-// FindByID - Returns a FacebookUser given an facebookUserId
-func (m APIManager) FindByID(facebookID string) (*FacebookUser, error) {
-	user := &FacebookUser{}
+// FindByID - Returns a Category given an Id
+func (m APIManager) FindByID(ID string) (*Category, error) {
+	user := &Category{}
 
 	userJSON, _ := redis.Bytes(m.Redis.Do(
 		"GET",
-		fmt.Sprintf("user:%s", facebookID),
+		fmt.Sprintf("category:%s", ID),
 	))
 
 	if userJSON != nil {
 		json.Unmarshal(userJSON, user)
-		m.CacheLogger.Printf("Got user:%s", user.FacebookUserID)
+		m.CacheLogger.Printf("Got category:%s", user.ID)
 
 		return user, nil
 	}
 
-	m.CacheLogger.Printf("Could not find user:%s", facebookID)
+	m.CacheLogger.Printf("Could not find category:%s", ID)
 	return nil, errors.New("Not found")
 
 }

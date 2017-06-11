@@ -4,5 +4,5 @@ package user
 type Managable interface {
 	New() *FacebookUser
 	Save(*FacebookUser) error
-	FindByFacebookID(string) (*FacebookUser, error)
+	FindByID(string) (*FacebookUser, error)
 }

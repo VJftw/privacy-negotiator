@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
@@ -31,6 +33,8 @@ func NewPrivNegWorker() *PrivNegWorker {
 	gormDB := persisters.NewGORMDB(
 		dbLogger,
 		&user.FacebookUser{},
+		&photo.FacebookPhoto{},
+		&category.Category{},
 	)
 
 	redisCache := persisters.NewRedisDB(cacheLogger)

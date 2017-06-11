@@ -90,7 +90,7 @@ func fromAuthHeader(r *http.Request) (string, error) {
 	return authHeaderParts[1], nil
 }
 
-// AuthTokenFromContext - returns the auth token association with a context.
-func AuthTokenFromContext(ctx context.Context) string {
+// FBUserIDFromContext - returns the auth token association with a context.
+func FBUserIDFromContext(ctx context.Context) string {
 	return ctx.Value(requestFBUserID).(string)
 }

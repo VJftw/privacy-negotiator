@@ -38,7 +38,7 @@ func (c Controller) Setup(router *mux.Router, renderer *render.Render) {
 
 func (c Controller) websocketHandler(w http.ResponseWriter, r *http.Request) {
 
-	log.Printf("[websocket] Authenticated %s", middlewares.AuthTokenFromContext(r.Context()))
+	log.Printf("[websocket] Authenticated %s", middlewares.FBUserIDFromContext(r.Context()))
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

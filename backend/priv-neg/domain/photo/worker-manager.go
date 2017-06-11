@@ -42,8 +42,8 @@ func (m WorkerManager) Save(u *FacebookPhoto) error {
 	return nil
 }
 
-// FindByFacebookID - Returns a FacebookPhoto given an Id
-func (m WorkerManager) FindByFacebookID(facebookID string) (*FacebookPhoto, error) {
+// FindByID - Returns a FacebookPhoto given an Id
+func (m WorkerManager) FindByID(facebookID string) (*FacebookPhoto, error) {
 	user := &FacebookPhoto{}
 
 	// Check cache first.

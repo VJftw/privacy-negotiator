@@ -40,8 +40,8 @@ func (m APIManager) Save(u *FacebookPhoto) error {
 	return nil
 }
 
-// FindByFacebookID - Returns a FacebookPhoto given an Id
-func (m APIManager) FindByFacebookID(facebookID string) (*FacebookPhoto, error) {
+// FindByID - Returns a FacebookPhoto given an Id
+func (m APIManager) FindByID(facebookID string) (*FacebookPhoto, error) {
 	user := &FacebookPhoto{}
 
 	userJSON, _ := redis.Bytes(m.Redis.Do(

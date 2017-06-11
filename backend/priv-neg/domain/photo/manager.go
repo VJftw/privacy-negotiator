@@ -4,5 +4,5 @@ package photo
 type Managable interface {
 	New() *FacebookPhoto
 	Save(*FacebookPhoto) error
-	FindByFacebookID(string) (*FacebookPhoto, error)
+	FindByID(string) (*FacebookPhoto, error)
 }

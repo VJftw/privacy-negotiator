@@ -40,7 +40,7 @@ func (c Controller) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	returnIds := []string{}
 	// Find batch fb user ids on redis.
 	for _, facebookUserID := range ids {
-		_, err := c.UserManager.FindByFacebookID(facebookUserID)
+		_, err := c.UserManager.FindByID(facebookUserID)
 		if err == nil {
 			returnIds = append(returnIds, facebookUserID)
 		}

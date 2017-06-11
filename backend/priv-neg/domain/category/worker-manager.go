@@ -1,4 +1,4 @@
-package user
+package category
 
 import (
 	"encoding/json"
@@ -22,34 +22,34 @@ func NewWorkerManager() Managable {
 	return &WorkerManager{}
 }
 
-// New - Returns a new FacebookUser.
-func (m WorkerManager) New() *FacebookUser {
-	return &FacebookUser{}
+// New - Returns a new Category.
+func (m WorkerManager) New() *Category {
+	return &Category{}
 }
 
 // Save - Saves the model across storages
-func (m WorkerManager) Save(u *FacebookUser) error {
+func (m WorkerManager) Save(u *Category) error {
 	jsonUser, _ := json.Marshal(u)
 	m.Redis.Do(
 		"SET",
-		fmt.Sprintf("user:%s", u.FacebookUserID),
+		fmt.Sprintf("category:%s", u.ID),
 		jsonUser,
 	)
-	m.CacheLogger.Printf("Saved user:%s", u.FacebookUserID)
+	m.CacheLogger.Printf("Saved category:%s", u.ID)
 	m.Gorm.Save(u)
-	m.DbLogger.Printf("Saved user %s", u.FacebookUserID)
+	m.DbLogger.Printf("Saved category %s", u.ID)
 
 	return nil
 }
 
-// FindByID - Returns a FacebookUser given an facebookUserId
-func (m WorkerManager) FindByID(facebookID string) (*FacebookUser, error) {
-	user := &FacebookUser{}
+// FindByID - Returns a Category given an Id
+func (m WorkerManager) FindByID(ID string) (*Category, error) {
+	user := &Category{}
 
 	// Check cache first.
 	userJSON, _ := m.Redis.Do(
 		"GET",
-		fmt.Sprintf("user:%s", facebookID),
+		fmt.Sprintf("category:%s", ID),
 	)
 
 	if userJSON != nil {
@@ -62,7 +62,7 @@ func (m WorkerManager) FindByID(facebookID string) (*FacebookUser, error) {
 	// Check DB. If in DB, update cache.
 	// m.GetInto(user, "userId = ?", facebookID)
 	//
-	// if len(user.FacebookUserID) < 1 {
+	// if len(user.CategoryID) < 1 {
 	// 	return nil, errors.New("Not found")
 	// }
 

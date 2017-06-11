@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
@@ -38,6 +39,7 @@ func NewPrivNegAPI() {
 	var authController auth.Controller
 	var userController user.Controller
 	var photoController photo.Controller
+	var categoryController category.Controller
 	var websocketController websocket.Controller
 	qGetFacebookLongLivedToken := queues.NewGetFacebookLongLivedToken()
 
@@ -54,7 +56,7 @@ func NewPrivNegAPI() {
 		&inject.Object{Name: "auth.graphAPI", Value: auth.NewGraphAPI()},
 		&inject.Object{Name: "auth.controller", Value: &authController},
 		&inject.Object{Name: "user.controller", Value: &userController},
-		&inject.Object{Name: "photo.controller", Value: &photoController},
+		&inject.Object{Name: "category.controller", Value: &categoryController},
 		&inject.Object{Name: "websocket.controller", Value: &websocketController},
 		&inject.Object{Name: "user.manager", Value: user.NewAPIManager()},
 		&inject.Object{Name: "photo.manager", Value: photo.NewAPIManager()},
@@ -76,6 +78,7 @@ func NewPrivNegAPI() {
 		&authController,
 		&userController,
 		photoController,
+		categoryController,
 		&websocketController,
 	}, true)
 
