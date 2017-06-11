@@ -37,7 +37,7 @@ func (c Controller) getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal([]byte(idsJSON), &ids)
 	log.Println(ids)
 
-	var returnIds []string
+	returnIds := []string{}
 	// Find batch fb user ids on redis.
 	for _, facebookUserID := range ids {
 		_, err := c.UserManager.FindByFacebookID(facebookUserID)

@@ -28,6 +28,7 @@ export class Photo {
   albumId: string;
   uploader: FBUser;
   negotiable = false;
+  pending = false;
 
   public static fromFBPhoto(fp: FBPhoto): Photo {
     const p = new Photo();

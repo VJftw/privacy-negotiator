@@ -67,26 +67,38 @@ export class PhotoService {
         userIds.push(fbPhoto.from.id);
       }
     }
-    console.log(JSON.stringify(userIds));
-
-    const photos: Photo[] = [];
 
     this.apiService.get(
       '/v1/users?ids=' + JSON.stringify(userIds)
     ).then(response => {
       const goodUserIds = response.json();
-      console.log(goodUserIds);
 
       for (const fbPhoto of fbPhotosWAlbum) {
         const photo = Photo.fromFBPhoto(fbPhoto);
         if (goodUserIds.includes(fbPhoto.from.id)) {
-          console.log(fbPhoto.from.id, fbPhoto.from.name);
           photo.negotiable = true;
         }
-        photos.push(photo);
         this.photos.set(photo.id, photo);
       }
-      console.log(this.photos);
+      this.updatePhotosDetail(fbPhotosWAlbum);
+    });
+  }
+
+  private updatePhotosDetail(fbPhotos: FBPhoto[]) {
+    const photoIds = [];
+    for (const fbPhoto of fbPhotos) {
+      photoIds.push(fbPhoto.id);
+    }
+
+    this.apiService.get(
+      '/v1/photos?ids=' + JSON.stringify(photoIds)
+    ).then(response => {
+      const foundPhotos = response.json() as Photo[];
+      console.log(foundPhotos);
+
+      for (const foundPhoto of foundPhotos) {
+        this.photos.set(foundPhoto.id, foundPhoto);
+      }
     });
   }
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/queues"
@@ -36,6 +37,7 @@ func NewPrivNegAPI() {
 
 	var authController auth.Controller
 	var userController user.Controller
+	var photoController photo.Controller
 	var websocketController websocket.Controller
 	qGetFacebookLongLivedToken := queues.NewGetFacebookLongLivedToken()
 
@@ -52,8 +54,10 @@ func NewPrivNegAPI() {
 		&inject.Object{Name: "auth.graphAPI", Value: auth.NewGraphAPI()},
 		&inject.Object{Name: "auth.controller", Value: &authController},
 		&inject.Object{Name: "user.controller", Value: &userController},
+		&inject.Object{Name: "photo.controller", Value: &photoController},
 		&inject.Object{Name: "websocket.controller", Value: &websocketController},
 		&inject.Object{Name: "user.manager", Value: user.NewAPIManager()},
+		&inject.Object{Name: "photo.manager", Value: photo.NewAPIManager()},
 		&inject.Object{Name: "persister.cache", Value: redisCache},
 		&inject.Object{Name: "queues.getFacebookLongLivedToken", Value: qGetFacebookLongLivedToken},
 	)
@@ -71,6 +75,7 @@ func NewPrivNegAPI() {
 	muxRouter := routers.NewMuxRouter([]routers.Routable{
 		&authController,
 		&userController,
+		photoController,
 		&websocketController,
 	}, true)
 
