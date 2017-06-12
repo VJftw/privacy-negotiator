@@ -10,10 +10,20 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
+	"github.com/streadway/amqp"
 )
 
+// PrivNegWorker - Holds the Worker
+type PrivNegWorker struct {
+	queue   utils.DeclarableQueue
+	conn    *amqp.Connection
+	channel *amqp.Channel
+}
+
 // NewPrivNegWorker - Returns a new Privacy Negotiation API app
-func NewPrivNegWorker(queue string) {
+func NewPrivNegWorker(queue string) App {
+
+	privNegWorker := &PrivNegWorker{}
 
 	dbLogger := log.New(os.Stdout, "[database] ", log.Lshortfile)
 	queueLogger := log.New(os.Stdout, "[queue] ", log.Lshortfile)
@@ -43,7 +53,19 @@ func NewPrivNegWorker(queue string) {
 		panic("Invalid queue selected")
 	}
 
-	utils.SetupQueues([]utils.DeclarableQueue{q}, queueLogger)
-	utils.Consume([]utils.DeclarableQueue{q}, queueLogger)
+	privNegWorker.conn, privNegWorker.channel = utils.SetupQueues([]utils.DeclarableQueue{q}, queueLogger)
+	privNegWorker.queue = q
 
+	return privNegWorker
+}
+
+// Start - Starts the Worker
+func (p *PrivNegWorker) Start() {
+	p.queue.Consume()
+}
+
+// Stop - Stops the worker
+func (p *PrivNegWorker) Stop() {
+	p.channel.Close()
+	p.conn.Close()
 }

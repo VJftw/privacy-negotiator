@@ -24,3 +24,4 @@ ENV FACEBOOK_APP_SECRET changeme
 ADD priv-neg/dist/priv-neg /priv-neg
 
 ENTRYPOINT ["/priv-neg"]
+CMD ["/priv-neg"]

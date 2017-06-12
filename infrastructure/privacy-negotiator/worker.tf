@@ -8,7 +8,7 @@ data "template_file" "ecs_def_worker-auth-queue" {
     weave_cidr = "${var.weave_cidr}"
     version = "${var.version}"
 
-    cloudwatch_log_group = "${aws_cloudwatch_log_group.worker-auth-queue.arn}"
+    cloudwatch_log_group = "${aws_cloudwatch_log_group.worker-auth-queue.name}"
     cloudwatch_region    = "${var.aws_region}"
 
     rabbitmq_user = "${var.rabbitmq_user}"

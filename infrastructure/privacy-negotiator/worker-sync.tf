@@ -8,7 +8,7 @@ data "template_file" "ecs_def_worker-sync-photo" {
     weave_cidr = "${var.weave_cidr}"
     version = "${var.version}"
 
-    cloudwatch_log_group = "${aws_cloudwatch_log_group.worker-sync-photo.arn}"
+    cloudwatch_log_group = "${aws_cloudwatch_log_group.worker-sync-photo.name}"
     cloudwatch_region    = "${var.aws_region}"
 
     rabbitmq_user = "${var.rabbitmq_user}"

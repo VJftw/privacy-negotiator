@@ -12,7 +12,7 @@
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
-        "awslogs-group": "${environment}.worker-container-logs",
+        "awslogs-group": "${cloudwatch_log_group}",
         "awslogs-region": "${cloudwatch_region}",
         "awslogs-stream-prefix": "worker"
       }

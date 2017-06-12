@@ -31,7 +31,11 @@ services:
   api:
     build:
       context: ./backend/
-      dockerfile: Dockerfile
+      dockerfile: dev.Dockerfile
+    command: fresh
+    volumes:
+      - "./backend:/go/src/github.com/VJftw/privacy-negotiator/backend/"
+    working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
       TYPE: API
       JWT_SECRET: development
@@ -53,7 +57,11 @@ services:
   worker-auth:
     build:
       context: ./backend/
-      dockerfile: Dockerfile
+      dockerfile: dev.Dockerfile
+    command: fresh
+    volumes:
+      - "./backend:/go/src/github.com/VJftw/privacy-negotiator/backend/"
+    working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
       TYPE: WORKER
       QUEUE: auth-queue
@@ -79,7 +87,11 @@ services:
   worker-sync:
     build:
       context: ./backend/
-      dockerfile: Dockerfile
+      dockerfile: dev.Dockerfile
+    command: fresh
+    volumes:
+      - "./backend:/go/src/github.com/VJftw/privacy-negotiator/backend/"
+    working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
       TYPE: WORKER
       QUEUE: sync-queue

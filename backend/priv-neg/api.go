@@ -21,10 +21,11 @@ import (
 // PrivNegAPI - The Privacy Negotiation API app
 type PrivNegAPI struct {
 	Router *routers.MuxRouter
+	server *http.Server
 }
 
 // NewPrivNegAPI - Returns a new Privacy Negotiation API app
-func NewPrivNegAPI() {
+func NewPrivNegAPI() App {
 	privNegAPI := &PrivNegAPI{}
 
 	wsLogger := log.New(os.Stdout, "[websocket] ", log.Lshortfile)
@@ -64,12 +65,27 @@ func NewPrivNegAPI() {
 	}, queueLogger)
 
 	port := os.Getenv("PORT")
-	s := &http.Server{
+	privNegAPI.server = &http.Server{
 		Addr:           fmt.Sprintf(":%s", port),
 		Handler:        privNegAPI.Router.Negroni,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	log.Fatal(s.ListenAndServe())
+
+	return privNegAPI
+}
+
+// Stop - Stops the API
+func (p *PrivNegAPI) Stop() {
+	if err := p.server.Shutdown(nil); err != nil {
+		panic(err)
+	}
+}
+
+// Start - Starts the API
+func (p *PrivNegAPI) Start() {
+	if err := p.server.ListenAndServe(); err != nil {
+		log.Printf("Error %s", err)
+	}
 }
