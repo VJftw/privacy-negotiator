@@ -11,12 +11,12 @@ import (
 
 // APIManager - Implementation of Managable.
 type APIManager struct {
-	redis       redis.Conn
+	redis       *redis.Pool
 	cacheLogger *log.Logger
 }
 
 // NewAPIManager - Returns an implementation of Manager.
-func NewAPIManager(cacheLogger *log.Logger, redis redis.Conn) Managable {
+func NewAPIManager(cacheLogger *log.Logger, redis *redis.Pool) Managable {
 	return &APIManager{
 		redis:       redis,
 		cacheLogger: cacheLogger,
@@ -31,7 +31,9 @@ func (m APIManager) New() *Category {
 // Save - Saves the model across storages
 func (m APIManager) Save(c *Category) error {
 	jsonUser, _ := json.Marshal(c)
-	m.redis.Do(
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
 		"SET",
 		fmt.Sprintf("category:%s", c.ID),
 		jsonUser,
@@ -46,8 +48,9 @@ func (m APIManager) Save(c *Category) error {
 // FindByID - Returns a Category given an Id
 func (m APIManager) FindByID(ID string) (*Category, error) {
 	user := &Category{}
-
-	userJSON, _ := redis.Bytes(m.redis.Do(
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	userJSON, _ := redis.Bytes(redisConn.Do(
 		"GET",
 		fmt.Sprintf("category:%s", ID),
 	))

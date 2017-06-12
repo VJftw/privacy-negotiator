@@ -38,6 +38,11 @@ func (c Controller) Setup(router *mux.Router) {
 		negroni.Wrap(http.HandlerFunc(c.getPhotosHandler)),
 	)).Methods("GET")
 
+	router.Handle("/v1/photos", negroni.New(
+		middlewares.NewJWT(c.render),
+		negroni.Wrap(http.HandlerFunc(c.postPhotoHandler)),
+	)).Methods("POST")
+
 	log.Println("Set up Photo controller.")
 
 }

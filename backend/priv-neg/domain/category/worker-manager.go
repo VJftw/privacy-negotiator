@@ -14,7 +14,7 @@ type WorkerManager struct {
 	dbLogger    *log.Logger
 	gorm        *gorm.DB
 	cacheLogger *log.Logger
-	redis       redis.Conn
+	redis       *redis.Pool
 }
 
 // NewWorkerManager - Returns an implementation of Manager.
@@ -22,7 +22,7 @@ func NewWorkerManager(
 	dbLogger *log.Logger,
 	gorm *gorm.DB,
 	cacheLogger *log.Logger,
-	redis redis.Conn,
+	redis *redis.Pool,
 ) Managable {
 	return &WorkerManager{
 		dbLogger:    dbLogger,
@@ -40,7 +40,9 @@ func (m WorkerManager) New() *Category {
 // Save - Saves the model across storages
 func (m WorkerManager) Save(u *Category) error {
 	jsonUser, _ := json.Marshal(u)
-	m.redis.Do(
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
 		"SET",
 		fmt.Sprintf("category:%s", u.ID),
 		jsonUser,
@@ -57,7 +59,9 @@ func (m WorkerManager) FindByID(ID string) (*Category, error) {
 	user := &Category{}
 
 	// Check cache first.
-	userJSON, _ := m.redis.Do(
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	userJSON, _ := redisConn.Do(
 		"GET",
 		fmt.Sprintf("category:%s", ID),
 	)

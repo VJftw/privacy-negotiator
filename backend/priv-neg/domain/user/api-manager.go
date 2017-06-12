@@ -11,12 +11,12 @@ import (
 
 // APIManager - Implementation of Managable.
 type APIManager struct {
-	redis       redis.Conn
+	redis       *redis.Pool
 	cacheLogger *log.Logger
 }
 
 // NewAPIManager - Returns an implementation of Manager.
-func NewAPIManager(cacheLogger *log.Logger, redis redis.Conn) Managable {
+func NewAPIManager(cacheLogger *log.Logger, redis *redis.Pool) Managable {
 	return &APIManager{
 		redis:       redis,
 		cacheLogger: cacheLogger,
@@ -31,7 +31,9 @@ func (m APIManager) New() *FacebookUser {
 // Save - Saves the model across storages
 func (m APIManager) Save(u *FacebookUser) error {
 	jsonUser, _ := json.Marshal(u)
-	m.redis.Do(
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
 		"SET",
 		fmt.Sprintf("user:%s", u.FacebookUserID),
 		jsonUser,
@@ -47,7 +49,9 @@ func (m APIManager) Save(u *FacebookUser) error {
 func (m APIManager) FindByID(facebookID string) (*FacebookUser, error) {
 	user := &FacebookUser{}
 
-	userJSON, _ := redis.Bytes(m.redis.Do(
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	userJSON, _ := redis.Bytes(redisConn.Do(
 		"GET",
 		fmt.Sprintf("user:%s", facebookID),
 	))
