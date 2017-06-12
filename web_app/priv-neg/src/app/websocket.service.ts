@@ -16,7 +16,7 @@ export class WebSocketService {
     this.channels.set(
       c.getName(),
       c
-    )
+    );
     console.log(this.channels);
   }
 
