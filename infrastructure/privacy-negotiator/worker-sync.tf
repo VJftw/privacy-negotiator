@@ -1,5 +1,5 @@
 ### ECS RabbitMQ containers
-data "template_file" "ecs_def_worker-auth-queue" {
+data "template_file" "ecs_def_worker-sync-photo" {
   template = "${file("${path.module}/worker.def.tpl.json")}"
 
   vars {
@@ -8,7 +8,7 @@ data "template_file" "ecs_def_worker-auth-queue" {
     weave_cidr = "${var.weave_cidr}"
     version = "${var.version}"
 
-    cloudwatch_log_group = "${aws_cloudwatch_log_group.worker-auth-queue.arn}"
+    cloudwatch_log_group = "${aws_cloudwatch_log_group.worker-sync-photo.arn}"
     cloudwatch_region    = "${var.aws_region}"
 
     rabbitmq_user = "${var.rabbitmq_user}"
@@ -24,19 +24,19 @@ data "template_file" "ecs_def_worker-auth-queue" {
     facebook_app_id = "${var.facebook_app_id}"
     facebook_app_secret = "${var.facebook_app_secret}"
 
-    queue = "auth-queue"
+    queue = "sync-queue"
   }
 }
 
-resource "aws_ecs_task_definition" "worker-auth-queue" {
-  family                = "worker-auth-queue_${var.environment}"
-  container_definitions = "${data.template_file.ecs_def_worker-auth-queue.rendered}"
+resource "aws_ecs_task_definition" "worker-sync-photo" {
+  family                = "worker-sync-photo_${var.environment}"
+  container_definitions = "${data.template_file.ecs_def_worker-sync-photo.rendered}"
 }
 
-resource "aws_ecs_service" "worker-auth-queue" {
-  name            = "worker-auth-queue_${var.environment}"
+resource "aws_ecs_service" "worker-sync-photo" {
+  name            = "worker-sync-photo_${var.environment}"
   cluster         = "${var.cluster_name}"
-  task_definition = "${aws_ecs_task_definition.worker-auth-queue.arn}"
+  task_definition = "${aws_ecs_task_definition.worker-sync-photo.arn}"
   desired_count   = 2
 
   placement_strategy {
@@ -45,14 +45,14 @@ resource "aws_ecs_service" "worker-auth-queue" {
   }
 }
 
-#### Log Group for Privacy Negotiator worker-auth-queue
-resource "aws_cloudwatch_log_group" "worker-auth-queue" {
-  name = "${var.environment}.worker-auth-queue-container-logs"
+#### Log Group for Privacy Negotiator worker-sync-photo
+resource "aws_cloudwatch_log_group" "worker-sync-photo" {
+  name = "${var.environment}.worker-sync-photo-container-logs"
 
   retention_in_days = 7
 
   tags {
-    Name        = "worker-auth-queue"
+    Name        = "worker-sync-photo"
     Environment = "${var.environment}"
   }
 }

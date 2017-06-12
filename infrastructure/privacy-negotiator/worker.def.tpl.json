@@ -27,6 +27,10 @@
         "Value": "WORKER"
       },
       {
+        "Name": "QUEUE",
+        "Value": "${queue}"
+      },
+      {
         "Name": "RABBITMQ_USER",
         "Value": "${rabbitmq_user}"
       },
