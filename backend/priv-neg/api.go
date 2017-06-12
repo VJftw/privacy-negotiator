@@ -68,7 +68,7 @@ func NewPrivNegAPI() App {
 	privNegAPI.server = &http.Server{
 		Addr:           fmt.Sprintf(":%s", port),
 		Handler:        privNegAPI.Router.Negroni,
-		ReadTimeout:    10 * time.Second,
+		ReadTimeout:    1 * time.Hour,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}

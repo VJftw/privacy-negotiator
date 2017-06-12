@@ -4,31 +4,52 @@ import 'rxjs/add/operator/toPromise';
 import { environment } from '../environments/environment';
 import { WebSocketService } from './websocket.service';
 
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 @Injectable()
 export class APIService {
 
   private headers = new Headers({'Content-Type': 'application/json'});
+  private authorization: string;
   private websocket: WebSocket;
 
   constructor(
     private http: Http,
     private webSocketService: WebSocketService
-  ) {
-
-  }
+  ) {}
 
   public setAuthorization(authToken: string) {
     console.log('Authenticated with API:' + authToken);
     this.headers.set('Authorization', 'bearer ' + authToken);
-    // connect to WebSocket
-    this.websocket = new WebSocket(environment.apiEndpoint.replace('http', 'ws') + '/v1/ws?authToken=' + authToken);
+    this.authorization = authToken;
+    this.connectToWebSocket();
+  }
+
+  private connectToWebSocket() {
+    this.websocket = new WebSocket(environment.apiEndpoint.replace('http', 'ws') + '/v1/ws?authToken=' + this.authorization);
 
     this.websocket.addEventListener('open', this.webSocketService.onOpen);
     this.websocket.addEventListener('message', this.webSocketService.onMessage);
-    this.websocket.addEventListener('close', this.webSocketService.onClose);
-    this.websocket.addEventListener('error', this.webSocketService.onError);
-
+    this.websocket.addEventListener('close', (ev) => this.onClose(ev));
+    this.websocket.addEventListener('error', (ev: ErrorEvent) => this.onError(ev));
   }
+
+
+
+  private onClose(ev: Event) {
+    console.log('Websocket closed.');
+    console.log('Reconnecting...');
+    delay(2000).then(() => this.connectToWebSocket());
+  }
+
+  private onError(ev: ErrorEvent) {
+    console.log('Websocket error.');
+    // console.log('Reconnecting...');
+    // delay(2000).then(() => this.connectToWebSocket());
+  }
+
 
   public isAuthenticated(): boolean {
     if (this.headers.has('Authorization')) {

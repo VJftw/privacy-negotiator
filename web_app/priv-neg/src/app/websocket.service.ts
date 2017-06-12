@@ -11,16 +11,6 @@ export class WebSocketService {
   public onMessage(ev: MessageEvent) {
     console.log('Received message from websocket' + ev.data);
   }
-
-  public onClose(ev: Event) {
-    console.log('Websocket closed.');
-
-  }
-
-  public onError(ev: ErrorEvent) {
-    console.log('Websocket error.');
-  }
-
 }
 
 export interface Channel {
