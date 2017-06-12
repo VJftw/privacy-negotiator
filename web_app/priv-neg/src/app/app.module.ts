@@ -17,6 +17,7 @@ import { FacebookService } from 'ngx-facebook';
 import { APIService } from './api.service';
 import { WebSocketService } from './websocket.service';
 import { AuthService } from './auth.service';
+import { PhotoService } from './photos/photo.service';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { AuthService } from './auth.service';
     APIService,
     WebSocketService,
     AuthService,
-    FacebookService
+    FacebookService,
+    PhotoService
   ],
   bootstrap: [AppComponent]
 })

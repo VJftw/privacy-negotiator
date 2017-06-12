@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers/websocket"
 	"github.com/garyburd/redigo/redis"
 	"github.com/jinzhu/gorm"
 )
@@ -48,10 +49,11 @@ func (m WorkerManager) Save(u *FacebookPhoto) error {
 		jsonUser,
 	)
 	m.cacheLogger.Printf("Saved photo:%s", u.FacebookPhotoID)
+	jsonWSMessage, _ := json.Marshal(websocket.Message{Type: "photo", Data: u})
 	redisConn.Do(
 		"PUBLISH",
 		fmt.Sprintf("user:%s", u.Uploader),
-		jsonUser,
+		jsonWSMessage,
 	)
 	m.cacheLogger.Printf("Published photo %s to %s", u.FacebookPhotoID, u.Uploader)
 	for user := range u.TaggedUsers {

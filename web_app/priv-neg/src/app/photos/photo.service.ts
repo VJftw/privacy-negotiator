@@ -3,19 +3,32 @@ import { FacebookService } from 'ngx-facebook';
 import { Photo, FBPhoto, APIPhoto } from './photo.model';
 import { FBUser } from '../auth.service';
 import { APIService } from '../api.service';
+import { WebSocketService, Channel } from '../websocket.service';
 
 
 @Injectable()
-export class PhotoService {
+export class PhotoService implements Channel {
 
   protected photos: Map<string, Photo>;
   protected offset: string;
 
   constructor(
     private fb: FacebookService,
-    private apiService: APIService
+    private apiService: APIService,
+    private websocketService: WebSocketService
   ) {
     this.photos = new Map();
+    this.websocketService.addChannel(this);
+  }
+
+  public getName(): string {
+    return "photo";
+  }
+
+  public onWebsocketMessage(data) {
+    const apiPhoto = data as APIPhoto;
+    const photo = this.getPhotoById(apiPhoto.id);
+    this.photos.set(apiPhoto.id, Photo.fromAPIPhoto(apiPhoto, photo));
   }
 
   public getPhotos(): Photo[] {

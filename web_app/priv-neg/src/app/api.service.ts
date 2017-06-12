@@ -30,13 +30,11 @@ export class APIService {
   private connectToWebSocket() {
     this.websocket = new WebSocket(environment.apiEndpoint.replace('http', 'ws') + '/v1/ws?authToken=' + this.authorization);
 
-    this.websocket.addEventListener('open', this.webSocketService.onOpen);
-    this.websocket.addEventListener('message', this.webSocketService.onMessage);
+    this.websocket.addEventListener('open', (ev) => this.webSocketService.onOpen(ev));
+    this.websocket.addEventListener('message', (ev) => this.webSocketService.onMessage(ev));
     this.websocket.addEventListener('close', (ev) => this.onClose(ev));
     this.websocket.addEventListener('error', (ev: ErrorEvent) => this.onError(ev));
   }
-
-
 
   private onClose(ev: Event) {
     console.log('Websocket closed.');
