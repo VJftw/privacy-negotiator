@@ -22,7 +22,7 @@ export class PhotoService implements Channel {
   }
 
   public getName(): string {
-    return "photo";
+    return 'photo';
   }
 
   public onWebsocketMessage(data) {
