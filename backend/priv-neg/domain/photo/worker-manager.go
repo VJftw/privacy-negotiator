@@ -48,6 +48,21 @@ func (m WorkerManager) Save(u *FacebookPhoto) error {
 		jsonUser,
 	)
 	m.cacheLogger.Printf("Saved photo:%s", u.FacebookPhotoID)
+	redisConn.Do(
+		"PUBLISH",
+		fmt.Sprintf("user:%s", u.Uploader),
+		jsonUser,
+	)
+	m.cacheLogger.Printf("Published photo %s to %s", u.FacebookPhotoID, u.Uploader)
+	for user := range u.TaggedUsers {
+		redisConn.Do(
+			"PUBLISH",
+			fmt.Sprintf("user:%v", user),
+			jsonUser,
+		)
+		m.cacheLogger.Printf("Published photo %s to %v", u.FacebookPhotoID, user)
+	}
+
 	m.gorm.Where(
 		FacebookPhoto{FacebookPhotoID: u.FacebookPhotoID},
 	).Assign(u).FirstOrCreate(u)
