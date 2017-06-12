@@ -9,14 +9,15 @@
         <span class="card-title"></span>
       </div>
       <div class="card-content">
-        at: {{photo.createdTime}}<br />
-        by: {{photo.uploader.name}}<br />
-        album: {{photo.albumId}}
+        taggedUsers: {{photo.taggedUsers.length}} <br />
+        by: {{photo.from.name}}<br />
       </div>
       <div class="card-action">
       </div>
       <div class="card-reveal">
         <span class="card-title grey-text text-darken-4">{{photo.id}}<i class="material-icons right">close</i></span>
+        at: {{photo.createdTime}}<br />
+        album: {{photo.albumId}}
 
       </div>
     </div>

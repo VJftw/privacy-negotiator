@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
-import { Photo, FBPhoto } from './photo.model';
+import { Photo, FBPhoto, APIPhoto } from './photo.model';
 import { FBUser } from '../auth.service';
 import { APIService } from '../api.service';
 
@@ -52,53 +52,73 @@ export class PhotoService {
 
   private processFBPhotos(fbPhotos: FBPhoto[]) {
 
-    const userIds = [];
-
-    // remove photos with no album id
-    const fbPhotosWAlbum: FBPhoto[] = [];
+    const uploaderIds = [];
     for (const fbPhoto of fbPhotos) {
-      if (fbPhoto.album) {
-        fbPhotosWAlbum.push(fbPhoto);
-      }
-    }
-
-    for (const fbPhoto of fbPhotosWAlbum) {
-      if (!userIds.includes(fbPhoto.from.id)) {
-        userIds.push(fbPhoto.from.id);
+      // if they have an album we can determine their privacy.
+      // Add uploader id to uploaderIds to determine if they are negotiable.
+      if (fbPhoto.album && !uploaderIds.includes(fbPhoto.from.id)) {
+        uploaderIds.push(fbPhoto.from.id);
       }
     }
 
     this.apiService.get(
-      '/v1/users?ids=' + JSON.stringify(userIds)
+      '/v1/users?ids=' + JSON.stringify(uploaderIds)
     ).then(response => {
       const goodUserIds = response.json();
+      const negotiablePhotos: Photo[] = [];
 
-      for (const fbPhoto of fbPhotosWAlbum) {
-        const photo = Photo.fromFBPhoto(fbPhoto);
-        if (goodUserIds.includes(fbPhoto.from.id)) {
-          photo.negotiable = true;
+      for (const fbPhoto of fbPhotos) {
+        if (fbPhoto.album) {
+          const photo = Photo.fromFBPhoto(fbPhoto);
+
+          if (goodUserIds.includes(fbPhoto.from.id)) {
+            photo.negotiable = true;
+            negotiablePhotos.push(photo);
+          }
+          this.photos.set(photo.id, photo);
         }
-        this.photos.set(photo.id, photo);
       }
-      this.updatePhotosDetail(fbPhotosWAlbum);
+      this.updatePhotosDetail(negotiablePhotos);
     });
   }
 
-  private updatePhotosDetail(fbPhotos: FBPhoto[]) {
+  private updatePhotosDetail(negotiablePhotos: Photo[]) {
     const photoIds = [];
-    for (const fbPhoto of fbPhotos) {
-      photoIds.push(fbPhoto.id);
+    for (const photo of negotiablePhotos) {
+      photoIds.push(photo.id);
     }
 
     this.apiService.get(
       '/v1/photos?ids=' + JSON.stringify(photoIds)
     ).then(response => {
-      const foundPhotos = response.json() as Photo[];
+      const foundPhotos = response.json() as APIPhoto[];
       console.log(foundPhotos);
 
-      for (const foundPhoto of foundPhotos) {
-        this.photos.set(foundPhoto.id, foundPhoto);
+      for (const photo of negotiablePhotos) {
+        let f = null;
+        for (const foundPhoto of foundPhotos) {
+          if (foundPhoto.id === photo.id) {
+            f = foundPhoto;
+            break;
+          }
+        }
+        if (f) {
+          this.photos.set(photo.id, Photo.fromAPIPhoto(f, photo));
+        } else {
+          // POST new photo
+          this.savePhoto(photo);
+        }
       }
     });
   }
+
+  public savePhoto(photo: Photo) {
+    this.apiService.post(
+      '/v1/photos',
+      photo
+    ).then(response => {
+      console.log(response);
+    });
+  }
+
 }

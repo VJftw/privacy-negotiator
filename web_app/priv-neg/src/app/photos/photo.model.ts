@@ -26,9 +26,10 @@ export class Photo {
   createdTime: string;
   url: string;
   albumId: string;
-  uploader: FBUser;
+  from: FBUser;
   negotiable = false;
   pending = false;
+  taggedUsers: FBUser[] = [];
 
   public static fromFBPhoto(fp: FBPhoto): Photo {
     const p = new Photo();
@@ -37,8 +38,26 @@ export class Photo {
     p.createdTime = fp.created_time;
     p.url = fp.images[0].source;
     p.albumId = fp.album.id;
-    p.uploader = fp.from;
+    p.from = fp.from;
+    return p;
+  }
+
+  public static fromAPIPhoto(ap: APIPhoto, p: Photo = new Photo()): Photo {
+    p.id = ap.id;
+    p.pending = ap.pending;
+
+    for (const taggedUser of ap.taggedUsers) {
+      const fbUser = new FBUser();
+      fbUser.id = taggedUser;
+      p.taggedUsers.push(fbUser);
+    }
 
     return p;
   }
+}
+
+export class APIPhoto {
+  id: string;
+  taggedUsers: string[] = [];
+  pending = false;
 }
