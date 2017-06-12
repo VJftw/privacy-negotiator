@@ -48,7 +48,9 @@ func (m WorkerManager) Save(u *Category) error {
 		jsonUser,
 	)
 	m.cacheLogger.Printf("Saved category:%s", u.ID)
-	m.gorm.Save(u)
+	m.gorm.Where(
+		Category{ID: u.ID},
+	).Assign(u).FirstOrCreate(u)
 	m.dbLogger.Printf("Saved category %s", u.ID)
 
 	return nil

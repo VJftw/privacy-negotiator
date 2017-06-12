@@ -45,7 +45,7 @@ func NewPrivNegAPI() {
 
 	authController := auth.NewController(controllerLogger, renderer, authQueue, userManager)
 	userController := user.NewController(controllerLogger, renderer, userManager)
-	photoController := photo.NewController(controllerLogger, renderer, photoManager)
+	photoController := photo.NewController(controllerLogger, renderer, photoManager, syncQueue)
 	categoryController := category.NewController(controllerLogger, renderer, categoryManager)
 	websocketController := websocket.NewController(wsLogger, renderer)
 

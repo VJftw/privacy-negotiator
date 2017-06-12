@@ -48,7 +48,9 @@ func (m WorkerManager) Save(u *FacebookPhoto) error {
 		jsonUser,
 	)
 	m.cacheLogger.Printf("Saved photo:%s", u.FacebookPhotoID)
-	m.gorm.Save(u)
+	m.gorm.Where(
+		FacebookPhoto{FacebookPhotoID: u.FacebookPhotoID},
+	).Assign(u).FirstOrCreate(u)
 	m.dbLogger.Printf("Saved photo %s", u.FacebookPhotoID)
 
 	return nil

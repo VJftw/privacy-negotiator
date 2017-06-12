@@ -24,6 +24,7 @@ func FromRequest(r *http.Request) (*FacebookPhoto, error) {
 
 	photo.FacebookPhotoID = photoJSON["id"].(string)
 	photo.Uploader = middlewares.FBUserIDFromContext(r.Context())
+	photo.Pending = true
 
 	return photo, nil
 }

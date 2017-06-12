@@ -16,6 +16,7 @@ type Controller struct {
 	logger       *log.Logger
 	render       *render.Render
 	photoManager Managable
+	syncQueue    *SyncQueue
 }
 
 // NewController - Returns a new controller for photos.
@@ -23,11 +24,13 @@ func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,
 	photoManager Managable,
+	syncQueue *SyncQueue,
 ) *Controller {
 	return &Controller{
 		logger:       controllerLogger,
 		render:       renderer,
 		photoManager: photoManager,
+		syncQueue:    syncQueue,
 	}
 }
 
@@ -74,6 +77,8 @@ func (c Controller) postPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c.photoManager.Save(photo)
+
+	c.syncQueue.Publish(photo)
 
 	c.render.JSON(w, http.StatusCreated, photo)
 }

@@ -110,7 +110,7 @@ func (q *SyncQueue) process(d amqp.Delivery) {
 	q.photoManager.Save(photo)
 
 	elapsed := time.Since(start)
-	q.logger.Printf("Processed SyncPhoto for %s in %s", photo.FacebookPhotoID, elapsed)
+	q.logger.Printf("Processed SyncPhoto for %v in %s", photo, elapsed)
 }
 
 func updatePhotoFromGraphAPI(p *FacebookPhoto, authUser *user.FacebookUser) {
@@ -121,21 +121,31 @@ func updatePhotoFromGraphAPI(p *FacebookPhoto, authUser *user.FacebookUser) {
 		authUser.LongLivedToken,
 	))
 
-	var photoResponse fbResponsePhoto
-	json.NewDecoder(res.Body).Decode(&photoResponse)
-	p.Uploader = photoResponse.From.FacebookUserID
+	photoResponse := &fbResponsePhoto{}
+	err := json.NewDecoder(res.Body).Decode(photoResponse)
+	defer res.Body.Close()
+	if err != nil {
+		log.Printf("Error: %s", err)
+	}
+	p.Uploader = photoResponse.From.ID
 
 	for _, taggedUser := range photoResponse.Tags.Data {
-		p.TaggedUsers = append(p.TaggedUsers, taggedUser.FacebookUserID)
+		p.TaggedUsers = append(p.TaggedUsers, taggedUser.ID)
 	}
 
+	p.Pending = false
+
+}
+
+type fbResponseUser struct {
+	ID string `json:"id"`
 }
 
 type fbResponsePhoto struct {
-	From user.FacebookUser `json:"from"`
-	Tags fbResponsePager   `json:"tags"`
+	From fbResponseUser  `json:"from"`
+	Tags fbResponsePager `json:"tags"`
 }
 
 type fbResponsePager struct {
-	Data []user.FacebookUser `json:"data"`
+	Data []fbResponseUser `json:"data"`
 }
