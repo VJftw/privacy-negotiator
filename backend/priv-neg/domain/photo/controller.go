@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
 	"github.com/gorilla/mux"
@@ -67,7 +68,7 @@ func (c Controller) getPhotosHandler(w http.ResponseWriter, r *http.Request) {
 	// JSON unmarshal url query ids
 	json.Unmarshal([]byte(idsJSON), &ids)
 
-	returnPhotos := []*WebPhoto{}
+	returnPhotos := []*domain.WebPhoto{}
 	// Find batch fb photo ids on redis.
 	for _, facebookPhotoID := range ids {
 		facebookPhoto, err := c.photoRedis.FindByIDWithUserCategories(facebookPhotoID, facebookUser)
@@ -88,7 +89,7 @@ func (c Controller) postPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cachePhoto := CachePhotoFromWebPhoto(webPhoto)
+	cachePhoto := domain.CachePhotoFromWebPhoto(webPhoto)
 
 	c.photoRedis.Save(cachePhoto)
 

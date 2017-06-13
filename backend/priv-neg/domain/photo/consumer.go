@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
@@ -77,7 +78,7 @@ func (c *Consumer) Consume() {
 func (c *Consumer) process(d amqp.Delivery) {
 	start := time.Now()
 
-	cachePhoto := &CachePhoto{}
+	cachePhoto := &domain.CachePhoto{}
 	json.Unmarshal(d.Body, cachePhoto)
 
 	c.logger.Printf("Started processing for %s", cachePhoto.ID)
@@ -88,7 +89,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	c.photoRedis.Save(cachePhoto)
 
-	webPhoto := WebPhotoFromCachePhoto(cachePhoto)
+	webPhoto := domain.WebPhotoFromCachePhoto(cachePhoto)
 	for _, user := range cachePhoto.TaggedUsers {
 		c.userRedis.Publish(user, "photo", webPhoto)
 	}
@@ -97,7 +98,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 	c.logger.Printf("Processed SyncPhoto for %s in %s", cachePhoto.ID, elapsed)
 }
 
-func updatePhotoFromGraphAPI(p *CachePhoto, u *user.DBUser) {
+func updatePhotoFromGraphAPI(p *domain.CachePhoto, u *domain.DBUser) {
 
 	res, _ := http.Get(fmt.Sprintf(
 		"https://graph.facebook.com/v2.9/%s?access_token=%s&fields=from,tags{id}",

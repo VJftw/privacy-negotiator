@@ -5,12 +5,12 @@ import (
 	"errors"
 	"io"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 )
 
 // FromRequest - Validates and Transforms raw request data into a struct of Facebook credentials.
-func FromRequest(b io.ReadCloser) (*user.AuthUser, error) {
-	user := &user.AuthUser{}
+func FromRequest(b io.ReadCloser) (*domain.AuthUser, error) {
+	user := &domain.AuthUser{}
 
 	requestUser := &requestUser{}
 

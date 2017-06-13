@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/jinzhu/gorm"
 )
 
@@ -25,8 +26,8 @@ func NewDBManager(
 }
 
 // Save - Saves a given photo to the Database.
-func (m *DBManager) Save(p *DBPhoto) error {
-	err := m.gorm.Where(DBPhoto{ID: p.ID}).Assign(p).FirstOrCreate(p).Error
+func (m *DBManager) Save(p *domain.DBPhoto) error {
+	err := m.gorm.Where(domain.DBPhoto{ID: p.ID}).Assign(p).FirstOrCreate(p).Error
 	if err != nil {
 		return err
 	}
@@ -36,8 +37,8 @@ func (m *DBManager) Save(p *DBPhoto) error {
 }
 
 // FindByID - Returns a Photo given its ID, nil if not found.
-func (m *DBManager) FindByID(id string) (*DBPhoto, error) {
-	dbPhoto := &DBPhoto{}
+func (m *DBManager) FindByID(id string) (*domain.DBPhoto, error) {
+	dbPhoto := &domain.DBPhoto{}
 
 	m.gorm.Where("id = ?", id).First(dbPhoto)
 	if dbPhoto.ID == "" {

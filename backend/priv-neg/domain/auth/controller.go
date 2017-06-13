@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
@@ -60,6 +61,6 @@ func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
 	c.authPublisher.Publish(webUser)
 
 	// Save to Redis
-	cacheUser := user.CacheUserFromAuthUser(webUser)
+	cacheUser := domain.CacheUserFromAuthUser(webUser)
 	c.userRedis.Save(cacheUser)
 }

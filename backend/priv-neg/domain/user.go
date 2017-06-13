@@ -1,10 +1,6 @@
-package user
+package domain
 
-import (
-	"time"
-
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
-)
+import "time"
 
 // User - The FacebookUser entity.
 type User interface{}
@@ -28,7 +24,7 @@ type DBUser struct {
 	LongLivedToken string
 	TokenExpires   time.Time
 
-	Categories []category.Category
+	Categories []DBCategory
 }
 
 // CacheUserFromAuthUser - Translates a AuthUser to a CacheUser.

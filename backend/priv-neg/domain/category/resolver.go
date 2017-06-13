@@ -2,31 +2,39 @@ package category
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
+	"errors"
+
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 )
 
-// FromRequest - Returns a new Category using information from a request.
-func FromRequest(r *http.Request) (*Category, error) {
-	category := Category{}
+func FromRequest(r *http.Request, cacheUser *domain.CacheUser) (*domain.DBCategory, error) {
+	dbCategory := &domain.DBCategory{}
 
-	var rJSON map[string]interface{}
-
-	err := json.NewDecoder(r.Body).Decode(&rJSON)
+	requestCategory := &categoryRequest{}
+	err := json.NewDecoder(r.Body).Decode(requestCategory)
 	if err != nil {
 		return nil, err
 	}
 
-	if _, ok := rJSON["name"]; !ok {
-		return nil, errors.New("Missing name")
+	if requestCategory.Name == "" {
+		return nil, errors.New("Missing name.")
 	}
 
-	fbUserID := middlewares.FBUserIDFromContext(r.Context())
+	for _, existingCat := range cacheUser.Categories {
+		if existingCat == requestCategory.Name {
+			return nil, errors.New("Category already exists.")
+		}
+	}
 
-	category.Name = rJSON["name"].(string)
-	category.FacebookUserID = fbUserID
+	dbCategory.Name = requestCategory.Name
+	dbCategory.UserID = cacheUser.ID
 
-	return &category, nil
+	return dbCategory, nil
+
+}
+
+type categoryRequest struct {
+	Name string `json:"name"`
 }

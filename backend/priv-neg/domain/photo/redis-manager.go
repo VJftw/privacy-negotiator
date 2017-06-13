@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -25,7 +25,7 @@ func NewRedisManager(cacheLogger *log.Logger, redis *redis.Pool) *RedisManager {
 }
 
 // Save - Saves a given Photo to the Cache.
-func (m *RedisManager) Save(p *CachePhoto) error {
+func (m *RedisManager) Save(p *domain.CachePhoto) error {
 	jsonPhoto, err := json.Marshal(p)
 	if err != nil {
 		return err
@@ -44,8 +44,8 @@ func (m *RedisManager) Save(p *CachePhoto) error {
 }
 
 // FindByID - Returns a Photo given its ID, nil if not found.
-func (m *RedisManager) FindByID(id string) (*CachePhoto, error) {
-	photo := &CachePhoto{}
+func (m *RedisManager) FindByID(id string) (*domain.CachePhoto, error) {
+	photo := &domain.CachePhoto{}
 
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
@@ -69,12 +69,12 @@ func (m *RedisManager) FindByID(id string) (*CachePhoto, error) {
 }
 
 // FindByIDWithUserCategories - Returns a WebPhoto with the user's chosen categories.
-func (m *RedisManager) FindByIDWithUserCategories(id string, user *user.CacheUser) (*WebPhoto, error) {
+func (m *RedisManager) FindByIDWithUserCategories(id string, user *domain.CacheUser) (*domain.WebPhoto, error) {
 	cachePhoto, err := m.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
-	webPhoto := WebPhotoFromCachePhoto(cachePhoto)
+	webPhoto := domain.WebPhotoFromCachePhoto(cachePhoto)
 
 	redisConn := m.redis.Get()
 	defer redisConn.Close()

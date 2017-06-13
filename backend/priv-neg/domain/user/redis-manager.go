@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers/websocket"
 	"github.com/garyburd/redigo/redis"
 )
@@ -25,7 +26,7 @@ func NewRedisManager(cacheLogger *log.Logger, redis *redis.Pool) *RedisManager {
 }
 
 // Save - Saves a given user to the Cache.
-func (m *RedisManager) Save(u *CacheUser) error {
+func (m *RedisManager) Save(u *domain.CacheUser) error {
 	jsonUser, err := json.Marshal(u)
 	if err != nil {
 		return err
@@ -57,8 +58,8 @@ func (m *RedisManager) Publish(uID string, channel string, data interface{}) {
 }
 
 // FindByID - Returns a user given its ID, nil if not found.
-func (m *RedisManager) FindByID(id string) (*CacheUser, error) {
-	user := &CacheUser{}
+func (m *RedisManager) FindByID(id string) (*domain.CacheUser, error) {
+	user := &domain.CacheUser{}
 
 	redisConn := m.redis.Get()
 	defer redisConn.Close()

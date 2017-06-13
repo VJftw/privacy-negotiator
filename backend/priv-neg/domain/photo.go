@@ -1,10 +1,4 @@
-package photo
-
-import (
-	"os/user"
-
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
-)
+package domain
 
 // CachePhoto - The representation of a Photo stored on the Cache.
 type CachePhoto struct {
@@ -28,9 +22,9 @@ type DBPhoto struct {
 	ID       string `gorm:"primary_key"`
 	Uploader string
 
-	TaggedUsers []user.User `gorm:"many2many:photo_users"`
+	TaggedUsers []DBUser `gorm:"many2many:photo_users"`
 
-	Categories []category.Category `gorm:"many2many:photo_categories"`
+	Categories []DBCategory `gorm:"many2many:photo_categories"`
 }
 
 // WebPhotoFromCachePhoto - Converts a CachePhoto into a WebPhoto.

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 )
 
 // FromRequest - Returns a Photo from a http request.
-func FromRequest(r *http.Request, user *user.CacheUser) (*WebPhoto, error) {
-	photo := &WebPhoto{}
+func FromRequest(r *http.Request, user *domain.CacheUser) (*domain.WebPhoto, error) {
+	photo := &domain.WebPhoto{}
 
 	requestPhoto := &photoRequest{}
 	err := json.NewDecoder(r.Body).Decode(requestPhoto)

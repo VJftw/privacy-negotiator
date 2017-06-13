@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
@@ -72,14 +73,14 @@ func (c *Consumer) Consume() {
 func (c *Consumer) process(d amqp.Delivery) {
 	start := time.Now()
 
-	authUser := &user.AuthUser{}
+	authUser := &domain.AuthUser{}
 	json.Unmarshal(d.Body, authUser)
 
 	c.logger.Printf("Started processing for %s", authUser.ID)
 
 	respLongLived := getLongLivedToken(authUser)
 
-	dbUser := user.DBUserFromAuthUser(authUser)
+	dbUser := domain.DBUserFromAuthUser(authUser)
 	dbUser.LongLivedToken = respLongLived.AccessToken
 	duration, _ := time.ParseDuration(fmt.Sprintf("%ds", respLongLived.Expires))
 	dbUser.TokenExpires = time.Now().Add(duration)
@@ -90,7 +91,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 	c.logger.Printf("Processed AuthQueue for %s in %s", dbUser.ID, elapsed)
 }
 
-func getLongLivedToken(u *user.AuthUser) *facebookResponseLongLived {
+func getLongLivedToken(u *domain.AuthUser) *facebookResponseLongLived {
 	clientID := os.Getenv("FACEBOOK_APP_ID")
 	clientSecret := os.Getenv("FACEBOOK_APP_SECRET")
 	res, _ := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s",

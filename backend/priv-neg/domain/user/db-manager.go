@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/jinzhu/gorm"
 )
 
@@ -25,8 +26,8 @@ func NewDBManager(
 }
 
 // Save - Saves a given user to the Database.
-func (m *DBManager) Save(u *DBUser) error {
-	err := m.gorm.Where(DBUser{ID: u.ID}).Assign(u).FirstOrCreate(u).Error
+func (m *DBManager) Save(u *domain.DBUser) error {
+	err := m.gorm.Where(domain.DBUser{ID: u.ID}).Assign(u).FirstOrCreate(u).Error
 	if err != nil {
 		return err
 	}
@@ -36,8 +37,8 @@ func (m *DBManager) Save(u *DBUser) error {
 }
 
 // FindByID - Returns a user given its ID, nil if not found.
-func (m *DBManager) FindByID(id string) (*DBUser, error) {
-	dbUser := &DBUser{}
+func (m *DBManager) FindByID(id string) (*domain.DBUser, error) {
+	dbUser := &domain.DBUser{}
 
 	m.gorm.Where("id = ?", id).First(dbUser)
 	if dbUser.ID == "" {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 )
 
 type me struct {
@@ -14,7 +14,7 @@ type me struct {
 }
 
 // ValidateFacebookCredentials - Validates given Facebook credentials with the Graph API.
-func ValidateFacebookCredentials(webUser *user.AuthUser) bool {
+func ValidateFacebookCredentials(webUser *domain.AuthUser) bool {
 	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/me?access_token=%s", webUser.ShortLivedToken))
 
 	if err != nil {
