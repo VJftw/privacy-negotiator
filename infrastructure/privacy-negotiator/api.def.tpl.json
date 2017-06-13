@@ -9,6 +9,9 @@
         "containerPort": 80
       }
     ],
+    "command": [
+      "/priv-neg"
+    ],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {

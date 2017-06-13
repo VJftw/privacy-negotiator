@@ -54,7 +54,7 @@ services:
       - "cache:redis"
 
   # Golang Worker - Auth queue
-  worker-auth:
+  worker-auth-long-token:
     build:
       context: ./backend/
       dockerfile: dev.Dockerfile
@@ -64,7 +64,7 @@ services:
     working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
       TYPE: WORKER
-      QUEUE: auth-queue
+      QUEUE: auth-long-token
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg
@@ -84,7 +84,7 @@ services:
       - "db:postgres"
       - "cache:redis"
 
-  worker-sync:
+  worker-photo-tags:
     build:
       context: ./backend/
       dockerfile: dev.Dockerfile
@@ -94,7 +94,7 @@ services:
     working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
     environment:
       TYPE: WORKER
-      QUEUE: sync-queue
+      QUEUE: photo-tags
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg

@@ -3,28 +3,28 @@ data "template_file" "ecs_def_worker-sync-photo" {
   template = "${file("${path.module}/worker.def.tpl.json")}"
 
   vars {
-    environment        = "${var.environment}"
-    domain = "${var.domain}"
-    weave_cidr = "${var.weave_cidr}"
-    version = "${var.version}"
+    environment = "${var.environment}"
+    domain      = "${var.domain}"
+    weave_cidr  = "${var.weave_cidr}"
+    version     = "${var.version}"
 
     cloudwatch_log_group = "${aws_cloudwatch_log_group.worker-sync-photo.name}"
     cloudwatch_region    = "${var.aws_region}"
 
-    rabbitmq_user = "${var.rabbitmq_user}"
-    rabbitmq_pass = "${var.rabbitmq_pass}"
+    rabbitmq_user     = "${var.rabbitmq_user}"
+    rabbitmq_pass     = "${var.rabbitmq_pass}"
     rabbitmq_hostname = "rabbitmq_${var.environment}"
-    redis_host = "redis_${var.environment}"
+    redis_host        = "redis_${var.environment}"
 
-    postgres_user = "${var.postgres_user}"
-    postgres_dbname = "privneg_${var.environment}"
+    postgres_user     = "${var.postgres_user}"
+    postgres_dbname   = "privneg_${var.environment}"
     postgres_password = "${var.postgres_password}"
-    postgres_host = "${aws_db_instance.db.address}"
+    postgres_host     = "${aws_db_instance.db.address}"
 
-    facebook_app_id = "${var.facebook_app_id}"
+    facebook_app_id     = "${var.facebook_app_id}"
     facebook_app_secret = "${var.facebook_app_secret}"
 
-    queue = "sync-queue"
+    queue = "photo-tags"
   }
 }
 

@@ -44,10 +44,10 @@ func NewPrivNegWorker(queue string) App {
 	rabbitMQ, conn := persisters.NewQueue(queueLogger)
 	var q persisters.Consumer
 	switch queue {
-	case "auth-queue":
+	case "auth-long-token":
 		q = auth.NewConsumer(queueLogger, rabbitMQ, userDBManager)
 		break
-	case "sync-queue":
+	case "photo-tags":
 		q = photo.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, photoRedisManager)
 		break
 	default:

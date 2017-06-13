@@ -50,13 +50,13 @@ services:
       - "cache:redis"
 
   # Golang Worker - Auth queue
-  worker-auth:
+  worker-auth-long-token:
     build:
       context: ./backend/
       dockerfile: Dockerfile
     environment:
       TYPE: WORKER
-      QUEUE: auth-queue
+      QUEUE: auth-long-token
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg
@@ -82,7 +82,7 @@ services:
       dockerfile: Dockerfile
     environment:
       TYPE: WORKER
-      QUEUE: sync-queue
+      QUEUE: photo-tags
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg
