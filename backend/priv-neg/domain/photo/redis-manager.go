@@ -78,13 +78,10 @@ func (m *RedisManager) FindByIDWithUserCategories(id string, user *user.CacheUse
 
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
-	jsonPhotoCategories, err := redis.Bytes(redisConn.Do(
+	jsonPhotoCategories, _ := redis.Bytes(redisConn.Do(
 		"GET",
 		fmt.Sprintf("%s:%s", webPhoto.ID, user.ID),
 	))
-	if err != nil {
-		return nil, err
-	}
 
 	if jsonPhotoCategories != nil {
 		json.Unmarshal(jsonPhotoCategories, webPhoto.Categories)
