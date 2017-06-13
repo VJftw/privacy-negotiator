@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers/websocket"
 	"github.com/garyburd/redigo/redis"
 	"github.com/jinzhu/gorm"
@@ -39,58 +40,70 @@ func (m WorkerManager) New() *FacebookPhoto {
 }
 
 // Save - Saves the model across storages
-func (m WorkerManager) Save(u *FacebookPhoto) error {
-	jsonUser, _ := json.Marshal(u)
+func (m WorkerManager) Save(p *FacebookPhoto, u *user.FacebookUser) error {
+	jsonPhoto, _ := json.Marshal(u)
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
 	redisConn.Do(
 		"SET",
-		fmt.Sprintf("photo:%s", u.FacebookPhotoID),
-		jsonUser,
+		fmt.Sprintf("photo:%s", p.FacebookPhotoID),
+		jsonPhoto,
 	)
-	m.cacheLogger.Printf("Saved photo:%s", u.FacebookPhotoID)
-	jsonWSMessage, _ := json.Marshal(websocket.Message{Type: "photo", Data: u})
+	m.cacheLogger.Printf("Saved photo:%s", p.FacebookPhotoID)
+	jsonWSMessage, _ := json.Marshal(websocket.Message{Type: "photo", Data: p})
 	redisConn.Do(
 		"PUBLISH",
-		fmt.Sprintf("user:%s", u.Uploader),
+		fmt.Sprintf("user:%s", p.Uploader),
 		jsonWSMessage,
 	)
-	m.cacheLogger.Printf("Published photo %s to %s", u.FacebookPhotoID, u.Uploader)
-	for user := range u.TaggedUsers {
+	m.cacheLogger.Printf("Published photo %s to %s", p.FacebookPhotoID, p.Uploader)
+	for user := range p.TaggedUsers {
 		redisConn.Do(
 			"PUBLISH",
 			fmt.Sprintf("user:%v", user),
-			jsonUser,
+			jsonPhoto,
 		)
-		m.cacheLogger.Printf("Published photo %s to %v", u.FacebookPhotoID, user)
+		m.cacheLogger.Printf("Published photo %s to %v", p.FacebookPhotoID, user)
 	}
 
 	m.gorm.Where(
-		FacebookPhoto{FacebookPhotoID: u.FacebookPhotoID},
-	).Assign(u).FirstOrCreate(u)
-	m.dbLogger.Printf("Saved photo %s", u.FacebookPhotoID)
+		FacebookPhoto{FacebookPhotoID: p.FacebookPhotoID},
+	).Assign(p).FirstOrCreate(p)
+	m.dbLogger.Printf("Saved photo %s", p.FacebookPhotoID)
 
 	return nil
 }
 
 // FindByID - Returns a FacebookPhoto given an Id
-func (m WorkerManager) FindByID(facebookID string) (*FacebookPhoto, error) {
-	user := &FacebookPhoto{}
+func (m WorkerManager) FindByID(facebookID string, facebookUser *user.FacebookUser) (*FacebookPhoto, error) {
+	photo := &FacebookPhoto{}
 
-	// Check cache first.
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
-	userJSON, _ := redisConn.Do(
+	photoJSON, _ := redis.Bytes(redisConn.Do(
 		"GET",
 		fmt.Sprintf("photo:%s", facebookID),
-	)
+	))
 
-	if userJSON != nil {
-		str, _ := userJSON.(string)
-		json.Unmarshal([]byte(str), user)
+	if photoJSON != nil {
+		json.Unmarshal(photoJSON, photo)
+		m.cacheLogger.Printf("Got photo:%s", photo.FacebookPhotoID)
 
-		return user, nil
+		photoCategoriesJSON, _ := redis.Bytes(redisConn.Do(
+			"GET",
+			fmt.Sprintf("%s:%s", photo.FacebookPhotoID, facebookUser.FacebookUserID),
+		))
+
+		if photoCategoriesJSON != nil {
+			json.Unmarshal(photoCategoriesJSON, photo.Categories)
+			m.cacheLogger.Printf("Got photo user %s:%s", photo.FacebookPhotoID, facebookUser.FacebookUserID)
+		}
+
+		return photo, nil
 	}
+
+	m.cacheLogger.Printf("Could not find photo:%s", facebookID)
+	// return nil, errors.New("Not found")
 
 	// Check DB. If in DB, update cache.
 	// m.GetInto(user, "userId = ?", facebookID)
@@ -99,5 +112,5 @@ func (m WorkerManager) FindByID(facebookID string) (*FacebookPhoto, error) {
 	// 	return nil, errors.New("Not found")
 	// }
 
-	return user, nil
+	return photo, nil
 }

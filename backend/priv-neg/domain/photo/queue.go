@@ -107,7 +107,7 @@ func (q *SyncQueue) process(d amqp.Delivery) {
 
 	updatePhotoFromGraphAPI(photo, user)
 
-	q.photoManager.Save(photo)
+	q.photoManager.Save(photo, user)
 
 	elapsed := time.Since(start)
 	q.logger.Printf("Processed SyncPhoto for %s in %s", photo.FacebookPhotoID, elapsed)

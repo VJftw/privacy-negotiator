@@ -9,24 +9,31 @@ import (
 )
 
 // FromRequest - Validates and Transforms raw request data into a struct of Facebook credentials.
-func FromRequest(fbAuth *user.FacebookUser, b io.ReadCloser) error {
-	var rJSON map[string]interface{}
+func FromRequest(b io.ReadCloser) (*user.WebUser, error) {
+	user := &user.WebUser{}
 
-	err := json.NewDecoder(b).Decode(&rJSON)
+	requestUser := &requestUser{}
+
+	err := json.NewDecoder(b).Decode(requestUser)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if _, ok := rJSON["accessToken"]; !ok {
-		return errors.New("Missing accessToken")
+	if requestUser.ID == "" {
+		return nil, errors.New("Missing userID")
 	}
 
-	if _, ok := rJSON["userID"]; !ok {
-		return errors.New("Missing userID")
+	if requestUser.AccessToken == "" {
+		return nil, errors.New("Missing accessToken")
 	}
 
-	fbAuth.ShortLivedToken = rJSON["accessToken"].(string)
-	fbAuth.FacebookUserID = rJSON["userID"].(string)
+	user.ID = requestUser.ID
+	user.ShortLivedToken = requestUser.AccessToken
 
-	return nil
+	return user, nil
+}
+
+type requestUser struct {
+	ID          string `json:"userID"`
+	AccessToken string `json:"accessToken"`
 }

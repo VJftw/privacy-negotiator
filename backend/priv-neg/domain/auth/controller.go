@@ -41,25 +41,27 @@ func (c Controller) Setup(router *mux.Router) {
 }
 
 func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
-	fbUser := &user.FacebookUser{}
 
-	err := FromRequest(fbUser, r.Body)
+	webUser, err := FromRequest(r.Body)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	if !ValidateFacebookCredentials(fbUser) {
+	if !ValidateFacebookCredentials(webUser) {
 		c.render.JSON(w, http.StatusUnauthorized, nil)
 		return
 	}
 
-	token := NewFromFacebookAuth(fbUser)
+	token := NewFromFacebookAuth(webUser)
 	c.render.JSON(w, http.StatusCreated, token)
 
 	// Add GetLongLivedToken to queue
-	c.authQueue.Publish(fbUser)
+	c.authQueue.Publish(webUser)
 
-	// Save to Redis
-	c.userManager.Save(fbUser)
+	cacheUser := user.CacheUserFromWebUser(webUser)
+
+	// Save to Redis c.userRedis.Save
+	// Save to DB c.userDB.Save
+	c.userManager.Save(cacheUser)
 }

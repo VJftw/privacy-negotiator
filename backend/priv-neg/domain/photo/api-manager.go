@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -29,7 +30,7 @@ func (m APIManager) New() *FacebookPhoto {
 }
 
 // Save - Saves the model across storages
-func (m APIManager) Save(p *FacebookPhoto) error {
+func (m APIManager) Save(p *FacebookPhoto, u *user.FacebookUser) error {
 	jsonPhoto, _ := json.Marshal(p)
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
@@ -44,7 +45,7 @@ func (m APIManager) Save(p *FacebookPhoto) error {
 }
 
 // FindByID - Returns a FacebookPhoto given an Id
-func (m APIManager) FindByID(facebookID string) (*FacebookPhoto, error) {
+func (m APIManager) FindByID(facebookID string, facebookUser *user.FacebookUser) (*FacebookPhoto, error) {
 	photo := &FacebookPhoto{}
 
 	redisConn := m.redis.Get()
@@ -57,6 +58,17 @@ func (m APIManager) FindByID(facebookID string) (*FacebookPhoto, error) {
 	if photoJSON != nil {
 		json.Unmarshal(photoJSON, photo)
 		m.cacheLogger.Printf("Got photo:%s", photo.FacebookPhotoID)
+
+		photoCategoriesJSON, _ := redis.Bytes(redisConn.Do(
+			"GET",
+			fmt.Sprintf("%s:%s", photo.FacebookPhotoID, facebookUser.FacebookUserID),
+		))
+
+		if photoCategoriesJSON != nil {
+			json.Unmarshal(photoCategoriesJSON, photo.Categories)
+			m.cacheLogger.Printf("Got photo user %s:%s", photo.FacebookPhotoID, facebookUser.FacebookUserID)
+
+		}
 
 		return photo, nil
 	}

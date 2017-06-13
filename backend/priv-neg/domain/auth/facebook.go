@@ -14,8 +14,8 @@ type me struct {
 }
 
 // ValidateFacebookCredentials - Validates given Facebook credentials with the Graph API.
-func ValidateFacebookCredentials(fbAuth *user.FacebookUser) bool {
-	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/me?access_token=%s", fbAuth.ShortLivedToken))
+func ValidateFacebookCredentials(webUser *user.WebUser) bool {
+	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/me?access_token=%s", webUser.ShortLivedToken))
 
 	if err != nil {
 		log.Printf("Error: %s", err)
@@ -30,7 +30,7 @@ func ValidateFacebookCredentials(fbAuth *user.FacebookUser) bool {
 		return false
 	}
 
-	if me.ID == fbAuth.FacebookUserID {
+	if me.ID == webUser.ID {
 		return true
 	}
 

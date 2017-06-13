@@ -2,7 +2,6 @@ package user
 
 // Managable - Manages FacebookUsers.
 type Managable interface {
-	New() *FacebookUser
-	Save(*FacebookUser) error
+	Save(*User) error
 	FindByID(string) (*FacebookUser, error)
 }

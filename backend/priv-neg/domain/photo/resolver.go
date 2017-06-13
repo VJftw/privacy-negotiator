@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
 )
 
@@ -27,4 +29,31 @@ func FromRequest(r *http.Request) (*FacebookPhoto, error) {
 	photo.Pending = true
 
 	return photo, nil
+}
+
+// FromPutRequest - Modifies a given FacebookPhoto with data from a request for a given User.
+func FromPutRequest(r *http.Request, p *FacebookPhoto, u *user.FacebookUser) error {
+	var photoJSON requestPUT
+	err := json.NewDecoder(r.Body).Decode(&photoJSON)
+	if err != nil {
+		return err
+	}
+
+	p.Categories = []category.Category{}
+
+	for _, cat := range photoJSON.Categories {
+		c := category.Category{
+			Name:           cat,
+			FacebookUserID: u.FacebookUserID,
+		}
+
+		p.Categories = append(p.Categories, c)
+	}
+
+	return nil
+
+}
+
+type requestPUT struct {
+	Categories []string `json:"categories"`
 }
