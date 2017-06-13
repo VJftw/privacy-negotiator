@@ -2,6 +2,7 @@ import { AuthService } from '../auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Photo } from './photo.model';
 import { PhotoService } from './photo.service';
+import {Router} from '@angular/router';
 
 
 @Component({
@@ -9,15 +10,12 @@ import { PhotoService } from './photo.service';
   templateUrl: './photos.component.html',
   styles: [`
     .card-image img {
-     max-height: 150px;
+     max-height: 300px;
      max-width: 100%;
      object-fit: cover;
    }
    .blur {-webkit-filter: grayscale(100%);filter: grayscale(100%);}
-  `],
-  providers: [
-    PhotoService
-  ]
+  `]
 })
 export class PhotosComponent implements OnInit {
 
@@ -25,7 +23,8 @@ export class PhotosComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private photoService: PhotoService
+    private photoService: PhotoService,
+    private router: Router
   ) {
     this.lock = false;
   }
@@ -47,4 +46,7 @@ export class PhotosComponent implements OnInit {
     }
   }
 
+  protected selectPhoto(photo: Photo) {
+    this.router.navigate(['photos', photo.id]);
+  }
 }

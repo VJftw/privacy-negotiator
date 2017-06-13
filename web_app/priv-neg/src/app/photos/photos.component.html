@@ -3,16 +3,21 @@
 [infiniteScrollThrottle]="300"
 (scrolled)="updateTaggedPhotos()">
   <div class="col s12 m6 l4" *ngFor="let photo of getTaggedPhotos()">
-    <div class="card small sticky-action" [ngClass]="{'grey': !photo.negotiable }">
-      <div class="card-image waves-effect waves-block waves-light">
-        <img class="activator" [ngClass]="{'blur': !photo.negotiable }"  src="{{photo.url}}">
+    <div class="card small" [ngClass]="{'grey': !photo.negotiable, 'hoverable sticky-action': photo.negotiable}">
+      <div class="card-image" [ngClass]="{'waves-effect waves-block waves-light': photo.negotiable}">
+        <img [ngClass]="{'blur': !photo.negotiable, 'activator': photo.negotiable }"  src="{{photo.url}}">
         <span class="card-title"></span>
+
       </div>
       <div class="card-content">
-        taggedUsers: {{photo.taggedUsers.length}} <br />
-        by: {{photo.from.name}}<br />
+        by: {{photo.from.name}}
       </div>
       <div class="card-action">
+        <span *ngIf="photo.negotiable">
+          <i class="fa fa-tags" aria-hidden="true" ></i> {{photo.taggedUsers.length}}
+
+          <a class="right" (click)="this.selectPhoto(photo)">View</a>
+        </span>
       </div>
       <div class="card-reveal">
         <span class="card-title grey-text text-darken-4">{{photo.id}}<i class="material-icons right">close</i></span>
@@ -24,7 +29,7 @@
   </div>
 
   <div *ngIf="lock" class="progress">
-    <div class="indeterminate"></div>
+    <div class="indeterminate blue"></div>
   </div>
 
 </div>

@@ -11,6 +11,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { AppComponent } from './app.component';
 import { IndexComponent } from './index/index.component';
 import { PhotosComponent } from './photos/photos.component';
+import { PhotoDetailComponent } from './photos/photo-detail.component';
 import { CommunitiesComponent } from './communities/communities.component';
 
 import { FacebookService } from 'ngx-facebook';
@@ -24,6 +25,7 @@ import { PhotoService } from './photos/photo.service';
     AppComponent,
     IndexComponent,
     PhotosComponent,
+    PhotoDetailComponent,
     CommunitiesComponent
   ],
   imports: [
@@ -37,6 +39,7 @@ import { PhotoService } from './photos/photo.service';
       { path: '', redirectTo: '/start', pathMatch: 'full' },
       { path: 'start', component: IndexComponent },
       { path: 'photos', component: PhotosComponent, canActivate: [AuthService] },
+      { path: 'photos/:id', component: PhotoDetailComponent, canActivate: [AuthService] },
       { path: 'communities', component: CommunitiesComponent, canActivate: [AuthService] }
     ], { useHash: true })
   ],

@@ -1,6 +1,5 @@
 import { AuthService } from '../auth.service';
 import { Component } from '@angular/core';
-import { LoginResponse } from 'ngx-facebook';
 
 @Component({
   selector: 'app-index',

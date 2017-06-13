@@ -1,0 +1,12 @@
+
+<div class="row" *ngIf="this.photo">
+
+  <div class="col s12 m10 offset-m1">
+    <img style="max-width:100%;" src="{{photo.url}}" />
+  </div>
+  {{ photo.id }}
+
+  <div class="chips" materialize="material_chip" [materializeParams]="[autocompleteInit]"></div>
+
+</div>
+

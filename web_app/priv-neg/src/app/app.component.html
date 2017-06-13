@@ -1,9 +1,9 @@
 <nav class="blue" role="navigation">
   <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">PrivNeg</a>
     <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
-    <ul *ngIf="authService.isAuthenticated()" id="nav-mobile" class="right hide-on-med-and-down">
-        <li><a routerLink="/photos">Photos</a></li>
-        <li><a routerLink="/communities">Friends</a></li>
+    <ul *ngIf="isLoggedIn()" id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a routerLink="/photos" routerLinkActive="active">Photos</a></li>
+        <li><a routerLink="/communities" routerLinkActive="active">Friends</a></li>
       </ul>
   </div>
 </nav>

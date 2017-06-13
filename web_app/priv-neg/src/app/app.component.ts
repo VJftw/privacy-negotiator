@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { FacebookService, InitParams, LoginResponse } from 'ngx-facebook';
 import { environment } from '../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -12,6 +11,9 @@ export class AppComponent {
 
   constructor(
     private authService: AuthService
-  ) {
+  ) {}
+
+  protected isLoggedIn(): boolean {
+    return this.authService.isAuthenticated();
   }
 }
