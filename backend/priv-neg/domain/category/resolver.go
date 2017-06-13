@@ -9,6 +9,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 )
 
+// FromRequest - Returns a DBCategory from a httpRequest.
 func FromRequest(r *http.Request, cacheUser *domain.CacheUser) (*domain.DBCategory, error) {
 	dbCategory := &domain.DBCategory{}
 
@@ -19,12 +20,12 @@ func FromRequest(r *http.Request, cacheUser *domain.CacheUser) (*domain.DBCatego
 	}
 
 	if requestCategory.Name == "" {
-		return nil, errors.New("Missing name.")
+		return nil, errors.New("missing name")
 	}
 
 	for _, existingCat := range cacheUser.Categories {
 		if existingCat == requestCategory.Name {
-			return nil, errors.New("Category already exists.")
+			return nil, errors.New("category already exists")
 		}
 	}
 

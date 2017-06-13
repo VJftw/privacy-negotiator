@@ -11,7 +11,7 @@ import (
 	"github.com/urfave/negroni"
 )
 
-// Handles Categories.
+// Controller - Handles Categories.
 type Controller struct {
 	logger            *log.Logger
 	render            *render.Render
