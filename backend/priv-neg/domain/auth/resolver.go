@@ -9,8 +9,8 @@ import (
 )
 
 // FromRequest - Validates and Transforms raw request data into a struct of Facebook credentials.
-func FromRequest(b io.ReadCloser) (*user.WebUser, error) {
-	user := &user.WebUser{}
+func FromRequest(b io.ReadCloser) (*user.AuthUser, error) {
+	user := &user.AuthUser{}
 
 	requestUser := &requestUser{}
 

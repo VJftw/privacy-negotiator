@@ -8,13 +8,11 @@ import (
 	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers/websocket"
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/unrolled/render"
 )
 
@@ -34,35 +32,29 @@ func NewPrivNegAPI() App {
 	controllerLogger := log.New(os.Stdout, "[controller]", log.Lshortfile)
 
 	redisCache := persisters.NewRedisDB(cacheLogger)
+	rabbitMQ, _ := persisters.NewQueue(queueLogger)
 
-	userManager := user.NewAPIManager(cacheLogger, redisCache)
-	photoManager := photo.NewAPIManager(cacheLogger, redisCache)
-	categoryManager := category.NewAPIManager(cacheLogger, redisCache)
+	userRedisManager := user.NewRedisManager(cacheLogger, redisCache)
+	photoRedisManager := photo.NewRedisManager(cacheLogger, redisCache)
 
-	authQueue := auth.NewAuthQueue(queueLogger, userManager)
-	syncQueue := photo.NewSyncQueue(queueLogger, photoManager, userManager)
+	authPublisher := auth.NewPublisher(queueLogger, rabbitMQ)
+	syncPublisher := photo.NewPublisher(queueLogger, rabbitMQ)
 
 	renderer := render.New()
 
-	authController := auth.NewController(controllerLogger, renderer, authQueue, userManager)
-	userController := user.NewController(controllerLogger, renderer, userManager)
-	photoController := photo.NewController(controllerLogger, renderer, photoManager, userManager, syncQueue)
-	categoryController := category.NewController(controllerLogger, renderer, categoryManager)
+	authController := auth.NewController(controllerLogger, renderer, authPublisher, userRedisManager)
+	userController := user.NewController(controllerLogger, renderer, userRedisManager)
+	photoController := photo.NewController(controllerLogger, renderer, photoRedisManager, userRedisManager, syncPublisher)
+	// categoryController := category.NewController(controllerLogger, renderer, categoryManager)
 	websocketController := websocket.NewController(wsLogger, renderer, redisCache)
 
 	privNegAPI.Router = routers.NewMuxRouter([]routers.Routable{
 		authController,
 		userController,
 		photoController,
-		categoryController,
+		// categoryController,
 		websocketController,
 	}, true)
-
-	// Initialise queues
-	utils.SetupQueues([]utils.DeclarableQueue{
-		authQueue,
-		syncQueue,
-	}, queueLogger)
 
 	port := os.Getenv("PORT")
 	privNegAPI.server = &http.Server{

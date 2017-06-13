@@ -11,24 +11,24 @@ import (
 
 // Controller - Handles authentication
 type Controller struct {
-	logger      *log.Logger
-	render      *render.Render
-	authQueue   *LongAuthQueue
-	userManager user.Managable
+	logger        *log.Logger
+	render        *render.Render
+	authPublisher *Publisher
+	userRedis     *user.RedisManager
 }
 
 // NewController - returns a new Controller for Authentication.
 func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,
-	authQueue *LongAuthQueue,
-	userManager user.Managable,
+	authPublisher *Publisher,
+	userRedis *user.RedisManager,
 ) *Controller {
 	return &Controller{
-		logger:      controllerLogger,
-		render:      renderer,
-		authQueue:   authQueue,
-		userManager: userManager,
+		logger:        controllerLogger,
+		render:        renderer,
+		authPublisher: authPublisher,
+		userRedis:     userRedis,
 	}
 }
 
@@ -57,11 +57,9 @@ func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
 	c.render.JSON(w, http.StatusCreated, token)
 
 	// Add GetLongLivedToken to queue
-	c.authQueue.Publish(webUser)
+	c.authPublisher.Publish(webUser)
 
-	cacheUser := user.CacheUserFromWebUser(webUser)
-
-	// Save to Redis c.userRedis.Save
-	// Save to DB c.userDB.Save
-	c.userManager.Save(cacheUser)
+	// Save to Redis
+	cacheUser := user.CacheUserFromAuthUser(webUser)
+	c.userRedis.Save(cacheUser)
 }

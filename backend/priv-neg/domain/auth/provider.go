@@ -8,7 +8,7 @@ import (
 )
 
 // NewFromFacebookAuth - Returns an AuthToken based off Facebook ID.
-func NewFromFacebookAuth(webUser *user.WebUser) *APIAuth {
+func NewFromFacebookAuth(webUser *user.AuthUser) *APIAuth {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"fbUserID": webUser.ID,
 		"nbf":      time.Now().Unix(),

@@ -9,13 +9,12 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
 )
 
 // PrivNegWorker - Holds the Worker
 type PrivNegWorker struct {
-	queue   utils.DeclarableQueue
+	queue   persisters.Consumer
 	conn    *amqp.Connection
 	channel *amqp.Channel
 }
@@ -32,28 +31,31 @@ func NewPrivNegWorker(queue string) App {
 	// Initialise persisters to pass into managers
 	gormDB := persisters.NewGORMDB(
 		dbLogger,
-		&user.FacebookUser{},
-		&photo.FacebookPhoto{},
+		&user.DBUser{},
+		&photo.DBPhoto{},
 		&category.Category{},
 	)
 	redisCache := persisters.NewRedisDB(cacheLogger)
 
-	userManager := user.NewWorkerManager(dbLogger, gormDB, cacheLogger, redisCache)
-	photoManager := photo.NewWorkerManager(dbLogger, gormDB, cacheLogger, redisCache)
+	photoRedisManager := photo.NewRedisManager(cacheLogger, redisCache)
+	userDBManager := user.NewDBManager(dbLogger, gormDB)
+	userRedisManager := user.NewRedisManager(cacheLogger, redisCache)
 
-	var q utils.DeclarableQueue
+	rabbitMQ, conn := persisters.NewQueue(queueLogger)
+	var q persisters.Consumer
 	switch queue {
 	case "auth-queue":
-		q = auth.NewAuthQueue(queueLogger, userManager)
+		q = auth.NewConsumer(queueLogger, rabbitMQ, userDBManager)
 		break
 	case "sync-queue":
-		q = photo.NewSyncQueue(queueLogger, photoManager, userManager)
+		q = photo.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, photoRedisManager)
 		break
 	default:
 		panic("Invalid queue selected")
 	}
 
-	privNegWorker.conn, privNegWorker.channel = utils.SetupQueues([]utils.DeclarableQueue{q}, queueLogger)
+	privNegWorker.channel = rabbitMQ
+	privNegWorker.conn = conn
 	privNegWorker.queue = q
 
 	return privNegWorker

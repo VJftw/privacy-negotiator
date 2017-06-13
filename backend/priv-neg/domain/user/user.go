@@ -16,14 +16,14 @@ type CacheUser struct {
 	Categories   []string  `json:"categories"`
 }
 
-// WebUser - a representation of a User communicated with the web_app.
-type WebUser struct {
+// AuthUser - a representation of a User communicated from the web_app for authentication.
+type AuthUser struct {
 	ID              string `json:"id"`
 	ShortLivedToken string `json:"accessToken"`
 }
 
-// DatabaseUser - The representation of a User stored in the database.
-type DatabaseUser struct {
+// DBUser - The representation of a User stored in the database.
+type DBUser struct {
 	ID             string `gorm:"primary_key"`
 	LongLivedToken string
 	TokenExpires   time.Time
@@ -31,13 +31,15 @@ type DatabaseUser struct {
 	Categories []category.Category
 }
 
-func CacheUserFromWebUser(webUser *WebUser) *CacheUser {
+// CacheUserFromAuthUser - Translates a AuthUser to a CacheUser.
+func CacheUserFromAuthUser(authUser *AuthUser) *CacheUser {
 	return &CacheUser{
-		ID: webUser.ID,
+		ID: authUser.ID,
 	}
 }
 
-func CacheUserFromDatabaseUser(user *DatabaseUser) *CacheUser {
+// CacheUserFromDatabaseUser - Translates a DatabaseUser to a CacheUser.
+func CacheUserFromDatabaseUser(user *DBUser) *CacheUser {
 	cU := CacheUser{
 		ID:           user.ID,
 		TokenExpires: user.TokenExpires,
@@ -47,4 +49,11 @@ func CacheUserFromDatabaseUser(user *DatabaseUser) *CacheUser {
 	}
 
 	return &cU
+}
+
+// DBUserFromAuthUser - Translates an AuthUser to a DBUser.
+func DBUserFromAuthUser(authUser *AuthUser) *DBUser {
+	return &DBUser{
+		ID: authUser.ID,
+	}
 }

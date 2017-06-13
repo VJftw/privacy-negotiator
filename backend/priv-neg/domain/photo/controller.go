@@ -14,27 +14,27 @@ import (
 
 // Controller - Handles photos
 type Controller struct {
-	logger       *log.Logger
-	render       *render.Render
-	photoManager Managable
-	userManager  user.Managable
-	syncQueue    *SyncQueue
+	logger         *log.Logger
+	render         *render.Render
+	photoRedis     *RedisManager
+	userRedis      *user.RedisManager
+	photoPublisher *Publisher
 }
 
 // NewController - Returns a new controller for photos.
 func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,
-	photoManager Managable,
-	userManager user.Managable,
-	syncQueue *SyncQueue,
+	photoRedisManager *RedisManager,
+	userRedisManager *user.RedisManager,
+	photoPublisher *Publisher,
 ) *Controller {
 	return &Controller{
-		logger:       controllerLogger,
-		render:       renderer,
-		photoManager: photoManager,
-		userManager:  userManager,
-		syncQueue:    syncQueue,
+		logger:         controllerLogger,
+		render:         renderer,
+		photoRedis:     photoRedisManager,
+		userRedis:      userRedisManager,
+		photoPublisher: photoPublisher,
 	}
 }
 
@@ -61,16 +61,16 @@ func (c Controller) Setup(router *mux.Router) {
 
 func (c Controller) getPhotosHandler(w http.ResponseWriter, r *http.Request) {
 	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
-	facebookUser, _ := c.userManager.FindByID(facebookUserID)
+	facebookUser, _ := c.userRedis.FindByID(facebookUserID)
 	idsJSON := r.URL.Query().Get("ids")
 	var ids []string
 	// JSON unmarshal url query ids
 	json.Unmarshal([]byte(idsJSON), &ids)
 
-	returnPhotos := []*FacebookPhoto{}
+	returnPhotos := []*WebPhoto{}
 	// Find batch fb photo ids on redis.
 	for _, facebookPhotoID := range ids {
-		facebookPhoto, err := c.photoManager.FindByID(facebookPhotoID, facebookUser)
+		facebookPhoto, err := c.photoRedis.FindByIDWithUserCategories(facebookPhotoID, facebookUser)
 		if err == nil {
 			returnPhotos = append(returnPhotos, facebookPhoto)
 		}
@@ -80,32 +80,34 @@ func (c Controller) getPhotosHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c Controller) postPhotoHandler(w http.ResponseWriter, r *http.Request) {
-	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
-	facebookUser, _ := c.userManager.FindByID(facebookUserID)
-	photo, err := FromRequest(r)
+	userID := middlewares.FBUserIDFromContext(r.Context())
+	user, _ := c.userRedis.FindByID(userID)
+	webPhoto, err := FromRequest(r, user)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	c.photoManager.Save(photo, facebookUser)
+	cachePhoto := CachePhotoFromWebPhoto(webPhoto)
 
-	c.syncQueue.Publish(photo)
+	c.photoRedis.Save(cachePhoto)
 
-	c.render.JSON(w, http.StatusCreated, photo)
+	c.photoPublisher.Publish(cachePhoto)
+
+	c.render.JSON(w, http.StatusCreated, webPhoto)
 }
 
-func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
-	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
-	facebookUser, _ := c.userManager.FindByID(facebookUserID)
-	vars := mux.Vars(r)
-	photoID := vars["id"]
-
-	photo, _ := c.photoManager.FindByID(photoID, facebookUser)
-
-	FromPutRequest(r, photo, facebookUser)
-
-	c.photoManager.Save(photo, facebookUser)
-
-	c.render.JSON(w, http.StatusOK, photo)
-}
+// func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
+// 	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
+// 	facebookUser, _ := c.userManager.FindByID(facebookUserID)
+// 	vars := mux.Vars(r)
+// 	photoID := vars["id"]
+//
+// 	photo, _ := c.photoManager.FindByID(photoID, facebookUser)
+//
+// 	FromPutRequest(r, photo, facebookUser)
+//
+// 	c.photoManager.Save(photo, facebookUser)
+//
+// 	c.render.JSON(w, http.StatusOK, photo)
+// }
