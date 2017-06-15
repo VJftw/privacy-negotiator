@@ -5,7 +5,7 @@ import {Category} from './category.model';
 @Injectable()
 export class CategoryService {
 
-  protected categories: Category[];
+  protected categories: string[];
 
   constructor(
     private apiService: APIService
@@ -13,23 +13,34 @@ export class CategoryService {
     this.categories = [];
   }
 
-  public getCategories(): Category[] {
+  public getCategories(): string[] {
     return this.categories;
   }
 
-  public updateCategories(): Promise<Category[]> {
+  public updateCategories(): Promise<string[]> {
     const uri = '/v1/categories';
 
     return this.apiService.get(uri).then(response => {
-      console.log(response);
+      for (const cat of response.json()) {
+        this.categories.push(cat);
+      }
     });
   }
 
-  public createCategory(c: Category): Promise<Category[]> {
+  public createCategory(c: string): boolean {
     const uri = '/v1/categories';
 
-    return this.apiService.post(uri, c).then(response => {
+    if (this.categories.includes(c)) {
+      console.log('Already have' + c);
+      return false;
+    }
+
+    this.categories.push(c);
+
+    this.apiService.post(uri, new Category(c)).then(response => {
       console.log(response);
     });
+
+    return true;
   }
 }

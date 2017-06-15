@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-facebook';
 import { environment } from '../environments/environment';
 import { Router, CanActivate } from '@angular/router';
 import { APIService } from './api.service';
+import {CategoryService} from './categories/category.service';
 
 @Injectable()
 export class AuthService implements CanActivate {
@@ -14,6 +14,7 @@ export class AuthService implements CanActivate {
   constructor(
     public fb: FacebookService,
     private apiService: APIService,
+    private categoryService: CategoryService,
     private router: Router,
 
   ) {
@@ -36,7 +37,7 @@ export class AuthService implements CanActivate {
 
   public isAuthenticated(): boolean {
     if (this.fbUser) {
-      return true && this.apiService.isAuthenticated();
+      return this.apiService.isAuthenticated();
     }
     console.log('Not authenticated with Facebook.');
     return false;
@@ -59,6 +60,7 @@ export class AuthService implements CanActivate {
         this.fbUser.id = response.authResponse.userID;
         this.authenticateWithApi(response)
           .then(() => {
+            this.categoryService.updateCategories();
             this.router.navigate(['/photos']);
           });
       })

@@ -30,7 +30,8 @@ type DBUser struct {
 // CacheUserFromAuthUser - Translates a AuthUser to a CacheUser.
 func CacheUserFromAuthUser(authUser *AuthUser) *CacheUser {
 	return &CacheUser{
-		ID: authUser.ID,
+		ID:         authUser.ID,
+		Categories: []string{},
 	}
 }
 

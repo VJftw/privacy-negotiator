@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"fmt"
+
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 )
 
@@ -34,29 +36,40 @@ type photoRequest struct {
 	Categories []string `json:"categories"`
 }
 
-// FromPutRequest - Modifies a given FacebookPhoto with data from a request for a given User.
-// func FromPutRequest(r *http.Request, p *FacebookPhoto, u *user.FacebookUser) error {
-// 	var photoJSON requestPUT
-// 	err := json.NewDecoder(r.Body).Decode(&photoJSON)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	p.Categories = []category.Category{}
-//
-// 	for _, cat := range photoJSON.Categories {
-// 		c := category.Category{
-// 			Name:           cat,
-// 			FacebookUserID: u.FacebookUserID,
-// 		}
-//
-// 		p.Categories = append(p.Categories, c)
-// 	}
-//
-// 	return nil
-//
-// }
-//
-// type requestPUT struct {
-// 	Categories []string `json:"categories"`
-// }
+//FromPutRequest - Modifies a given FacebookPhoto with data from a request for a given User.
+func FromPutRequest(r *http.Request, p *domain.CachePhoto, u *domain.CacheUser) (*domain.WebPhoto, error) {
+	var jsonPhoto requestPUT
+	err := json.NewDecoder(r.Body).Decode(&jsonPhoto)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, cat := range jsonPhoto.Categories {
+		found := false
+		for _, existCat := range u.Categories {
+			if cat == existCat {
+				found = true
+			}
+		}
+		if !found {
+			return nil, errors.New(fmt.Sprintf("Could not find category: %s", cat))
+		}
+	}
+
+	webPhoto := &domain.WebPhoto{
+		ID: p.ID,
+	}
+
+	webPhoto.Categories = []string{}
+
+	for _, cat := range jsonPhoto.Categories {
+		webPhoto.Categories = append(webPhoto.Categories, cat)
+	}
+
+	return webPhoto, nil
+
+}
+
+type requestPUT struct {
+	Categories []string `json:"categories"`
+}

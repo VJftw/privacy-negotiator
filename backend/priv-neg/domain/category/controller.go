@@ -40,6 +40,11 @@ func (c Controller) Setup(router *mux.Router) {
 		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.getCategoriesHandler)),
 	)).Methods("GET")
+
+	router.Handle("/v1/categories", negroni.New(
+		middlewares.NewJWT(c.render),
+		negroni.Wrap(http.HandlerFunc(c.postCategoriesHandler)),
+	)).Methods("POST")
 }
 
 func (c Controller) getCategoriesHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,5 +69,5 @@ func (c Controller) postCategoriesHandler(w http.ResponseWriter, r *http.Request
 
 	c.categoryPublisher.Publish(dbCategory)
 
-	c.render.JSON(w, http.StatusOK, cacheUser.Categories)
+	c.render.JSON(w, http.StatusCreated, cacheUser.Categories)
 }

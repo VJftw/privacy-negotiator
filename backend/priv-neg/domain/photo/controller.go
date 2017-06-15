@@ -51,9 +51,9 @@ func (c Controller) Setup(router *mux.Router) {
 		negroni.Wrap(http.HandlerFunc(c.postPhotoHandler)),
 	)).Methods("POST")
 
-	router.Handle("/v1/photos/{id:[0-9]+}", negroni.New(
+	router.Handle("/v1/photos/{id}", negroni.New(
 		middlewares.NewJWT(c.render),
-		negroni.Wrap(http.HandlerFunc(c.postPhotoHandler)),
+		negroni.Wrap(http.HandlerFunc(c.putPhotoHandler)),
 	)).Methods("PUT")
 
 	log.Println("Set up Photo controller.")
@@ -98,17 +98,27 @@ func (c Controller) postPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	c.render.JSON(w, http.StatusCreated, webPhoto)
 }
 
-// func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
-// 	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
-// 	facebookUser, _ := c.userManager.FindByID(facebookUserID)
-// 	vars := mux.Vars(r)
-// 	photoID := vars["id"]
-//
-// 	photo, _ := c.photoManager.FindByID(photoID, facebookUser)
-//
-// 	FromPutRequest(r, photo, facebookUser)
-//
-// 	c.photoManager.Save(photo, facebookUser)
-//
-// 	c.render.JSON(w, http.StatusOK, photo)
-// }
+func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
+	userID := middlewares.FBUserIDFromContext(r.Context())
+	cacheUser, _ := c.userRedis.FindByID(userID)
+	vars := mux.Vars(r)
+	idPhoto := vars["id"]
+
+	cachePhoto, err := c.photoRedis.FindByID(idPhoto)
+	if err != nil {
+		c.render.JSON(w, http.StatusNotFound, nil)
+		return
+	}
+
+	webPhoto, err := FromPutRequest(r, cachePhoto, cacheUser)
+	if err != nil {
+		c.render.JSON(w, http.StatusBadRequest, nil)
+		return
+	}
+
+	c.photoRedis.SavePhotoWithUserCategories(webPhoto, cacheUser)
+
+	// Add to DB queue to persist relational data
+
+	c.render.JSON(w, http.StatusOK, webPhoto)
+}

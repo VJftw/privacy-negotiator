@@ -34,6 +34,7 @@ func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
 		TaggedUsers: cachePhoto.TaggedUsers,
 		Pending:     cachePhoto.Pending,
 		Uploader:    cachePhoto.Uploader,
+		Categories:  []string{},
 	}
 }
 

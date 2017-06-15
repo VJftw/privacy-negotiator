@@ -66,6 +66,15 @@ export class APIService {
     .catch(this.handleError);
   }
 
+  public put(resource: string, body: any): Promise<any> {
+    return this.http.put(
+      environment.apiEndpoint + resource,
+      JSON.stringify(body),
+      {headers: this.headers}
+    ).toPromise()
+      .catch(this.handleError);
+  }
+
   public get(resource: string): Promise<any> {
     return this.http.get(
       environment.apiEndpoint + resource,

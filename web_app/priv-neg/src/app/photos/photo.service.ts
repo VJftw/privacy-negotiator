@@ -38,6 +38,12 @@ export class PhotoService implements Channel {
   public updatePhoto(photo: Photo) {
     this.photos.set(photo.id, photo);
     // send PUT request to API
+    this.apiService.put(
+      '/v1/photos/' + photo.id,
+      photo
+    ).then(response => {
+      console.log(response);
+    });
   }
 
   public getPhotoById(photoId: string): Photo {

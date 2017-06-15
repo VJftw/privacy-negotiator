@@ -30,6 +30,7 @@ export class Photo {
   negotiable = false;
   pending = false;
   taggedUsers: FBUser[] = [];
+  categories: string[] = [];
 
   public static fromFBPhoto(fp: FBPhoto): Photo {
     const p = new Photo();
@@ -52,6 +53,8 @@ export class Photo {
       p.taggedUsers.push(fbUser);
     }
 
+    p.categories = ap.categories;
+
     return p;
   }
 }
@@ -60,4 +63,5 @@ export class APIPhoto {
   id: string;
   taggedUsers: string[] = [];
   pending = false;
+  categories: string[] = [];
 }

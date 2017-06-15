@@ -84,9 +84,32 @@ func (m *RedisManager) FindByIDWithUserCategories(id string, user *domain.CacheU
 	))
 
 	if jsonPhotoCategories != nil {
-		json.Unmarshal(jsonPhotoCategories, webPhoto.Categories)
+		jsonCategories := []string{}
+		json.Unmarshal(jsonPhotoCategories, &jsonCategories)
+		fmt.Println(jsonCategories)
+		webPhoto.Categories = jsonCategories
+		fmt.Println(webPhoto)
 		m.cacheLogger.Printf("Got photo for user %s:%s", webPhoto.ID, user.ID)
 	}
 
 	return webPhoto, nil
+}
+
+func (m *RedisManager) SavePhotoWithUserCategories(photo *domain.WebPhoto, user *domain.CacheUser) error {
+	jsonCategories, err := json.Marshal(photo.Categories)
+	if err != nil {
+		return err
+	}
+
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
+		"SET",
+		fmt.Sprintf("%s:%s", photo.ID, user.ID),
+		jsonCategories,
+	)
+
+	m.cacheLogger.Printf("Saved photo for user %s:%s", photo.ID, user.ID)
+
+	return nil
 }

@@ -19,6 +19,7 @@ import { APIService } from './api.service';
 import { WebSocketService } from './websocket.service';
 import { AuthService } from './auth.service';
 import { PhotoService } from './photos/photo.service';
+import {CategoryService} from './categories/category.service';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { PhotoService } from './photos/photo.service';
     WebSocketService,
     AuthService,
     FacebookService,
-    PhotoService
+    PhotoService,
+    CategoryService
   ],
   bootstrap: [AppComponent]
 })

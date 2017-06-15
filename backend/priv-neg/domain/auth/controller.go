@@ -60,7 +60,12 @@ func (c Controller) authHandler(w http.ResponseWriter, r *http.Request) {
 	// Add GetLongLivedToken to queue
 	c.authPublisher.Publish(webUser)
 
-	// Save to Redis
-	cacheUser := domain.CacheUserFromAuthUser(webUser)
-	c.userRedis.Save(cacheUser)
+	// get existing cache user if exists.
+	_, err = c.userRedis.FindByID(webUser.ID)
+
+	if err != nil {
+		cacheUser := domain.CacheUserFromAuthUser(webUser)
+		c.userRedis.Save(cacheUser)
+	}
+
 }
