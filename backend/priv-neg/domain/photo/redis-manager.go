@@ -95,6 +95,7 @@ func (m *RedisManager) FindByIDWithUserCategories(id string, user *domain.CacheU
 	return webPhoto, nil
 }
 
+// SavePhotoWithUserCategories - Saves a categories defined by a user for a photo.
 func (m *RedisManager) SavePhotoWithUserCategories(photo *domain.WebPhoto, user *domain.CacheUser) error {
 	jsonCategories, err := json.Marshal(photo.Categories)
 	if err != nil {

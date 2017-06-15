@@ -52,7 +52,7 @@ func FromPutRequest(r *http.Request, p *domain.CachePhoto, u *domain.CacheUser) 
 			}
 		}
 		if !found {
-			return nil, errors.New(fmt.Sprintf("Could not find category: %s", cat))
+			return nil, fmt.Errorf("could not find category: %s", cat)
 		}
 	}
 
