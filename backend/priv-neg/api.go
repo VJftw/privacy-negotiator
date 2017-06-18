@@ -9,6 +9,7 @@ import (
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/friend"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
@@ -37,6 +38,7 @@ func NewPrivNegAPI() App {
 
 	userRedisManager := user.NewRedisManager(cacheLogger, redisCache)
 	photoRedisManager := photo.NewRedisManager(cacheLogger, redisCache)
+	friendRedisManager := friend.NewRedisManager(cacheLogger, redisCache)
 
 	authPublisher := auth.NewPublisher(queueLogger, rabbitMQ)
 	syncPublisher := photo.NewPublisher(queueLogger, rabbitMQ)
@@ -48,6 +50,7 @@ func NewPrivNegAPI() App {
 	userController := user.NewController(controllerLogger, renderer, userRedisManager)
 	photoController := photo.NewController(controllerLogger, renderer, photoRedisManager, userRedisManager, syncPublisher)
 	categoryController := category.NewController(controllerLogger, renderer, userRedisManager, categoryPublisher)
+	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager)
 	websocketController := websocket.NewController(wsLogger, renderer, redisCache)
 
 	privNegAPI.Router = routers.NewMuxRouter([]routers.Routable{
@@ -55,6 +58,7 @@ func NewPrivNegAPI() App {
 		userController,
 		photoController,
 		categoryController,
+		friendController,
 		websocketController,
 	}, true)
 

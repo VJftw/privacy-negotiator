@@ -1,0 +1,29 @@
+<div class="search-results row" infiniteScroll
+     [infiniteScrollDistance]="0"
+     [infiniteScrollThrottle]="300"
+     (scrolled)="updateFriends()">
+  <div class="col s12 m6 l4" *ngFor="let friend of getFriends()">
+    <div class="card small hoverable sticky-action">
+      <div class="card-image waves-effect waves-block waves-light">
+        <img src="{{friend.picture}}">
+        <span class="card-title"></span>
+
+      </div>
+      <div class="card-content">
+        {{friend.name}}
+      </div>
+      <div class="card-action">
+
+      </div>
+      <div class="card-reveal">
+        <span class="card-title grey-text text-darken-4">{{friend.id}}<i class="material-icons right">close</i></span>
+
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="lock" class="progress">
+    <div class="indeterminate blue"></div>
+  </div>
+
+</div>
