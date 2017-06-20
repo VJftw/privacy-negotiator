@@ -2,7 +2,7 @@ GIT_VERSION = $(shell git describe --always)
 ENVIRONMENT ?= beta
 
 install:
-	docker run --rm -v ${CURDIR}/priv-neg:/app -w /app node:8 npm install
+	docker run --rm -v ${CURDIR}/priv-neg:/app -w /app node:8 npm install --silent
 
 build: install
 	# TODO: Better environment setup

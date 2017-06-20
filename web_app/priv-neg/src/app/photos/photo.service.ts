@@ -50,7 +50,7 @@ export class PhotoService implements Channel {
     return this.photos.get(photoId);
   }
 
-  public updateTaggedPhotosForUser(fbUser: FBUser): Promise<Photo[]> {
+  public updateTaggedPhotosForUser(fbUser: FBUser): Promise<void> {
     let uri = '/' + fbUser.id + '/photos?fields=id,created_time,from,target,images,album';
 
     if (this.offset) {
@@ -63,7 +63,7 @@ export class PhotoService implements Channel {
           this.offset = response.paging.cursors.after;
         }
         const fbPhotos = response.data as FBPhoto[];
-        this.processFBPhotos(fbPhotos);
+        return this.processFBPhotos(fbPhotos);
       })
       .catch(e => console.error(e))
     ;

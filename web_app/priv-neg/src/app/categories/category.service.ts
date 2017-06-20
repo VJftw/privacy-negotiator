@@ -17,7 +17,7 @@ export class CategoryService {
     return this.categories;
   }
 
-  public updateCategories(): Promise<string[]> {
+  public updateCategories(): Promise<void> {
     const uri = '/v1/categories';
 
     return this.apiService.get(uri).then(response => {
