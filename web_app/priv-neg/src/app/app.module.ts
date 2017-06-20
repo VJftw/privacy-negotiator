@@ -12,7 +12,7 @@ import { AppComponent } from './app.component';
 import { IndexComponent } from './index/index.component';
 import { PhotosComponent } from './photos/photos.component';
 import { PhotoDetailComponent } from './photos/photo-detail.component';
-import { FriendsComponent } from "./friends/friends.component";
+import { FriendsComponent } from './friends/friends.component';
 
 import { FacebookService } from 'ngx-facebook';
 import { APIService } from './api.service';
@@ -20,7 +20,7 @@ import { WebSocketService } from './websocket.service';
 import { AuthService } from './auth.service';
 import { PhotoService } from './photos/photo.service';
 import { CategoryService } from './categories/category.service';
-import { FriendService } from "./friends/friend.service";
+import { FriendService } from './friends/friend.service';
 
 @NgModule({
   declarations: [

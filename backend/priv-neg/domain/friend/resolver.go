@@ -9,6 +9,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 )
 
+// FromRequest - Returns a WebFriendship from a request and authenticated user.
 func FromRequest(r *http.Request, user *domain.CacheUser) (*domain.WebFriendship, error) {
 	webFriendship := &domain.WebFriendship{
 		From: user.ID,

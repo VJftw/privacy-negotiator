@@ -1,7 +1,7 @@
 import { AuthService } from '../auth.service';
 import { Component, OnInit } from '@angular/core';
-import { FriendService } from "./friend.service";
-import {Friend} from "./friend.model";
+import { FriendService } from './friend.service';
+import {Friend} from './friend.model';
 
 
 @Component({

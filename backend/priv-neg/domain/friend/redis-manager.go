@@ -46,6 +46,7 @@ func (m *RedisManager) Save(u *domain.CacheUser, f *domain.CacheFriendship) erro
 	return nil
 }
 
+// FindByIDAndUser - Returns a CacheFriendship given a friend user id and the authenticated user.
 func (m *RedisManager) FindByIDAndUser(fUserID string, cacheUser *domain.CacheUser) (*domain.CacheFriendship, error) {
 	cacheFriend := &domain.CacheFriendship{}
 

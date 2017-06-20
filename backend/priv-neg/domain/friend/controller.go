@@ -64,6 +64,9 @@ func (c Controller) getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	// Find batch fb photo ids on redis.
 	for _, friendUserID := range ids {
 		cacheFriendship, err := c.friendRedis.FindByIDAndUser(friendUserID, facebookUser)
+		if err != nil {
+			break
+		}
 		webFriendship := domain.WebFriendshipFromCacheFriendshipAndCacheUser(cacheFriendship, facebookUser)
 		if err == nil {
 			returnFriendships = append(returnFriendships, webFriendship)
