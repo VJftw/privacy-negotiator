@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/friend"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
@@ -16,10 +17,11 @@ import (
 
 // Consumer - Consumer for authentication. Gets a long-lived Facebook API token.
 type Consumer struct {
-	queue   amqp.Queue
-	channel *amqp.Channel
-	logger  *log.Logger
-	userDB  *user.DBManager
+	queue           amqp.Queue
+	channel         *amqp.Channel
+	logger          *log.Logger
+	userDB          *user.DBManager
+	friendPublisher *friend.Publisher
 }
 
 // NewConsumer - Returns a new consumer for authentication.
@@ -27,6 +29,7 @@ func NewConsumer(
 	queueLogger *log.Logger,
 	ch *amqp.Channel,
 	userDBManager *user.DBManager,
+	friendPublisher *friend.Publisher,
 ) *Consumer {
 	queue, err := ch.QueueDeclare(
 		"auth-long-token", // name
@@ -38,10 +41,11 @@ func NewConsumer(
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
 	return &Consumer{
-		logger:  queueLogger,
-		channel: ch,
-		queue:   queue,
-		userDB:  userDBManager,
+		logger:          queueLogger,
+		channel:         ch,
+		queue:           queue,
+		userDB:          userDBManager,
+		friendPublisher: friendPublisher,
 	}
 }
 
@@ -86,6 +90,9 @@ func (c *Consumer) process(d amqp.Delivery) {
 	dbUser.TokenExpires = time.Now().Add(duration)
 
 	c.userDB.Save(dbUser)
+
+	// This Queue can determine clique and tie-strength
+	c.friendPublisher.Publish(dbUser)
 
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed AuthQueue for %s in %s", dbUser.ID, elapsed)

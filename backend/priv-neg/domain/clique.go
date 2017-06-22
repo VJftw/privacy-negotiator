@@ -8,9 +8,32 @@ type CacheClique struct {
 	Name string `json:"name"`
 }
 
+type WebClique struct {
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	UserIDs []string `json:"users"`
+}
+
 // DBClique - Representation of a Clique stored in the database
 type DBClique struct {
-	ID string
+	ID            string         `gorm:"primary_key"`
+	DBUserCliques []DBUserClique `gorm:"ForeignKey:CliqueID"`
+}
+
+type DBUserClique struct {
+	CliqueID string `gorm:"primary_key"`
+	UserID   string `gorm:"primary_key"`
+	Name     string
+}
+
+func (c *DBClique) GetUserIDs() []string {
+	userIDs := []string{}
+
+	for _, userClique := range c.DBUserCliques {
+		userIDs = append(userIDs, userClique.UserID)
+	}
+
+	return userIDs
 }
 
 // NewCacheClique - Returns a new CacheClique with UUID
@@ -20,9 +43,16 @@ func NewCacheClique() *CacheClique {
 	}
 }
 
-// NewDBClique - Returns a new DBClique with UUID
-func NewDBClique() *DBClique {
+func DBCliqueFromCacheClique(cacheClique *CacheClique) *DBClique {
 	return &DBClique{
-		ID: uuid.NewV4().String(),
+		ID: cacheClique.ID,
+	}
+}
+
+func DBUserCliqueFromCacheCliqueAndUserID(cacheClique *CacheClique, userID string) *DBUserClique {
+	return &DBUserClique{
+		CliqueID: cacheClique.ID,
+		Name:     cacheClique.Name,
+		UserID:   userID,
 	}
 }

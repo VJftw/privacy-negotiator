@@ -36,20 +36,27 @@ func NewPrivNegWorker(queue string) App {
 		&domain.DBUser{},
 		&domain.DBPhoto{},
 		&domain.DBCategory{},
+		&domain.DBClique{},
+		&domain.DBUserClique{},
 	)
 	redisCache := persisters.NewRedisDB(cacheLogger)
 
 	photoRedisManager := photo.NewRedisManager(cacheLogger, redisCache)
-	userDBManager := user.NewDBManager(dbLogger, gormDB)
 	userRedisManager := user.NewRedisManager(cacheLogger, redisCache)
-	categoryDBManager := category.NewDBManager(dbLogger, gormDB)
 	friendRedisManager := friend.NewRedisManager(cacheLogger, redisCache)
 
+	userDBManager := user.NewDBManager(dbLogger, gormDB)
+	categoryDBManager := category.NewDBManager(dbLogger, gormDB)
+	cliqueDBManager := friend.NewDBManager(dbLogger, gormDB)
+
 	rabbitMQ, conn := persisters.NewQueue(queueLogger)
+
+	friendPublisher := friend.NewPublisher(queueLogger, rabbitMQ)
+
 	var q persisters.Consumer
 	switch queue {
 	case "auth-long-token":
-		q = auth.NewConsumer(queueLogger, rabbitMQ, userDBManager)
+		q = auth.NewConsumer(queueLogger, rabbitMQ, userDBManager, friendPublisher)
 		break
 	case "photo-tags":
 		q = photo.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, photoRedisManager)
@@ -58,7 +65,7 @@ func NewPrivNegWorker(queue string) App {
 		q = category.NewConsumer(queueLogger, rabbitMQ, categoryDBManager)
 		break
 	case "community-detection":
-		q = friend.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, friendRedisManager)
+		q = friend.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, friendRedisManager, cliqueDBManager)
 		break
 	default:
 		panic("Invalid queue selected")

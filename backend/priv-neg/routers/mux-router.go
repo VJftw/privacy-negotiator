@@ -31,7 +31,7 @@ func NewMuxRouter(controllers []Routable, logging bool) *MuxRouter {
 			"Content-Type",
 		},
 		AllowedMethods: []string{"GET", "POST", "PUT"},
-		Debug:          true,
+		//Debug:          true,
 	}))
 
 	for _, controller := range controllers {

@@ -15,11 +15,10 @@ import (
 
 // Controller - Handles users
 type Controller struct {
-	logger          *log.Logger
-	render          *render.Render
-	userRedis       *user.RedisManager
-	friendRedis     *RedisManager
-	friendPublisher *Publisher
+	logger      *log.Logger
+	render      *render.Render
+	userRedis   *user.RedisManager
+	friendRedis *RedisManager
 }
 
 // NewController - returns a new controller for users.
@@ -28,14 +27,12 @@ func NewController(
 	renderer *render.Render,
 	userRedisManager *user.RedisManager,
 	friendRedisManager *RedisManager,
-	friendPublisher *Publisher,
 ) *Controller {
 	return &Controller{
-		logger:          controllerLogger,
-		render:          renderer,
-		userRedis:       userRedisManager,
-		friendRedis:     friendRedisManager,
-		friendPublisher: friendPublisher,
+		logger:      controllerLogger,
+		render:      renderer,
+		userRedis:   userRedisManager,
+		friendRedis: friendRedisManager,
 	}
 }
 
@@ -105,9 +102,6 @@ func (c Controller) postFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	cacheFriendship := domain.CacheFriendshipFromWebFriendship(webFriendship)
 
 	c.friendRedis.Save(cacheUser, cacheFriendship)
-
-	// This Queue can determine clique and tie-strength
-	c.friendPublisher.Publish(webFriendship)
 
 	c.render.JSON(w, http.StatusCreated, webFriendship)
 

@@ -19,6 +19,13 @@ type WebFriendship struct {
 	TieStrength int      `json:"tieStrength"`
 }
 
+func QueueFriendshipFromWebFriendshipAndSessionUser(w *WebFriendship, s *CacheUser) *QueueFriendship {
+	return &QueueFriendship{
+		From: s.ID,
+		To:   w.ID,
+	}
+}
+
 // CacheFriendshipFromWebFriendship - Converts a WebFriendship into a CacheFriendship
 func CacheFriendshipFromWebFriendship(w *WebFriendship) *CacheFriendship {
 	return &CacheFriendship{

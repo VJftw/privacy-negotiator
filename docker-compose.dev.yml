@@ -148,7 +148,7 @@ services:
   # Angular 4 Web App
   web:
     image: node:8
-    command: node_modules/.bin/ng serve --host=0.0.0.0
+    command: node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check
     working_dir: /app
     volumes:
       - "./web_app/priv-neg:/app"

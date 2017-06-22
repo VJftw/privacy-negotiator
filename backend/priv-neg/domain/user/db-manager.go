@@ -38,14 +38,26 @@ func (m *DBManager) Save(u *domain.DBUser) error {
 
 // FindByID - Returns a user given its ID, nil if not found.
 func (m *DBManager) FindByID(id string) (*domain.DBUser, error) {
+	dbUserCliques := []domain.DBUserClique{}
 	dbUser := &domain.DBUser{}
 
-	m.gorm.Where("id = ?", id).First(dbUser)
+	err := m.gorm.Where("id = ?", id).First(dbUser).Error
+	if err != nil {
+		m.dbLogger.Printf("Error: %v", err)
+		return nil, err
+	}
+	err = m.gorm.Model(dbUser).Related(&dbUserCliques, "DBUserCliques").Error
+	if err != nil {
+		m.dbLogger.Printf("Error: %v", err)
+		return nil, err
+	}
+	dbUser.DBUserCliques = dbUserCliques
+
 	if dbUser.ID == "" {
 		m.dbLogger.Printf("Could not find user %s", id)
 		return nil, errors.New("Not found")
 	}
 
-	m.dbLogger.Printf("Got user %s", dbUser.ID)
+	m.dbLogger.Printf("Got user %v", dbUser)
 	return dbUser, nil
 }

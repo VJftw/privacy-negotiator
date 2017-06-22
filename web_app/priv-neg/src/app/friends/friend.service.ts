@@ -3,12 +3,15 @@ import { FacebookService } from 'ngx-facebook';
 import {APIFriend, FBFriend, Friend} from './friend.model';
 import {FBUser} from '../auth.service';
 import {APIService} from '../api.service';
+import {APIClique, Clique} from './clique.model';
+import {Channel} from '../websocket.service';
 
 
 @Injectable()
-export class FriendService {
+export class FriendService implements Channel {
 
   private friends: Map<string, Friend>;
+  private cliques: Map<string, Clique>;
   protected offset: string;
 
 
@@ -17,11 +20,29 @@ export class FriendService {
     private apiService: APIService
   ) {
     this.friends = new Map();
+    this.cliques = new Map();
   }
 
   public getFriends() {
     return Array.from(this.friends.values());
   }
+
+  public getName(): string {
+    return 'clique';
+  }
+
+  public onWebsocketMessage(data) {
+    const apiClique = data as APIClique;
+    if (!this.cliques.has(apiClique.id)) {
+      const c = new Clique();
+      c.name = apiClique.name
+      this.cliques.set(apiClique.id, c);
+    } else {
+      // Merge cliques
+      // this.cliques.get(apiClique)
+    }
+  }
+
 
   public updateFriendsForUser(fbUser: FBUser, offset = null): Promise<any> {
     let uri = '/' + fbUser.id + '/friends?fields=id,name,picture{url}';
@@ -72,20 +93,8 @@ export class FriendService {
         }
       }
 
-      this.addNewFriendsToAPI(nonExistingFriends);
-
     });
 
-  }
-
-  private addNewFriendsToAPI(newFriends: FBFriend[]) {
-
-    for (const friend of newFriends) {
-      this.apiService.post(
-        '/v1/friends',
-        friend
-      ).then(response => console.log(response));
-    }
   }
 
 

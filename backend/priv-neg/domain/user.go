@@ -25,6 +25,8 @@ type DBUser struct {
 	TokenExpires   time.Time
 
 	Categories []DBCategory
+
+	DBUserCliques []DBUserClique `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
 }
 
 // CacheUserFromAuthUser - Translates a AuthUser to a CacheUser.
