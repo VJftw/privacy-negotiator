@@ -60,7 +60,7 @@ export class FriendService {
       const nonExistingFriends = [];
 
       for (const apiFriend of existingFriends) {
-        const f = Friend.UpdateFromAPIFriend(this.friends.get(apiFriend.to), apiFriend);
+        const f = Friend.UpdateFromAPIFriend(this.friends.get(apiFriend.id), apiFriend);
         this.friends.set(f.id, f);
 
         existingFriendIds.push(f.id);

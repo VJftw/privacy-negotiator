@@ -17,11 +17,12 @@ import (
 
 // Consumer - Consumer for getting Community Detection.
 type Consumer struct {
-	queue     amqp.Queue
-	channel   *amqp.Channel
-	logger    *log.Logger
-	userDB    *user.DBManager
-	userRedis *user.RedisManager
+	queue       amqp.Queue
+	channel     *amqp.Channel
+	logger      *log.Logger
+	userDB      *user.DBManager
+	userRedis   *user.RedisManager
+	friendRedis *RedisManager
 }
 
 // NewConsumer - Returns a new consumer.
@@ -30,6 +31,7 @@ func NewConsumer(
 	ch *amqp.Channel,
 	userDBManager *user.DBManager,
 	userRedisManager *user.RedisManager,
+	friendRedisManager *RedisManager,
 ) *Consumer {
 	queue, err := ch.QueueDeclare(
 		"community-detection", // name
@@ -41,11 +43,12 @@ func NewConsumer(
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
 	return &Consumer{
-		logger:    queueLogger,
-		channel:   ch,
-		queue:     queue,
-		userDB:    userDBManager,
-		userRedis: userRedisManager,
+		logger:      queueLogger,
+		channel:     ch,
+		queue:       queue,
+		userDB:      userDBManager,
+		userRedis:   userRedisManager,
+		friendRedis: friendRedisManager,
 	}
 }
 
@@ -77,12 +80,18 @@ func (c *Consumer) Consume() {
 func (c *Consumer) process(d amqp.Delivery) {
 	start := time.Now()
 
-	webFriendship := &domain.WebFriendship{}
-	json.Unmarshal(d.Body, webFriendship)
+	queueFriendship := &domain.QueueFriendship{}
+	json.Unmarshal(d.Body, queueFriendship)
 
-	fromCacheUser, _ := c.userRedis.FindByID(webFriendship.From)
-	toCacheUser, _ := c.userRedis.FindByID(webFriendship.To)
-	c.logger.Printf("Started processing for new friendship %s:%s", fromCacheUser.ID, toCacheUser.ID)
+	fromDBUser, err := c.userDB.FindByID(queueFriendship.From)
+	if err != nil {
+		return
+	}
+	toDBUser, err := c.userDB.FindByID(queueFriendship.To)
+	if err != nil {
+		return
+	}
+	c.logger.Printf("Started processing for new friendship %s:%s", fromDBUser.ID, toDBUser.ID)
 
 	// k=3
 	// Given a new Facebook User.
@@ -93,34 +102,47 @@ func (c *Consumer) process(d amqp.Delivery) {
 	// 		* (Will probably hit API limit) Use Mutual Friends from Graph API! if length of result is >= k then a new clique can be formed.
 	//		* Use Redis Cache
 	//			* <userID>:friends | [<userID>, <userID>]
-	dbUser, _ := c.userDB.FindByID(toCacheUser.ID)
-	friendIDs := c.getFacebookFriendsForUser(dbUser, "", nil)
+	//			* <userID>:cliques | [<cliqueID>, <cliqueID>]
+	friendIDs := c.getFacebookFriendsForUser(toDBUser, "", nil)
 
 	mutualCliqueIDs := c.getMutualCliqueIDsForUserIDs(friendIDs)
 
 	// add user to mutualCliques
+	for _, mutualCliqueID := range mutualCliqueIDs {
+		clique := &domain.CacheClique{
+			ID: mutualCliqueID,
+		}
+		c.friendRedis.AddCliqueToUserID(toDBUser.ID, clique)
+	}
 
 	// Form new Cliques
 	for _, friendID := range friendIDs {
-		mutualFriends := c.getMutualFriendIDsForUserIDs(dbUser.ID, friendID)
+		mutualFriends := c.getMutualFriendIDsForUserIDs(toDBUser.ID, friendID)
 		if len(mutualFriends) >= 2 {
 			// Form clique
-
+			c.formClique(append(mutualFriends, toDBUser.ID))
 		}
 	}
 
-
 	elapsed := time.Since(start)
-	c.logger.Printf("Processed friendship %s:%s in %s", fromCacheUser.ID, toCacheUser.ID, elapsed)
+	c.logger.Printf("Processed friendship %s:%s in %s", fromDBUser.ID, toDBUser.ID, elapsed)
+}
+
+func (c *Consumer) formClique(friendIDs []string) {
+	clique := domain.NewCacheClique()
+
+	for _, friendID := range friendIDs {
+		c.friendRedis.AddCliqueToUserID(friendID, clique)
+	}
 }
 
 func (c *Consumer) getMutualCliqueIDsForUserIDs(friendIDs []string) []string {
 	mutualCliqueIDs := []string{}
 	for i, friendID := range friendIDs {
-		cliqueIDs := c.userRedis.GetCliqueIDsForUserID(friendID)
+		cliqueIDs := c.friendRedis.GetCliqueIDsForAUserID(friendID)
 		for _, cliqueID := range cliqueIDs {
 			for _, friendIDJ := range friendIDs[i:] {
-				friendJCliqueIDs := c.userRedis.GetCliquesForUserID(friendIDJ)
+				friendJCliqueIDs := c.friendRedis.GetCliqueIDsForAUserID(friendIDJ)
 				if isIn(cliqueID, friendJCliqueIDs) {
 					mutualCliqueIDs = append(mutualCliqueIDs, cliqueID)
 				}
@@ -133,8 +155,8 @@ func (c *Consumer) getMutualCliqueIDsForUserIDs(friendIDs []string) []string {
 
 func (c *Consumer) getMutualFriendIDsForUserIDs(a string, b string) []string {
 	mutualFriends := []string{}
-	aFriends := c.userRedis.getFriendsForUserID(a)
-	bFriends := c.userRedis.getFriendsForUserID(b)
+	aFriends := c.friendRedis.GetFriendIDsForAUserID(a)
+	bFriends := c.friendRedis.GetFriendIDsForAUserID(b)
 
 	for _, aFriend := range aFriends {
 		for _, bFriend := range bFriends {

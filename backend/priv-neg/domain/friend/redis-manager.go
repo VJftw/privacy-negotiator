@@ -72,3 +72,71 @@ func (m *RedisManager) FindByIDAndUser(fUserID string, cacheUser *domain.CacheUs
 	m.cacheLogger.Printf("Could not find friendship %s:%s", cacheUser.ID, cacheFriend.ID)
 	return nil, errors.New("Not found")
 }
+
+// GetFriendIDsForAUserID - Returns friend IDs for a given user ID
+func (m *RedisManager) GetFriendIDsForAUserID(fUserID string) []string {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	jsonFriends, err := redis.Bytes(redisConn.Do(
+		"HKEYS",
+		fmt.Sprintf("%s:friends", fUserID),
+		fUserID,
+	))
+
+	friends := []string{}
+
+	if err != nil {
+		return friends
+	}
+
+	if jsonFriends != nil {
+		json.Unmarshal(jsonFriends, friends)
+		m.cacheLogger.Printf("Got friends for %s", fUserID)
+
+		return friends
+	}
+
+	m.cacheLogger.Printf("Could not find friends for %s", fUserID)
+	return friends
+}
+
+// GetCliqueIDsForAUserID - Returns clique IDs for a given user ID
+func (m *RedisManager) GetCliqueIDsForAUserID(fUserID string) []string {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	jsonCliques, err := redis.Bytes(redisConn.Do(
+		"HKEYS",
+		fmt.Sprintf("%s:cliques", fUserID),
+		fUserID,
+	))
+
+	cliques := []string{}
+
+	if err != nil {
+		return cliques
+	}
+
+	if jsonCliques != nil {
+		json.Unmarshal(jsonCliques, cliques)
+		m.cacheLogger.Printf("Got cliques for %s", fUserID)
+
+		return cliques
+	}
+
+	m.cacheLogger.Printf("Could not find cliques for %s", fUserID)
+	return cliques
+}
+
+// AddCliqueToUserID - Adds a given clique to a user ID
+func (m *RedisManager) AddCliqueToUserID(fUserID string, clique *domain.CacheClique) {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
+		"HSET",
+		fmt.Sprintf("%s:cliques", fUserID),
+		clique.ID,
+		clique,
+	)
+
+	m.cacheLogger.Printf("Added clique %s to %s", clique.ID, fUserID)
+}

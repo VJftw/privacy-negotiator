@@ -7,6 +7,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/friend"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
@@ -42,6 +43,7 @@ func NewPrivNegWorker(queue string) App {
 	userDBManager := user.NewDBManager(dbLogger, gormDB)
 	userRedisManager := user.NewRedisManager(cacheLogger, redisCache)
 	categoryDBManager := category.NewDBManager(dbLogger, gormDB)
+	friendRedisManager := friend.NewRedisManager(cacheLogger, redisCache)
 
 	rabbitMQ, conn := persisters.NewQueue(queueLogger)
 	var q persisters.Consumer
@@ -54,6 +56,9 @@ func NewPrivNegWorker(queue string) App {
 		break
 	case "category-persist":
 		q = category.NewConsumer(queueLogger, rabbitMQ, categoryDBManager)
+		break
+	case "community-detection":
+		q = friend.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, friendRedisManager)
 		break
 	default:
 		panic("Invalid queue selected")

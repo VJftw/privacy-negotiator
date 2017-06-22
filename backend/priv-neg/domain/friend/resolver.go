@@ -10,10 +10,8 @@ import (
 )
 
 // FromRequest - Returns a WebFriendship from a request and authenticated user.
-func FromRequest(r *http.Request, user *domain.CacheUser) (*domain.WebFriendship, error) {
-	webFriendship := &domain.WebFriendship{
-		From: user.ID,
-	}
+func FromRequest(r *http.Request) (*domain.WebFriendship, error) {
+	webFriendship := &domain.WebFriendship{}
 
 	requestFriendship := &friendshipRequest{}
 	err := json.NewDecoder(r.Body).Decode(requestFriendship)
@@ -26,7 +24,7 @@ func FromRequest(r *http.Request, user *domain.CacheUser) (*domain.WebFriendship
 		return nil, errors.New("missing id")
 	}
 
-	webFriendship.To = requestFriendship.ID
+	webFriendship.ID = requestFriendship.ID
 
 	return webFriendship, nil
 }

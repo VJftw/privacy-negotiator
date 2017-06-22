@@ -15,10 +15,11 @@ import (
 
 // Controller - Handles users
 type Controller struct {
-	logger      *log.Logger
-	render      *render.Render
-	userRedis   *user.RedisManager
-	friendRedis *RedisManager
+	logger          *log.Logger
+	render          *render.Render
+	userRedis       *user.RedisManager
+	friendRedis     *RedisManager
+	friendPublisher *Publisher
 }
 
 // NewController - returns a new controller for users.
@@ -27,12 +28,14 @@ func NewController(
 	renderer *render.Render,
 	userRedisManager *user.RedisManager,
 	friendRedisManager *RedisManager,
+	friendPublisher *Publisher,
 ) *Controller {
 	return &Controller{
-		logger:      controllerLogger,
-		render:      renderer,
-		userRedis:   userRedisManager,
-		friendRedis: friendRedisManager,
+		logger:          controllerLogger,
+		render:          renderer,
+		userRedis:       userRedisManager,
+		friendRedis:     friendRedisManager,
+		friendPublisher: friendPublisher,
 	}
 }
 
@@ -61,26 +64,39 @@ func (c Controller) getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal([]byte(idsJSON), &ids)
 
 	returnFriendships := []*domain.WebFriendship{}
-	// Find batch fb photo ids on redis.
+	userCliques := c.friendRedis.GetCliqueIDsForAUserID(facebookUser.ID)
+	// Find batch fb friend ids on redis.
 	for _, friendUserID := range ids {
 		cacheFriendship, err := c.friendRedis.FindByIDAndUser(friendUserID, facebookUser)
 		if err != nil {
+			// If the friendship doesn't exist, skip.
 			break
 		}
-		webFriendship := domain.WebFriendshipFromCacheFriendshipAndCacheUser(cacheFriendship, facebookUser)
+		// If the friendship does exist, find common cliques and return a webFriendship
+		friendCliques := c.friendRedis.GetCliqueIDsForAUserID(friendUserID)
+		commonCliques := []string{}
+		for _, userClique := range userCliques {
+			for _, friendClique := range friendCliques {
+				if friendClique == userClique {
+					commonCliques = append(commonCliques, userClique)
+					break
+				}
+			}
+		}
+
+		webFriendship := domain.WebFriendshipFromCacheFriendshipAndCliques(cacheFriendship, commonCliques)
 		if err == nil {
 			returnFriendships = append(returnFriendships, webFriendship)
 		}
 	}
 
 	c.render.JSON(w, http.StatusOK, returnFriendships)
-
 }
 
 func (c Controller) postFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.FBUserIDFromContext(r.Context())
 	cacheUser, _ := c.userRedis.FindByID(userID)
-	webFriendship, err := FromRequest(r, cacheUser)
+	webFriendship, err := FromRequest(r)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
@@ -91,7 +107,7 @@ func (c Controller) postFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	c.friendRedis.Save(cacheUser, cacheFriendship)
 
 	// This Queue can determine clique and tie-strength
-	//c.friendPublisher.Publish(webFriendship)
+	c.friendPublisher.Publish(webFriendship)
 
 	c.render.JSON(w, http.StatusCreated, webFriendship)
 
