@@ -37,6 +37,7 @@ func (m *DBManager) Save(u *domain.DBClique) error {
 	return nil
 }
 
+// SaveUserClique - Saves a DBUserClique
 func (m *DBManager) SaveUserClique(uC *domain.DBUserClique) error {
 	err := m.gorm.Where(
 		domain.DBUserClique{
@@ -52,7 +53,7 @@ func (m *DBManager) SaveUserClique(uC *domain.DBUserClique) error {
 	return nil
 }
 
-// FindByID - Returns a clique given its ID, nil if not found.
+// FindCliqueByID - Returns a clique given its ID, nil if not found.
 func (m *DBManager) FindCliqueByID(id string) (*domain.DBClique, error) {
 	dbUserCliques := []domain.DBUserClique{}
 	dbClique := domain.DBClique{}

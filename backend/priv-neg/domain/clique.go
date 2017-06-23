@@ -8,6 +8,7 @@ type CacheClique struct {
 	Name string `json:"name"`
 }
 
+// WebClique - Representation of Clique submitted via Websocket
 type WebClique struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
@@ -20,12 +21,14 @@ type DBClique struct {
 	DBUserCliques []DBUserClique `gorm:"ForeignKey:CliqueID"`
 }
 
+// DBUserClique - Represents a user belonging to a Clique
 type DBUserClique struct {
 	CliqueID string `gorm:"primary_key"`
 	UserID   string `gorm:"primary_key"`
 	Name     string
 }
 
+// GetUserIDs - returns the user ides for a DBClique
 func (c *DBClique) GetUserIDs() []string {
 	userIDs := []string{}
 
@@ -43,12 +46,14 @@ func NewCacheClique() *CacheClique {
 	}
 }
 
+// DBCliqueFromCacheClique - Returns a DBClique from a CacheClique
 func DBCliqueFromCacheClique(cacheClique *CacheClique) *DBClique {
 	return &DBClique{
 		ID: cacheClique.ID,
 	}
 }
 
+// DBUserCliqueFromCacheCliqueAndUserID - Returns a DBUserClique from CacheClique and UserID
 func DBUserCliqueFromCacheCliqueAndUserID(cacheClique *CacheClique, userID string) *DBUserClique {
 	return &DBUserClique{
 		CliqueID: cacheClique.ID,

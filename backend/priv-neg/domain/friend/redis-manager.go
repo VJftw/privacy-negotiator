@@ -150,6 +150,7 @@ func (m *RedisManager) GetCliquesForAUserID(fUserID string) []domain.CacheClique
 	return cliques
 }
 
+// AddCliqueToUserID - Adds a Clique to a UserID
 func (m *RedisManager) AddCliqueToUserID(fUserID string, clique *domain.CacheClique) {
 	jsonClique, _ := json.Marshal(clique)
 	redisConn := m.redis.Get()
