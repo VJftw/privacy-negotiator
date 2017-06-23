@@ -100,7 +100,7 @@ deploy-apply: build deploy-plan
 	hashicorp/terraform:0.9.7 \
 	apply
 
-	# Upload static Web to Cloudfront
+	# Upload static Web to S3
 	docker run --rm \
 	--volume ${CURDIR}:/app \
 	--workdir /app/web_app/priv-neg \
@@ -109,3 +109,25 @@ deploy-apply: build deploy-plan
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 	anigeo/awscli:latest \
 	s3 cp dist/. s3://${DOMAIN} --acl public-read --recursive --cache-control max-age=120
+
+deploy-destroy: deploy-init
+	# Remove static Web from S3
+	docker run --rm \
+	--volume ${CURDIR}:/app \
+	--workdir /app/web_app/priv-neg \
+	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	anigeo/awscli:latest \
+	s3 rm s3://${DOMAIN} --recursive
+
+	# Terraform Destroy
+	docker run --rm \
+	--volume ${CURDIR}:/app \
+	--workdir /app/infrastructure/env/${ENVIRONMENT} \
+	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+	--env TF_VAR_version=${GIT_VERSION} \
+	hashicorp/terraform:0.9.7 \
+	destroy --force
