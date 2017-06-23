@@ -90,12 +90,13 @@ resource "aws_alb_target_group" "api" {
   vpc_id   = "${data.aws_vpc.app_cluster.id}"
 
   health_check {
+    path = "/v1/health"
     healthy_threshold   = 5
     unhealthy_threshold = 2
-    timeout             = 3
+    timeout             = 5
     protocol            = "HTTP"
     interval            = 30
-    matcher             = "200,404"
+    matcher             = "200"
   }
 }
 

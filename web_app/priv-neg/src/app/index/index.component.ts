@@ -7,7 +7,7 @@ import { Component } from '@angular/core';
 })
 export class IndexComponent {
 
-  protected loading: boolean;
+  public loading: boolean;
 
   constructor(
     private authService: AuthService,

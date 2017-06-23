@@ -7,7 +7,6 @@
       <div class="card-image" [ngClass]="{'waves-effect waves-block waves-light': photo.negotiable}">
         <img [ngClass]="{'blur': !photo.negotiable, 'activator': photo.negotiable }"  src="{{photo.url}}">
         <span class="card-title"></span>
-
       </div>
       <div class="card-content">
         by: {{photo.from.name}}

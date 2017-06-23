@@ -9,7 +9,7 @@ import {CategoryService} from './categories/category.service';
 @Injectable()
 export class AuthService implements CanActivate {
 
-  private fbUser: FBUser;
+  private fbUser: SessionUser;
 
   constructor(
     public fb: FacebookService,
@@ -43,7 +43,7 @@ export class AuthService implements CanActivate {
     return false;
   }
 
-  public getUser(): FBUser {
+  public getUser(): SessionUser {
     return this.fbUser;
   }
 
@@ -54,21 +54,28 @@ export class AuthService implements CanActivate {
 
     return this.fb.login(options)
       .then((response: LoginResponse) => {
-        console.log('Authenticated with Facebook.');
-        this.fbUser = new FBUser();
-        this.fbUser.shortAccessToken = response.authResponse.accessToken;
-        this.fbUser.id = response.authResponse.userID;
-        this.authenticateWithApi(response)
-          .then(() => {
-            this.categoryService.updateCategories();
-            this.router.navigate(['/photos']);
-          });
+        console.log('Authenticated with Facebook. Getting /me');
+        this.fb.api('/me?fields=id,name,picture{url}').then(res => {
+          const user = res as FbGraphUser;
+          console.log(user);
+          this.fbUser = new SessionUser(
+            response.authResponse.userID,
+            user.name,
+            response.authResponse.accessToken,
+            user.picture.data.url
+          );
+          this.authenticateWithApi(response)
+            .then(() => {
+              this.categoryService.updateCategories();
+              this.router.navigate(['/photos']);
+            });
+        });
       })
       .catch((error: any) => console.error(error))
     ;
   }
 
-  public authenticateWithApi(loginResponse: LoginResponse): Promise<any> {
+  private authenticateWithApi(loginResponse: LoginResponse): Promise<any> {
     return this.apiService.post(
       '/v1/auth',
       loginResponse.authResponse
@@ -83,8 +90,31 @@ export class AuthService implements CanActivate {
   }
 }
 
-export class FBUser {
+export class SessionUser {
   id: string;
   name: string;
   shortAccessToken: string;
+  picture: string;
+
+  constructor(id: string, name: string, shortAccessToken: string, picture: string) {
+    this.id = id;
+    this.name = name;
+    this.shortAccessToken = shortAccessToken;
+    this.picture = picture;
+  }
+}
+
+class FbGraphUser {
+  id: string;
+  name: string;
+  picture: FbGraphUserPicture;
+}
+
+class FbGraphUserPicture {
+  data: FbGraphUserPictureData;
+}
+
+
+class FbGraphUserPictureData {
+  url: string;
 }

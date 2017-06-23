@@ -1,5 +1,3 @@
-import { FBUser } from '../auth.service';
-
 export class FBPhoto {
   id: string;
   created_time: string;
@@ -64,4 +62,9 @@ export class APIPhoto {
   taggedUsers: string[] = [];
   pending = false;
   categories: string[] = [];
+}
+
+export class FBUser {
+  id: string;
+  name: string;
 }

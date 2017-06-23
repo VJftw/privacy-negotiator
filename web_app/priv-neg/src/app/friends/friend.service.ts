@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
 import {APIFriend, FBFriend, Friend} from './friend.model';
-import {FBUser} from '../auth.service';
 import {APIService} from '../api.service';
 import {APIClique, Clique} from './clique.model';
 import {Channel} from '../websocket.service';
@@ -77,8 +76,8 @@ export class FriendService implements Channel {
   }
 
 
-  public updateFriendsForUser(fbUser: FBUser, offset = null): Promise<any> {
-    let uri = '/' + fbUser.id + '/friends?fields=id,name,picture{url}';
+  public updateFriends(offset = null): Promise<any> {
+    let uri = '/me/friends?fields=id,name,picture{url}';
 
     if (offset) {
       uri += '&after=' + offset;

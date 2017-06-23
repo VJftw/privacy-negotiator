@@ -12,9 +12,9 @@ import {CategoryService} from '../categories/category.service';
 })
 export class PhotoDetailComponent implements OnInit {
 
-  protected photo: Photo;
-  protected editing = false;
-  protected newCategoryName = '';
+  public photo: Photo;
+  public editing = false;
+  public newCategoryName = '';
   private categorySelection: Map<string, CategorySelection> = new Map();
 
   constructor(
@@ -36,11 +36,11 @@ export class PhotoDetailComponent implements OnInit {
     this.updateChoices();
   }
 
-  protected getCategories(): CategorySelection[] {
+  public getCategories(): CategorySelection[] {
     return Array.from(this.categorySelection.values());
   }
 
-  protected updateChoices() {
+  public updateChoices() {
     for (const cat of this.categoryService.getCategories()) {
       if (this.photo.categories.includes(cat)) {
         this.categorySelection.set(cat, new CategorySelection(cat, true));
@@ -50,7 +50,7 @@ export class PhotoDetailComponent implements OnInit {
     }
   }
 
-  protected onAddNewCategory() {
+  public onAddNewCategory() {
     if (this.categoryService.createCategory(this.newCategoryName)) {
       this.photo.categories.push(this.newCategoryName);
       this.newCategoryName = '';

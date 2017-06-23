@@ -9,11 +9,11 @@ import { FriendService } from './friend.service';
 })
 export class FriendsComponent implements OnInit {
 
-  private lock = false;
+  public lock = false;
 
   constructor(
     private authService: AuthService,
-    protected friendService: FriendService
+    public friendService: FriendService
   ) {}
 
   ngOnInit() {
@@ -23,7 +23,7 @@ export class FriendsComponent implements OnInit {
   updateFriends() {
     if (!this.lock) {
       this.lock = true;
-      this.friendService.updateFriendsForUser(this.authService.getUser())
+      this.friendService.updateFriends()
       .then(() => this.lock = false)
       ;
     }

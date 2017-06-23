@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
 import { Photo, FBPhoto, APIPhoto } from './photo.model';
-import { FBUser } from '../auth.service';
 import { APIService } from '../api.service';
 import { WebSocketService, Channel } from '../websocket.service';
 
@@ -15,7 +14,7 @@ export class PhotoService implements Channel {
   constructor(
     private fb: FacebookService,
     private apiService: APIService,
-    private websocketService: WebSocketService
+    private websocketService: WebSocketService,
   ) {
     this.photos = new Map();
     this.websocketService.addChannel(this);
@@ -50,8 +49,8 @@ export class PhotoService implements Channel {
     return this.photos.get(photoId);
   }
 
-  public updateTaggedPhotosForUser(fbUser: FBUser): Promise<void> {
-    let uri = '/' + fbUser.id + '/photos?fields=id,created_time,from,target,images,album';
+  public updateTaggedPhotos(): Promise<void> {
+    let uri = '/me/photos?fields=id,created_time,from,target,images,album';
 
     if (this.offset) {
       uri += '&after=' + this.offset;

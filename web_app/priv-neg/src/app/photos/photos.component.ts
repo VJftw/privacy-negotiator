@@ -19,10 +19,9 @@ import {Router} from '@angular/router';
 })
 export class PhotosComponent implements OnInit {
 
-  protected lock: boolean;
+  public lock: boolean;
 
   constructor(
-    private authService: AuthService,
     private photoService: PhotoService,
     private router: Router
   ) {
@@ -40,13 +39,13 @@ export class PhotosComponent implements OnInit {
   updateTaggedPhotos() {
     if (!this.lock) {
       this.lock = true;
-      this.photoService.updateTaggedPhotosForUser(this.authService.getUser())
+      this.photoService.updateTaggedPhotos()
         .then(() => this.lock = false)
       ;
     }
   }
 
-  protected selectPhoto(photo: Photo) {
+  public selectPhoto(photo: Photo) {
     this.router.navigate(['photos', photo.id]);
   }
 }

@@ -52,6 +52,7 @@ func NewPrivNegAPI() App {
 	categoryController := category.NewController(controllerLogger, renderer, userRedisManager, categoryPublisher)
 	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager)
 	websocketController := websocket.NewController(wsLogger, renderer, redisCache)
+	healthController := routers.NewHealthController(controllerLogger, renderer)
 
 	privNegAPI.Router = routers.NewMuxRouter([]routers.Routable{
 		authController,
@@ -60,6 +61,7 @@ func NewPrivNegAPI() App {
 		categoryController,
 		friendController,
 		websocketController,
+		healthController,
 	}, true)
 
 	port := os.Getenv("PORT")

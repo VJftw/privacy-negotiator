@@ -1,13 +1,43 @@
 <nav class="blue" role="navigation">
-  <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">PrivNeg</a>
-    <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
-    <ul *ngIf="isLoggedIn()" id="nav-mobile" class="right hide-on-med-and-down">
-        <li><a routerLink="/photos" routerLinkActive="active">Photos</a></li>
-        <li><a routerLink="/friends" routerLinkActive="active">Friends</a></li>
-      </ul>
+  <div class="nav-wrapper container">
+    <a id="logo-container" class="brand-logo">PrivNeg</a>
+    <ul class="right hide-on-med-and-down">
+        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="fa fa-picture-o left" aria-hidden="true"></i></a></li>
+        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/friends" routerLinkActive="active">Friends <i class="fa fa-users left" aria-hidden="true"></i></a></li>
+      <!--<a href="sass.html"><i class="material-icons left">search</i>Link with Left Icon</a>-->
+        <li *ngIf="authService.isAuthenticated()" ><a class="valign-wrapper">
+          <div style="padding-right: 0.5em;">Hi, {{authService.getUser().name.split(" ")[0]}}!</div>
+          <img src="{{authService.getUser().picture}}" alt="" class="circle right">
+        </a>
+        </li>
+      <li class="info"><a>
+        <div class="col s12 center-align">
+          {{latency}} ms
+        </div>
+        <div class="col s12 center-align">
+          v.{{version}}
+        </div>
+      </a>
+      </li>
+    </ul>
+    <ul *ngIf="authService.isAuthenticated()" id="nav-mobile" class="side-nav">
+      <li><div class="user-view">
+        <div class="background">
+          <img class="responsive-img" src="https://scontent.xx.fbcdn.net/v/t1.0-0/p180x540/11140299_10152943001532544_4603036818482573119_n.jpg?oh=1d4019143e4ba8269bd03141c516264e&oe=59E94392">
+        </div>
+        <a><img class="circle" src="{{authService.getUser().picture}}"></a>
+        <a><span class="name">Hi, {{authService.getUser().name.split(" ")[0]}}!</span></a>
+        <a><span class="email">jdandturk@gmail.com</span></a>
+      </div></li>
+      <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="fa fa-picture-o left" aria-hidden="true"></i></a></li>
+      <li><a routerLink="/friends" routerLinkActive="active">Friends <i class="fa fa-users left" aria-hidden="true"></i></a></li>
+    </ul>
+    <a *ngIf="authService.isAuthenticated()" materialize="sideNav"  class="button-collapse" data-activates="nav-mobile">
+      <i class="material-icons">menu</i>
+    </a>
   </div>
 </nav>
-<span id="version" class="new badge blue" data-badge-caption="">{{version}}</span>
+
 <div class="section no-pad-bot">
   <div class="container">
     <router-outlet></router-outlet>
