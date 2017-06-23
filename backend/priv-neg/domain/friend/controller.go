@@ -43,6 +43,11 @@ func (c Controller) Setup(router *mux.Router) {
 		negroni.Wrap(http.HandlerFunc(c.getFriendsHandler)),
 	)).Methods("GET")
 
+	router.Handle("/v1/cliques", negroni.New(
+		middlewares.NewJWT(c.render),
+		negroni.Wrap(http.HandlerFunc(c.getFriendsHandler)),
+	)).Methods("GET")
+
 	router.Handle("/v1/friends", negroni.New(
 		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.postFriendsHandler)),
@@ -50,6 +55,15 @@ func (c Controller) Setup(router *mux.Router) {
 
 	log.Println("Set up Friend controller.")
 
+}
+
+func (c Controller) getCliquesHandler(w http.ResponseWriter, r *http.Request) {
+	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
+	facebookUser, _ := c.userRedis.FindByID(facebookUserID)
+
+	userCliques := c.friendRedis.GetCliquesForAUserID(facebookUser.ID)
+
+	c.render.JSON(w, http.StatusOK, userCliques)
 }
 
 func (c Controller) getFriendsHandler(w http.ResponseWriter, r *http.Request) {

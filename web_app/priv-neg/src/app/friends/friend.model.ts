@@ -4,7 +4,7 @@ export class Friend {
   picture: string;
   name: string;
   // tieStrength: number;
-  clique: string;
+  cliques: string[];
 
   public static FromFBFriend(fbFriend: FBFriend): Friend {
     const f = new Friend();
@@ -19,7 +19,7 @@ export class Friend {
   public static UpdateFromAPIFriend(f: Friend, apiFriend: APIFriend): Friend {
     f.id = apiFriend.id;
     // f.tieStrength = apiFriend.tieStrength;
-    // f.clique = apiFriend.clique;
+    f.cliques = apiFriend.cliques;
 
     return f;
   }
@@ -27,7 +27,7 @@ export class Friend {
 
 export class APIFriend {
   id: string;
-  clique: string;
+  cliques: string[];
   // tieStrength: number;
 }
 

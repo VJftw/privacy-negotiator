@@ -9,4 +9,5 @@ export class Clique {
 export class APIClique {
   id: string;
   name: string;
+  users: string[];
 }

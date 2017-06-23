@@ -1,7 +1,6 @@
 import { AuthService } from '../auth.service';
 import { Component, OnInit } from '@angular/core';
 import { FriendService } from './friend.service';
-import {Friend} from './friend.model';
 
 
 @Component({
@@ -14,15 +13,11 @@ export class FriendsComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private friendService: FriendService
+    protected friendService: FriendService
   ) {}
 
   ngOnInit() {
-    this.updateFriends();
-  }
-
-  getFriends(): Friend[] {
-    return this.friendService.getFriends();
+    this.friendService.updateCliquesFromAPI().then(() => this.updateFriends());
   }
 
   updateFriends() {

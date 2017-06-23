@@ -120,6 +120,36 @@ func (m *RedisManager) GetCliqueIDsForAUserID(fUserID string) []string {
 	return cliques
 }
 
+// GetCliquesForAUserID - Returns cliques for a given user ID
+func (m *RedisManager) GetCliquesForAUserID(fUserID string) []domain.CacheClique {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	cliquesJSON, err := redis.ByteSlices(redisConn.Do(
+		"HVALS",
+		fmt.Sprintf("%s:cliques", fUserID),
+	))
+
+	cliques := []domain.CacheClique{}
+	if err != nil {
+		m.cacheLogger.Printf("Error: %v", err)
+		return cliques
+	}
+
+	if cliquesJSON != nil {
+		for _, cliqueJSON := range cliquesJSON {
+			clique := domain.CacheClique{}
+			json.Unmarshal(cliqueJSON, &clique)
+			cliques = append(cliques, clique)
+		}
+		m.cacheLogger.Printf("Got %d cliques for %s", len(cliques), fUserID)
+
+		return cliques
+	}
+
+	m.cacheLogger.Printf("Could not find cliques for %s", fUserID)
+	return cliques
+}
+
 func (m *RedisManager) AddCliqueToUserID(fUserID string, clique *domain.CacheClique) {
 	jsonClique, _ := json.Marshal(clique)
 	redisConn := m.redis.Get()

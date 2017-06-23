@@ -29,6 +29,9 @@ type DBPhoto struct {
 
 // WebPhotoFromCachePhoto - Converts a CachePhoto into a WebPhoto.
 func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
+	if cachePhoto.TaggedUsers == nil {
+		cachePhoto.TaggedUsers = []string{}
+	}
 	return &WebPhoto{
 		ID:          cachePhoto.ID,
 		TaggedUsers: cachePhoto.TaggedUsers,
@@ -40,6 +43,9 @@ func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
 
 // CachePhotoFromWebPhoto - Converts a WebPhoto into a CachePhoto.
 func CachePhotoFromWebPhoto(webPhoto *WebPhoto) *CachePhoto {
+	if webPhoto.TaggedUsers == nil {
+		webPhoto.TaggedUsers = []string{}
+	}
 	return &CachePhoto{
 		ID:          webPhoto.ID,
 		TaggedUsers: webPhoto.TaggedUsers,
