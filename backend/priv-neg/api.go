@@ -39,20 +39,27 @@ func NewPrivNegAPI() App {
 	userRedisManager := user.NewRedisManager(cacheLogger, redisCache)
 	photoRedisManager := photo.NewRedisManager(cacheLogger, redisCache)
 	friendRedisManager := friend.NewRedisManager(cacheLogger, redisCache)
+	categoryRedisManager := category.NewRedisManager(cacheLogger, redisCache)
 
 	authPublisher := auth.NewPublisher(queueLogger, rabbitMQ)
 	syncPublisher := photo.NewPublisher(queueLogger, rabbitMQ)
 	categoryPublisher := category.NewPublisher(queueLogger, rabbitMQ)
+	friendPublisher := friend.NewPublisher(queueLogger, rabbitMQ)
 
 	renderer := render.New()
 
 	authController := auth.NewController(controllerLogger, renderer, authPublisher, userRedisManager)
 	userController := user.NewController(controllerLogger, renderer, userRedisManager)
-	photoController := photo.NewController(controllerLogger, renderer, photoRedisManager, userRedisManager, syncPublisher)
-	categoryController := category.NewController(controllerLogger, renderer, userRedisManager, categoryPublisher)
+	photoController := photo.NewController(controllerLogger, renderer, photoRedisManager, userRedisManager, categoryRedisManager, syncPublisher)
+	categoryController := category.NewController(controllerLogger, renderer, userRedisManager, categoryRedisManager, categoryPublisher)
 	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager)
 	websocketController := websocket.NewController(wsLogger, renderer, redisCache)
-	healthController := routers.NewHealthController(controllerLogger, renderer)
+	healthController := routers.NewHealthController(controllerLogger, renderer, []persisters.Publisher{
+		authPublisher,
+		syncPublisher,
+		categoryPublisher,
+		friendPublisher,
+	})
 
 	privNegAPI.Router = routers.NewMuxRouter([]routers.Routable{
 		authController,

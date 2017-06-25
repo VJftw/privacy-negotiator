@@ -37,7 +37,7 @@ type photoRequest struct {
 }
 
 //FromPutRequest - Modifies a given FacebookPhoto with data from a request for a given User.
-func FromPutRequest(r *http.Request, p *domain.CachePhoto, u *domain.CacheUser) (*domain.WebPhoto, error) {
+func FromPutRequest(r *http.Request, p *domain.CachePhoto, u *domain.CacheUser, categories []string) (*domain.WebPhoto, error) {
 	var jsonPhoto requestPUT
 	err := json.NewDecoder(r.Body).Decode(&jsonPhoto)
 	if err != nil {
@@ -46,7 +46,7 @@ func FromPutRequest(r *http.Request, p *domain.CachePhoto, u *domain.CacheUser) 
 
 	for _, cat := range jsonPhoto.Categories {
 		found := false
-		for _, existCat := range u.Categories {
+		for _, existCat := range categories {
 			if cat == existCat {
 				found = true
 			}

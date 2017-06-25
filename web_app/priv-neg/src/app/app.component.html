@@ -10,12 +10,14 @@
           <img src="{{authService.getUser().picture}}" alt="" class="circle right">
         </a>
         </li>
-      <li class="info"><a>
+      <li class="info" (click)="cycleInfo()"><a>
         <div class="col s12 center-align">
-          {{latency}} ms
+          API: <span class="new badge" [ngClass]="{'green': apiStatus==='OK', 'red': apiStatus==='OFFLINE', 'orange': apiStatus==='BUSY'}" data-badge-caption="">{{apiStatus}}</span>
         </div>
         <div class="col s12 center-align">
-          v.{{version}}
+          <span *ngIf="info==0">v.{{version}}</span>
+          <span *ngIf="info==1">ping: {{latency}} ms</span>
+          <span *ngIf="info==2">queued: {{queueSize}}</span>
         </div>
       </a>
       </li>

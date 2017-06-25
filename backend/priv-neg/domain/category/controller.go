@@ -16,6 +16,7 @@ type Controller struct {
 	logger            *log.Logger
 	render            *render.Render
 	userRedis         *user.RedisManager
+	categoryRedis     *RedisManager
 	categoryPublisher *Publisher
 }
 
@@ -24,12 +25,14 @@ func NewController(
 	controllerLogger *log.Logger,
 	renderer *render.Render,
 	userRedisManager *user.RedisManager,
+	categoryRedisManager *RedisManager,
 	categoryPublisher *Publisher,
 ) *Controller {
 	return &Controller{
 		logger:            controllerLogger,
 		render:            renderer,
 		userRedis:         userRedisManager,
+		categoryRedis:     categoryRedisManager,
 		categoryPublisher: categoryPublisher,
 	}
 }
@@ -51,23 +54,26 @@ func (c Controller) getCategoriesHandler(w http.ResponseWriter, r *http.Request)
 	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
 	cacheUser, _ := c.userRedis.FindByID(facebookUserID)
 
-	c.render.JSON(w, http.StatusOK, cacheUser.Categories)
+	categories, _ := c.categoryRedis.FindByUser(cacheUser)
+
+	c.render.JSON(w, http.StatusOK, categories)
 }
 
 func (c Controller) postCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
 	cacheUser, _ := c.userRedis.FindByID(facebookUserID)
 
-	dbCategory, err := FromRequest(r, cacheUser)
+	categories, _ := c.categoryRedis.FindByUser(cacheUser)
+
+	dbCategory, err := FromRequest(r, cacheUser, categories)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	cacheUser.Categories = append(cacheUser.Categories, dbCategory.Name)
-	c.userRedis.Save(cacheUser)
+	c.categoryRedis.Save(cacheUser, dbCategory.Name)
 
 	c.categoryPublisher.Publish(dbCategory)
 
-	c.render.JSON(w, http.StatusCreated, cacheUser.Categories)
+	c.render.JSON(w, http.StatusCreated, append(categories, dbCategory.Name))
 }

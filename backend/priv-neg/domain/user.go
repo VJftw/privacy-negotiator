@@ -9,7 +9,6 @@ type User interface{}
 type CacheUser struct {
 	ID           string    `json:"id"`
 	TokenExpires time.Time `json:"tokenExpires"`
-	Categories   []string  `json:"categories"`
 }
 
 // AuthUser - a representation of a User communicated from the web_app for authentication.
@@ -32,8 +31,7 @@ type DBUser struct {
 // CacheUserFromAuthUser - Translates a AuthUser to a CacheUser.
 func CacheUserFromAuthUser(authUser *AuthUser) *CacheUser {
 	return &CacheUser{
-		ID:         authUser.ID,
-		Categories: []string{},
+		ID: authUser.ID,
 	}
 }
 
@@ -42,9 +40,6 @@ func CacheUserFromDatabaseUser(user *DBUser) *CacheUser {
 	cU := CacheUser{
 		ID:           user.ID,
 		TokenExpires: user.TokenExpires,
-	}
-	for _, category := range user.Categories {
-		cU.Categories = append(cU.Categories, category.Name)
 	}
 
 	return &cU

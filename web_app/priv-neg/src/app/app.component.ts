@@ -16,6 +16,9 @@ import {APIService} from './api.service';
 export class AppComponent implements OnInit  {
   version = environment.version;
   latency = '';
+  queueSize: number;
+  apiStatus = 'OFFLINE';
+  info = 0;
 
   constructor(
     public authService: AuthService,
@@ -26,12 +29,30 @@ export class AppComponent implements OnInit  {
     this.updateLatency();
   }
 
+  public cycleInfo() {
+    if (this.info < 2) {
+      this.info++;
+    } else {
+      this.info = 0;
+    }
+  }
+
   private updateLatency() {
     const timeStart = performance.now();
 
     this.apiService.get('/v1/health').then(res => {
+      const apiHealth = res.json() as ApiHealth;
       const timeEnd = performance.now();
       this.latency = ('   ' + (timeEnd - timeStart).toFixed(0)).slice(-3);
+      this.queueSize = apiHealth.queueSize;
+
+      if ((timeEnd - timeStart) < 500 && apiHealth.queueSize < 20) {
+        this.apiStatus = 'OK';
+      } else {
+        this.apiStatus = 'BUSY';
+      }
+    }).catch(() => {
+      this.apiStatus = 'OFFLINE';
     });
 
     this.sleep(5000).then(() => this.updateLatency());
@@ -40,4 +61,8 @@ export class AppComponent implements OnInit  {
   private sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
   }
+}
+
+class ApiHealth {
+  queueSize: number;
 }

@@ -17,6 +17,12 @@ type Consumer interface {
 // Publisher - interface.
 type Publisher interface {
 	Publish(Queueable)
+	GetMessageTotal() int
+}
+
+// TotalStats - Returns totals for all of the queues.
+type TotalStats struct {
+	TotalMessageCount uint `json:"messageCount"`
 }
 
 // Queueable - What Publishers should accept.

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
 	"github.com/gorilla/mux"
@@ -19,6 +20,7 @@ type Controller struct {
 	render         *render.Render
 	photoRedis     *RedisManager
 	userRedis      *user.RedisManager
+	categoryRedis  *category.RedisManager
 	photoPublisher *Publisher
 }
 
@@ -28,6 +30,7 @@ func NewController(
 	renderer *render.Render,
 	photoRedisManager *RedisManager,
 	userRedisManager *user.RedisManager,
+	categoryRedisManager *category.RedisManager,
 	photoPublisher *Publisher,
 ) *Controller {
 	return &Controller{
@@ -36,6 +39,7 @@ func NewController(
 		photoRedis:     photoRedisManager,
 		userRedis:      userRedisManager,
 		photoPublisher: photoPublisher,
+		categoryRedis:  categoryRedisManager,
 	}
 }
 
@@ -110,7 +114,9 @@ func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	webPhoto, err := FromPutRequest(r, cachePhoto, cacheUser)
+	userCategories, _ := c.categoryRedis.FindByUser(cacheUser)
+
+	webPhoto, err := FromPutRequest(r, cachePhoto, cacheUser, userCategories)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return

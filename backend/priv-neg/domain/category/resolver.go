@@ -10,7 +10,7 @@ import (
 )
 
 // FromRequest - Returns a DBCategory from a httpRequest.
-func FromRequest(r *http.Request, cacheUser *domain.CacheUser) (*domain.DBCategory, error) {
+func FromRequest(r *http.Request, cacheUser *domain.CacheUser, userCategories []string) (*domain.DBCategory, error) {
 	dbCategory := &domain.DBCategory{}
 
 	requestCategory := &categoryRequest{}
@@ -23,7 +23,7 @@ func FromRequest(r *http.Request, cacheUser *domain.CacheUser) (*domain.DBCatego
 		return nil, errors.New("missing name")
 	}
 
-	for _, existingCat := range cacheUser.Categories {
+	for _, existingCat := range userCategories {
 		if existingCat == requestCategory.Name {
 			return nil, errors.New("category already exists")
 		}

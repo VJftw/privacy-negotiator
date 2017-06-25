@@ -57,3 +57,8 @@ func (q *Publisher) Publish(i persisters.Queueable) {
 		})
 	utils.FailOnError(err, "Failed to publish a message")
 }
+
+// GetMessageTotal - returns the total amount of messages in the queue.
+func (q *Publisher) GetMessageTotal() int {
+	return q.queue.Messages
+}
