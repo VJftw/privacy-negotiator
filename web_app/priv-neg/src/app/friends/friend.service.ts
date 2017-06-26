@@ -23,7 +23,7 @@ export class FriendService implements Channel {
     const c = new Clique();
     c.id = 'NA';
     c.name = 'NA';
-    c.friends = [];
+    c.friends = new Map();
     this.cliques.set(c.id, c);
   }
 
@@ -41,7 +41,7 @@ export class FriendService implements Channel {
       const c = new Clique();
       c.name = apiClique.name;
       for (const userId of apiClique.users) {
-        c.friends.push(this.friends.get(userId));
+        c.friends.set(userId, this.friends.get(userId));
       }
       this.cliques.set(apiClique.id, c);
     } else {
@@ -111,20 +111,21 @@ export class FriendService implements Channel {
       for (const apiFriend of response.json() as APIFriend[]) {
         if (apiFriend.cliques.length < 1) {
           const clique = this.cliques.get('NA');
-          clique.friends.push(this.friends.get(apiFriend.id));
+          clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id));
           this.cliques.set('NA', clique);
         } else {
           for (const cliqueID of apiFriend.cliques) {
             if (this.cliques.has(cliqueID)) {
               const clique = this.cliques.get(cliqueID);
-              clique.friends.push(this.friends.get(apiFriend.id));
+              clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id));
+
               this.cliques.set(cliqueID, clique);
             } else {
               const clique = new Clique();
               clique.id = cliqueID;
               clique.name = 'Unnamed';
-              clique.friends = [];
-              clique.friends.push(this.friends.get(apiFriend.id));
+              clique.friends = new Map();
+              clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id));
               this.cliques.set(cliqueID, clique);
             }
           }

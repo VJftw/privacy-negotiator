@@ -4,6 +4,10 @@ ENVIRONMENT ?= beta
 install:
 	docker run --rm -v ${CURDIR}/priv-neg:/app -w /app node:8 npm install --silent
 
+serve:
+	cd priv-neg && \
+	${CURDIR}/priv-neg/node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check
+
 build: install
 	# TODO: Better environment setup
 	cp priv-neg/src/environments/environment.${ENVIRONMENT}.tpl.ts priv-neg/src/environments/environment.${ENVIRONMENT}.ts
