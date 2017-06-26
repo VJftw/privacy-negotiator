@@ -37,7 +37,7 @@ func (m *RedisManager) Save(u *domain.CacheUser, f *domain.CacheFriendship) erro
 	defer redisConn.Close()
 	redisConn.Do(
 		"HSET",
-		fmt.Sprintf("%s:friends", u.ID),
+		fmt.Sprintf("u%s:friends", u.ID),
 		f.ID,
 		jsonFriendship,
 	)
@@ -54,7 +54,7 @@ func (m *RedisManager) FindByIDAndUser(fUserID string, cacheUser *domain.CacheUs
 	defer redisConn.Close()
 	jsonFriendship, err := redis.Bytes(redisConn.Do(
 		"HGET",
-		fmt.Sprintf("%s:friends", cacheUser.ID),
+		fmt.Sprintf("u%s:friends", cacheUser.ID),
 		fUserID,
 	))
 
@@ -79,7 +79,7 @@ func (m *RedisManager) GetFriendIDsForAUserID(fUserID string) []string {
 	defer redisConn.Close()
 	friends, err := redis.Strings(redisConn.Do(
 		"HKEYS",
-		fmt.Sprintf("%s:friends", fUserID),
+		fmt.Sprintf("u%s:friends", fUserID),
 	))
 
 	if err != nil {
@@ -103,7 +103,7 @@ func (m *RedisManager) GetCliqueIDsForAUserID(fUserID string) []string {
 	defer redisConn.Close()
 	cliques, err := redis.Strings(redisConn.Do(
 		"HKEYS",
-		fmt.Sprintf("%s:cliques", fUserID),
+		fmt.Sprintf("u%s:cliques", fUserID),
 	))
 
 	if err != nil {
@@ -126,7 +126,7 @@ func (m *RedisManager) GetCliquesForAUserID(fUserID string) []domain.CacheClique
 	defer redisConn.Close()
 	cliquesJSON, err := redis.ByteSlices(redisConn.Do(
 		"HVALS",
-		fmt.Sprintf("%s:cliques", fUserID),
+		fmt.Sprintf("u%s:cliques", fUserID),
 	))
 
 	cliques := []domain.CacheClique{}
@@ -157,7 +157,7 @@ func (m *RedisManager) AddCliqueToUserID(fUserID string, clique *domain.CacheCli
 	defer redisConn.Close()
 	redisConn.Do(
 		"HSET",
-		fmt.Sprintf("%s:cliques", fUserID),
+		fmt.Sprintf("u%s:cliques", fUserID),
 		clique.ID,
 		jsonClique,
 	)

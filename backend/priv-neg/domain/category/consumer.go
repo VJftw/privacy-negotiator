@@ -13,10 +13,11 @@ import (
 
 // Consumer - Consumer for persisting Categories.
 type Consumer struct {
-	queue      amqp.Queue
-	channel    *amqp.Channel
-	logger     *log.Logger
-	categoryDB *DBManager
+	queue         amqp.Queue
+	channel       *amqp.Channel
+	logger        *log.Logger
+	categoryDB    *DBManager
+	categoryRedis *RedisManager
 }
 
 // NewConsumer - Returns a new consumer.
@@ -24,6 +25,7 @@ func NewConsumer(
 	queueLogger *log.Logger,
 	ch *amqp.Channel,
 	categoryDBManager *DBManager,
+	categoryRedisManager *RedisManager,
 ) *Consumer {
 	queue, err := ch.QueueDeclare(
 		"category-persist", // name
@@ -35,15 +37,35 @@ func NewConsumer(
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
 	return &Consumer{
-		logger:     queueLogger,
-		channel:    ch,
-		queue:      queue,
-		categoryDB: categoryDBManager,
+		logger:        queueLogger,
+		channel:       ch,
+		queue:         queue,
+		categoryDB:    categoryDBManager,
+		categoryRedis: categoryRedisManager,
+	}
+}
+
+func (c *Consumer) loadCategories() {
+	categories := []string{
+		"Family",
+		"Party",
+		"Alcohol",
+		"Holiday",
+		"Friends",
+	}
+
+	for _, nameCategory := range categories {
+		c.categoryRedis.Save(nameCategory)
+		_, err := c.categoryDB.FindByName(nameCategory)
+		if err != nil {
+			c.categoryDB.Save(&domain.DBCategory{Name: nameCategory})
+		}
 	}
 }
 
 // Consume - Processes items from the Queue.
 func (c *Consumer) Consume() {
+	c.loadCategories()
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
@@ -73,10 +95,10 @@ func (c *Consumer) process(d amqp.Delivery) {
 	dbCategory := &domain.DBCategory{}
 	json.Unmarshal(d.Body, dbCategory)
 
-	c.logger.Printf("Started processing for category %s:%s", dbCategory.UserID, dbCategory.Name)
+	c.logger.Printf("Started processing for category %s", dbCategory.Name)
 
 	c.categoryDB.Save(dbCategory)
 
 	elapsed := time.Since(start)
-	c.logger.Printf("Processed Category %s:%s in %s", dbCategory.UserID, dbCategory.Name, elapsed)
+	c.logger.Printf("Processed Category %s in %s", dbCategory.Name, elapsed)
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
@@ -75,9 +76,9 @@ func (c Controller) getPhotosHandler(w http.ResponseWriter, r *http.Request) {
 	returnPhotos := []*domain.WebPhoto{}
 	// Find batch fb photo ids on redis.
 	for _, facebookPhotoID := range ids {
-		facebookPhoto, err := c.photoRedis.FindByIDWithUserCategories(facebookPhotoID, facebookUser)
-		if err == nil {
-			returnPhotos = append(returnPhotos, facebookPhoto)
+		cachePhoto, err := c.photoRedis.FindByID(facebookPhotoID)
+		if err == nil && (facebookUser.ID == cachePhoto.Uploader || utils.IsIn(facebookUser.ID, cachePhoto.TaggedUsers)) { // verify ACL (tagged or uploader)
+			returnPhotos = append(returnPhotos, domain.WebPhotoFromCachePhoto(cachePhoto))
 		}
 	}
 
@@ -86,8 +87,8 @@ func (c Controller) getPhotosHandler(w http.ResponseWriter, r *http.Request) {
 
 func (c Controller) postPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	userID := middlewares.FBUserIDFromContext(r.Context())
-	user, _ := c.userRedis.FindByID(userID)
-	webPhoto, err := FromRequest(r, user)
+	facebookUser, _ := c.userRedis.FindByID(userID)
+	webPhoto, err := FromRequest(r, facebookUser)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
@@ -114,17 +115,25 @@ func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userCategories, _ := c.categoryRedis.FindByUser(cacheUser)
+	categories := c.categoryRedis.GetAll()
 
-	webPhoto, err := FromPutRequest(r, cachePhoto, cacheUser, userCategories)
+	webPhoto, err := FromPutRequest(r, cachePhoto, categories)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	c.photoRedis.SavePhotoWithUserCategories(webPhoto, cacheUser)
+	if cachePhoto.Uploader != cacheUser.ID && !utils.IsIn(cacheUser.ID, cachePhoto.TaggedUsers) {
+		c.render.JSON(w, http.StatusForbidden, nil)
+		return
+	}
 
-	// Add to DB queue to persist relational data
+	cachePhoto = domain.CachePhotoFromWebPhoto(webPhoto)
+	for _, cat := range cachePhoto.Categories {
+		c.photoRedis.SaveCategoryForPhoto(cachePhoto, cat)
+	}
+
+	// TODO: Add to DB queue to persist relational data
 
 	c.render.JSON(w, http.StatusOK, webPhoto)
 }

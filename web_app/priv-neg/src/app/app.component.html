@@ -2,8 +2,8 @@
   <div class="nav-wrapper container">
     <a id="logo-container" class="brand-logo">PrivNeg</a>
     <ul class="right hide-on-med-and-down">
-        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="fa fa-picture-o left" aria-hidden="true"></i></a></li>
-        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/friends" routerLinkActive="active">Friends <i class="fa fa-users left" aria-hidden="true"></i></a></li>
+        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
+        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
       <!--<a href="sass.html"><i class="material-icons left">search</i>Link with Left Icon</a>-->
         <li *ngIf="authService.isAuthenticated()" ><a class="valign-wrapper">
           <div style="padding-right: 0.5em;">Hi, {{authService.getUser().name.split(" ")[0]}}!</div>
@@ -31,8 +31,8 @@
         <a><span class="name">Hi, {{authService.getUser().name.split(" ")[0]}}!</span></a>
         <a><span class="email"></span></a>
       </div></li>
-      <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="fa fa-picture-o left" aria-hidden="true"></i></a></li>
-      <li><a routerLink="/friends" routerLinkActive="active">Friends <i class="fa fa-users left" aria-hidden="true"></i></a></li>
+      <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
+      <li><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
     </ul>
     <a *ngIf="authService.isAuthenticated()" materialize="sideNav"  class="button-collapse" data-activates="nav-mobile">
       <i class="material-icons">menu</i>

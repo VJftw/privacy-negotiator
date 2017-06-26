@@ -35,7 +35,7 @@ func (m *RedisManager) Save(p *domain.CachePhoto) error {
 	defer redisConn.Close()
 	redisConn.Do(
 		"SET",
-		fmt.Sprintf("photo:%s", p.ID),
+		fmt.Sprintf("p%s:info", p.ID),
 		jsonPhoto,
 	)
 	m.cacheLogger.Printf("Saved photo:%s", p.ID)
@@ -51,7 +51,7 @@ func (m *RedisManager) FindByID(id string) (*domain.CachePhoto, error) {
 	defer redisConn.Close()
 	jsonPhoto, err := redis.Bytes(redisConn.Do(
 		"GET",
-		fmt.Sprintf("photo:%s", id),
+		fmt.Sprintf("p%s:info", id),
 	))
 	if err != nil {
 		return nil, err
@@ -61,6 +61,8 @@ func (m *RedisManager) FindByID(id string) (*domain.CachePhoto, error) {
 		json.Unmarshal(jsonPhoto, photo)
 		m.cacheLogger.Printf("Got photo:%s", photo.ID)
 
+		photo.Categories = m.GetCategoriesForPhoto(photo)
+
 		return photo, nil
 	}
 
@@ -68,49 +70,31 @@ func (m *RedisManager) FindByID(id string) (*domain.CachePhoto, error) {
 	return nil, errors.New("Not found")
 }
 
-// FindByIDWithUserCategories - Returns a WebPhoto with the user's chosen categories.
-func (m *RedisManager) FindByIDWithUserCategories(id string, user *domain.CacheUser) (*domain.WebPhoto, error) {
-	cachePhoto, err := m.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	webPhoto := domain.WebPhotoFromCachePhoto(cachePhoto)
-
+// GetCategoriesForPhoto - Returns all categories for a given photo
+func (m *RedisManager) GetCategoriesForPhoto(p *domain.CachePhoto) []string {
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
-	jsonPhotoCategories, _ := redis.Bytes(redisConn.Do(
-		"GET",
-		fmt.Sprintf("%s:%s", webPhoto.ID, user.ID),
+	categories, _ := redis.Strings(redisConn.Do(
+		"SMEMBERS",
+		fmt.Sprintf("p%s:categories", p.ID),
 	))
 
-	if jsonPhotoCategories != nil {
-		jsonCategories := []string{}
-		json.Unmarshal(jsonPhotoCategories, &jsonCategories)
-		fmt.Println(jsonCategories)
-		webPhoto.Categories = jsonCategories
-		fmt.Println(webPhoto)
-		m.cacheLogger.Printf("Got photo for user %s:%s", webPhoto.ID, user.ID)
-	}
+	m.cacheLogger.Printf("Got categories for %s", p.ID)
 
-	return webPhoto, nil
+	return categories
 }
 
-// SavePhotoWithUserCategories - Saves a categories defined by a user for a photo.
-func (m *RedisManager) SavePhotoWithUserCategories(photo *domain.WebPhoto, user *domain.CacheUser) error {
-	jsonCategories, err := json.Marshal(photo.Categories)
-	if err != nil {
-		return err
-	}
-
+// SaveCategoryForPhoto - Adds a given category to the Photo
+func (m *RedisManager) SaveCategoryForPhoto(p *domain.CachePhoto, c string) error {
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
 	redisConn.Do(
-		"SET",
-		fmt.Sprintf("%s:%s", photo.ID, user.ID),
-		jsonCategories,
+		"SADD",
+		fmt.Sprintf("p%s:categories", p.ID),
+		c,
 	)
 
-	m.cacheLogger.Printf("Saved photo for user %s:%s", photo.ID, user.ID)
+	m.cacheLogger.Printf("Added categories for %s", p.ID)
 
 	return nil
 }

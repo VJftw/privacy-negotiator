@@ -2,11 +2,7 @@ package domain
 
 // DBCategory - The Category entity.
 type DBCategory struct {
-	Name string `gorm:"primary_key"`
-
-	User   DBUser
-	UserID string `gorm:"primary_key"`
-
+	Name   string    `gorm:"primary_key"`
 	Photos []DBPhoto `gorm:"many2many:photo_categories"`
 }
 

@@ -1,10 +1,8 @@
 package category
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -23,32 +21,29 @@ func NewRedisManager(cacheLogger *log.Logger, redis *redis.Pool) *RedisManager {
 }
 
 // Save - Saves a given Category to the Cache.
-func (m *RedisManager) Save(u *domain.CacheUser, c string) error {
+func (m *RedisManager) Save(c string) error {
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
 	redisConn.Do(
 		"SADD",
-		fmt.Sprintf("%s:categories", u.ID),
+		"categories",
 		c,
 	)
-	m.cacheLogger.Printf("Saved %s:categories", u.ID)
+	m.cacheLogger.Printf("Added category %s", c)
 
 	return nil
 }
 
-// FindByUser - Returns Categories given a user, nil if not found.
-func (m *RedisManager) FindByUser(u *domain.CacheUser) ([]string, error) {
+// GetAll - Returns all of the categories
+func (m *RedisManager) GetAll() []string {
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
-	categories, err := redis.Strings(redisConn.Do(
+	categories, _ := redis.Strings(redisConn.Do(
 		"SMEMBERS",
-		fmt.Sprintf("%s:categories", u.ID),
+		"categories",
 	))
-	if err != nil {
-		m.cacheLogger.Printf("Could not find %s:categories", u.ID)
-		return nil, err
-	}
 
-	m.cacheLogger.Printf("Found %s:categories", u.ID)
-	return categories, nil
+	m.cacheLogger.Printf("Got categories")
+
+	return categories
 }

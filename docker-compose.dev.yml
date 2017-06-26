@@ -144,13 +144,42 @@ services:
         - "db:postgres"
         - "cache:redis"
 
+  worker-category-persist:
+    build:
+      context: ./backend/
+      dockerfile: dev.Dockerfile
+    command: fresh
+    volumes:
+      - "./backend:/go/src/github.com/VJftw/privacy-negotiator/backend/"
+    working_dir: /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg
+    environment:
+      TYPE: WORKER
+      QUEUE: category-persist
+      RABBITMQ_HOSTNAME: rabbit
+      RABBITMQ_USER: privneg
+      RABBITMQ_PASS: privneg
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: privneg
+      POSTGRES_DBNAME: privneg
+      POSTGRES_PASSWORD: privneg
+      REDIS_HOST: redis
+      FACEBOOK_APP_ID: 431282593918092
+      FACEBOOK_APP_SECRET: 5208ed76bd97a1f30533bda1478bc594
+    depends_on:
+      - queue
+      - db
+      - cache
+    links:
+      - "queue:rabbit"
+      - "db:postgres"
+      - "cache:redis"
 
   # Angular 4 Web App
-  web:
-    image: node:8
-    command: node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check
-    working_dir: /app
-    volumes:
-      - "./web_app/priv-neg:/app"
-    ports:
-      - "4200:4200"
+  # web:
+  #   image: node:8
+  #   command: node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check
+  #   working_dir: /app
+  #   volumes:
+  #     - "./web_app/priv-neg:/app"
+  #   ports:
+  #     - "4200:4200"

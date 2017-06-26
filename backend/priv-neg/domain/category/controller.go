@@ -44,36 +44,33 @@ func (c Controller) Setup(router *mux.Router) {
 		negroni.Wrap(http.HandlerFunc(c.getCategoriesHandler)),
 	)).Methods("GET")
 
-	router.Handle("/v1/categories", negroni.New(
-		middlewares.NewJWT(c.render),
-		negroni.Wrap(http.HandlerFunc(c.postCategoriesHandler)),
-	)).Methods("POST")
+	//router.Handle("/v1/categories", negroni.New(
+	//	middlewares.NewJWT(c.render),
+	//	negroni.Wrap(http.HandlerFunc(c.postCategoriesHandler)),
+	//)).Methods("POST")
 }
 
 func (c Controller) getCategoriesHandler(w http.ResponseWriter, r *http.Request) {
-	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
-	cacheUser, _ := c.userRedis.FindByID(facebookUserID)
-
-	categories, _ := c.categoryRedis.FindByUser(cacheUser)
+	categories := c.categoryRedis.GetAll()
 
 	c.render.JSON(w, http.StatusOK, categories)
 }
 
-func (c Controller) postCategoriesHandler(w http.ResponseWriter, r *http.Request) {
-	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
-	cacheUser, _ := c.userRedis.FindByID(facebookUserID)
-
-	categories, _ := c.categoryRedis.FindByUser(cacheUser)
-
-	dbCategory, err := FromRequest(r, cacheUser, categories)
-	if err != nil {
-		c.render.JSON(w, http.StatusBadRequest, nil)
-		return
-	}
-
-	c.categoryRedis.Save(cacheUser, dbCategory.Name)
-
-	c.categoryPublisher.Publish(dbCategory)
-
-	c.render.JSON(w, http.StatusCreated, append(categories, dbCategory.Name))
-}
+//func (c Controller) postCategoriesHandler(w http.ResponseWriter, r *http.Request) {
+//	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
+//	cacheUser, _ := c.userRedis.FindByID(facebookUserID)
+//
+//	categories, _ := c.categoryRedis.FindByUser(cacheUser)
+//
+//	dbCategory, err := FromRequest(r, cacheUser, categories)
+//	if err != nil {
+//		c.render.JSON(w, http.StatusBadRequest, nil)
+//		return
+//	}
+//
+//	c.categoryRedis.Save(cacheUser, dbCategory.Name)
+//
+//	c.categoryPublisher.Publish(dbCategory)
+//
+//	c.render.JSON(w, http.StatusCreated, append(categories, dbCategory.Name))
+//}

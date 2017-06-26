@@ -36,7 +36,7 @@ func (m *RedisManager) Save(u *domain.CacheUser) error {
 	defer redisConn.Close()
 	redisConn.Do(
 		"SET",
-		fmt.Sprintf("user:%s", u.ID),
+		fmt.Sprintf("u%s:info", u.ID),
 		jsonUser,
 	)
 	m.cacheLogger.Printf("Saved user:%s", u.ID)
@@ -65,7 +65,7 @@ func (m *RedisManager) FindByID(id string) (*domain.CacheUser, error) {
 	defer redisConn.Close()
 	userJSON, err := redis.Bytes(redisConn.Do(
 		"GET",
-		fmt.Sprintf("user:%s", id),
+		fmt.Sprintf("u%s:info", id),
 	))
 	if err != nil {
 		return nil, err

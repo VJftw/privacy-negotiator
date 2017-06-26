@@ -6,6 +6,7 @@ type CachePhoto struct {
 	TaggedUsers []string `json:"taggedUsers"`
 	Uploader    string   `json:"uploader"`
 	Pending     bool     `json:"pending"`
+	Categories  []string `json:"categories"`
 }
 
 // WebPhoto - The photo representation sent to a web client.
@@ -32,12 +33,15 @@ func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
 	if cachePhoto.TaggedUsers == nil {
 		cachePhoto.TaggedUsers = []string{}
 	}
+	if cachePhoto.Categories == nil {
+		cachePhoto.Categories = []string{}
+	}
 	return &WebPhoto{
 		ID:          cachePhoto.ID,
 		TaggedUsers: cachePhoto.TaggedUsers,
 		Pending:     cachePhoto.Pending,
 		Uploader:    cachePhoto.Uploader,
-		Categories:  []string{},
+		Categories:  cachePhoto.Categories,
 	}
 }
 
@@ -46,10 +50,14 @@ func CachePhotoFromWebPhoto(webPhoto *WebPhoto) *CachePhoto {
 	if webPhoto.TaggedUsers == nil {
 		webPhoto.TaggedUsers = []string{}
 	}
+	if webPhoto.Categories == nil {
+		webPhoto.Categories = []string{}
+	}
 	return &CachePhoto{
 		ID:          webPhoto.ID,
 		TaggedUsers: webPhoto.TaggedUsers,
 		Pending:     webPhoto.Pending,
 		Uploader:    webPhoto.Uploader,
+		Categories:  webPhoto.Categories,
 	}
 }

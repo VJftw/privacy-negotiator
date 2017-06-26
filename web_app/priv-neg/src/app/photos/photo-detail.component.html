@@ -12,17 +12,9 @@
 </div>
 <div class="row">
   <ul>
-    <li *ngFor="let category of this.getCategories()">
+    <li class="valign-wrapper" style="display:inline-block; margin-right:1em;" *ngFor="let category of this.getCategories()">
       <input id="{{category.name}}-cat" type="checkbox" class="filled-in" [(ngModel)]="category.isActive" [disabled]="!this.editing"/>
       <label for="{{category.name}}-cat">{{category.name}}</label>
-    </li>
-    <li>
-      <form (ngSubmit)="onAddNewCategory()">
-        <div class="input-field col s6">
-        <input id="category_new" type="text" [disabled]="!this.editing" [(ngModel)]="this.newCategoryName" name="category">
-        <label class="active" for="category_new">New category</label>
-        </div>
-      </form>
     </li>
   </ul>
 </div>

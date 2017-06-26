@@ -44,6 +44,7 @@ func NewPrivNegWorker(queue string) App {
 	photoRedisManager := photo.NewRedisManager(cacheLogger, redisCache)
 	userRedisManager := user.NewRedisManager(cacheLogger, redisCache)
 	friendRedisManager := friend.NewRedisManager(cacheLogger, redisCache)
+	categoryRedisManager := category.NewRedisManager(cacheLogger, redisCache)
 
 	userDBManager := user.NewDBManager(dbLogger, gormDB)
 	categoryDBManager := category.NewDBManager(dbLogger, gormDB)
@@ -62,7 +63,7 @@ func NewPrivNegWorker(queue string) App {
 		q = photo.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, photoRedisManager)
 		break
 	case "category-persist":
-		q = category.NewConsumer(queueLogger, rabbitMQ, categoryDBManager)
+		q = category.NewConsumer(queueLogger, rabbitMQ, categoryDBManager, categoryRedisManager)
 		break
 	case "community-detection":
 		q = friend.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, friendRedisManager, cliqueDBManager)

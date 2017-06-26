@@ -4,7 +4,7 @@
 (scrolled)="updateTaggedPhotos()">
   <div class="col s12 m6 l4" *ngFor="let photo of getTaggedPhotos()">
     <div class="card small" [ngClass]="{'grey': !photo.negotiable, 'hoverable sticky-action': photo.negotiable}">
-      <div class="card-image" [ngClass]="{'waves-effect waves-block waves-light': photo.negotiable}">
+      <div class="card-image" [ngClass]="{'waves-effect waves-block waves-light': photo.negotiable}" (click)="this.selectPhoto(photo)">
         <img [ngClass]="{'blur': !photo.negotiable, 'activator': photo.negotiable }"  src="{{photo.url}}">
         <span class="card-title"></span>
       </div>
@@ -12,17 +12,10 @@
         by: {{photo.from.name}}
       </div>
       <div class="card-action">
-        <span *ngIf="photo.negotiable">
-          <i class="fa fa-tags" aria-hidden="true" ></i> {{photo.taggedUsers.length}}
-
-          <a class="right" (click)="this.selectPhoto(photo)">View</a>
-        </span>
-      </div>
-      <div class="card-reveal">
-        <span class="card-title grey-text text-darken-4">{{photo.id}}<i class="material-icons right">close</i></span>
-        at: {{photo.createdTime}}<br />
-        album: {{photo.albumId}}
-
+        <div *ngIf="photo.negotiable" class="valign-wrapper">
+          <i class="material-icons">tag_faces</i> {{photo.taggedUsers.length}}
+          <i class="material-icons">folder</i> {{photo.categories.length}}
+        </div>
       </div>
     </div>
   </div>
