@@ -4,9 +4,9 @@ import "github.com/satori/go.uuid"
 
 // CacheClique - Representation of a user's cached clique memberships. Stored as `<userID>:cliques`: cliqueID: {}
 type CacheClique struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Blocked []string `json:"blocked"`
+	ID         string   `json:"id"`
+	Name       string   `json:"name"`
+	Categories []string `json:"categories"`
 }
 
 // WebClique - Representation of Clique submitted via Websocket
@@ -43,7 +43,9 @@ func (c *DBClique) GetUserIDs() []string {
 // NewCacheClique - Returns a new CacheClique with UUID
 func NewCacheClique() *CacheClique {
 	return &CacheClique{
-		ID: uuid.NewV4().String(),
+		ID:         uuid.NewV4().String(),
+		Name:       "",
+		Categories: []string{},
 	}
 }
 

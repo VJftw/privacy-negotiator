@@ -3,7 +3,9 @@ import { FacebookService } from 'ngx-facebook';
 import {APIFriend, FBFriend, Friend} from './friend.model';
 import {APIService} from '../api.service';
 import {APIClique, Clique} from './clique.model';
-import {Channel} from '../websocket.service';
+import {Channel, WebSocketService} from '../websocket.service';
+import {CategoryService} from '../categories/category.service';
+import {CategorySelection} from '../photos/photo-detail.component';
 
 
 @Injectable()
@@ -16,7 +18,9 @@ export class FriendService implements Channel {
 
   constructor(
     private fb: FacebookService,
-    private apiService: APIService
+    private apiService: APIService,
+    private categoryService: CategoryService,
+    private websocketService: WebSocketService,
   ) {
     this.friends = new Map();
     this.cliques = new Map();
@@ -25,6 +29,7 @@ export class FriendService implements Channel {
     c.name = 'Not Grouped';
     c.friends = new Map();
     this.cliques.set(c.id, c);
+    this.websocketService.addChannel(this);
   }
 
   public getCliques(): Clique[] {
@@ -55,6 +60,7 @@ export class FriendService implements Channel {
       '/v1/cliques'
     ).then(response => {
       const apiCliques = response.json() as APIClique[];
+      console.log(response.json());
 
       for (const apiClique of apiCliques) {
         if (this.cliques.has(apiClique.id)) {
@@ -68,6 +74,15 @@ export class FriendService implements Channel {
             clique.name = 'Unnamed';
           } else {
             clique.name = apiClique.name;
+          }
+          for (const cat of this.categoryService.getCategories()) {
+            let category;
+            if (apiClique.categories.includes(cat)) {
+              category = new CategorySelection(cat, true);
+            } else {
+              category = new CategorySelection(cat, false);
+            }
+            clique.categories.push(category);
           }
           this.cliques.set(clique.id, clique);
         }

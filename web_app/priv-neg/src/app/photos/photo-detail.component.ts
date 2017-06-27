@@ -14,7 +14,6 @@ export class PhotoDetailComponent implements OnInit {
 
   public photo: Photo;
   public editing = false;
-  public newCategoryName = '';
   private categorySelection: Map<string, CategorySelection> = new Map();
 
   constructor(
@@ -48,14 +47,6 @@ export class PhotoDetailComponent implements OnInit {
         this.categorySelection.set(cat, new CategorySelection(cat, false));
       }
     }
-  }
-
-  public onAddNewCategory() {
-    if (this.categoryService.createCategory(this.newCategoryName)) {
-      this.photo.categories.push(this.newCategoryName);
-      this.newCategoryName = '';
-    }
-    this.updateChoices();
   }
 
   toggleEdit() {

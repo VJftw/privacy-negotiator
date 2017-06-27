@@ -55,7 +55,7 @@ export class AuthService implements CanActivate {
     return this.fb.login(options)
       .then((response: LoginResponse) => {
         console.log('Authenticated with Facebook. Getting /me');
-        this.fb.api('/me?fields=id,name,picture{url}').then(res => {
+        this.fb.api('/me?fields=id,name,picture{url},cover').then(res => {
           const user = res as FbGraphUser;
           console.log(user);
           this.fbUser = new SessionUser(
@@ -64,6 +64,10 @@ export class AuthService implements CanActivate {
             response.authResponse.accessToken,
             user.picture.data.url
           );
+          console.log(user);
+          if (user.cover && user.cover.source) {
+            this.fbUser.coverPicture = user.cover.source;
+          }
           this.authenticateWithApi(response)
             .then(() => {
               this.categoryService.updateCategories();
@@ -95,6 +99,7 @@ export class SessionUser {
   name: string;
   shortAccessToken: string;
   picture: string;
+  coverPicture: string;
 
   constructor(id: string, name: string, shortAccessToken: string, picture: string) {
     this.id = id;
@@ -108,6 +113,7 @@ class FbGraphUser {
   id: string;
   name: string;
   picture: FbGraphUserPicture;
+  cover: FbGraphCover;
 }
 
 class FbGraphUserPicture {
@@ -117,4 +123,9 @@ class FbGraphUserPicture {
 
 class FbGraphUserPictureData {
   url: string;
+}
+
+class FbGraphCover {
+  id: string;
+  source: string;
 }

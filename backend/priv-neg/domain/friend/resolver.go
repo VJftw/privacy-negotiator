@@ -60,7 +60,7 @@ func FromPutRequest(r *http.Request, clique *domain.CacheClique, categories []st
 		}
 	}
 
-	clique.Blocked = jsonClique.BlockedCategories
+	clique.Categories = jsonClique.BlockedCategories
 
 	return clique, nil
 }

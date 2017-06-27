@@ -1,19 +1,23 @@
 import { AuthService } from '../auth.service';
-import { Component, OnInit } from '@angular/core';
+import {AfterViewChecked, Component, OnInit} from '@angular/core';
 import { FriendService } from './friend.service';
+import {CategorySelection} from '../photos/photo-detail.component';
+import {CategoryService} from '../categories/category.service';
 
+declare var Materialize: any;
 
 @Component({
   selector: 'app-friends',
   templateUrl: './friends.component.html'
 })
-export class FriendsComponent implements OnInit {
+export class FriendsComponent implements OnInit, AfterViewChecked {
 
   public lock = false;
 
   constructor(
     private authService: AuthService,
-    public friendService: FriendService
+    public friendService: FriendService,
+    public categoryService: CategoryService
   ) {}
 
   ngOnInit() {
@@ -37,6 +41,11 @@ export class FriendsComponent implements OnInit {
       clique.editing = false;
     }
     this.friendService.updateClique(cliqueId, clique);
+    console.log(clique);
+  }
+
+  ngAfterViewChecked() {
+    Materialize.updateTextFields();
   }
 
 }
