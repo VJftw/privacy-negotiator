@@ -4,6 +4,7 @@ export class Clique {
   id: string;
   name: string;
   friends: Map<string, Friend>;
+  editing = false;
 
   constructor() {
     this.friends = new Map();

@@ -52,7 +52,7 @@ func NewPrivNegAPI() App {
 	userController := user.NewController(controllerLogger, renderer, userRedisManager)
 	photoController := photo.NewController(controllerLogger, renderer, photoRedisManager, userRedisManager, categoryRedisManager, syncPublisher)
 	categoryController := category.NewController(controllerLogger, renderer, userRedisManager, categoryRedisManager, categoryPublisher)
-	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager)
+	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager, categoryRedisManager)
 	websocketController := websocket.NewController(wsLogger, renderer, redisCache)
 	healthController := routers.NewHealthController(controllerLogger, renderer, []persisters.Publisher{
 		authPublisher,

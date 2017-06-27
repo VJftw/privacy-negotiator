@@ -22,7 +22,7 @@ export class FriendService implements Channel {
     this.cliques = new Map();
     const c = new Clique();
     c.id = 'NA';
-    c.name = 'NA';
+    c.name = 'Not Grouped';
     c.friends = new Map();
     this.cliques.set(c.id, c);
   }
@@ -73,6 +73,17 @@ export class FriendService implements Channel {
         }
       }
     });
+  }
+
+  public getCliqueById(id: string): Clique {
+    if (this.cliques.has(id)) {
+      return this.cliques.get(id);
+    }
+    return null;
+  }
+
+  public updateClique(id: string, clique: Clique) {
+    this.cliques.set(id, clique);
   }
 
 

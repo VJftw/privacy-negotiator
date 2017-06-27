@@ -29,4 +29,14 @@ export class FriendsComponent implements OnInit {
     }
   }
 
+  toggleEdit(cliqueId: string) {
+    const clique = this.friendService.getCliqueById(cliqueId);
+    if (clique.editing === false) {
+      clique.editing = true;
+    } else {
+      clique.editing = false;
+    }
+    this.friendService.updateClique(cliqueId, clique);
+  }
+
 }

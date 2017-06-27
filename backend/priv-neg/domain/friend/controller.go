@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/middlewares"
 	"github.com/gorilla/mux"
@@ -15,10 +16,11 @@ import (
 
 // Controller - Handles users
 type Controller struct {
-	logger      *log.Logger
-	render      *render.Render
-	userRedis   *user.RedisManager
-	friendRedis *RedisManager
+	logger        *log.Logger
+	render        *render.Render
+	userRedis     *user.RedisManager
+	friendRedis   *RedisManager
+	categoryRedis *category.RedisManager
 }
 
 // NewController - returns a new controller for users.
@@ -27,12 +29,14 @@ func NewController(
 	renderer *render.Render,
 	userRedisManager *user.RedisManager,
 	friendRedisManager *RedisManager,
+	categoryRedisManager *category.RedisManager,
 ) *Controller {
 	return &Controller{
-		logger:      controllerLogger,
-		render:      renderer,
-		userRedis:   userRedisManager,
-		friendRedis: friendRedisManager,
+		logger:        controllerLogger,
+		render:        renderer,
+		userRedis:     userRedisManager,
+		friendRedis:   friendRedisManager,
+		categoryRedis: categoryRedisManager,
 	}
 }
 
@@ -43,15 +47,20 @@ func (c Controller) Setup(router *mux.Router) {
 		negroni.Wrap(http.HandlerFunc(c.getFriendsHandler)),
 	)).Methods("GET")
 
-	router.Handle("/v1/cliques", negroni.New(
-		middlewares.NewJWT(c.render),
-		negroni.Wrap(http.HandlerFunc(c.getFriendsHandler)),
-	)).Methods("GET")
-
 	router.Handle("/v1/friends", negroni.New(
 		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.postFriendsHandler)),
 	)).Methods("POST")
+
+	router.Handle("/v1/cliques", negroni.New(
+		middlewares.NewJWT(c.render),
+		negroni.Wrap(http.HandlerFunc(c.getCliquesHandler)),
+	)).Methods("GET")
+
+	router.Handle("/v1/cliques/{id}", negroni.New(
+		middlewares.NewJWT(c.render),
+		negroni.Wrap(http.HandlerFunc(c.putCliquesHandler)),
+	)).Methods("PUT")
 
 	log.Println("Set up Friend controller.")
 
@@ -64,6 +73,35 @@ func (c Controller) getCliquesHandler(w http.ResponseWriter, r *http.Request) {
 	userCliques := c.friendRedis.GetCliquesForAUserID(facebookUser.ID)
 
 	c.render.JSON(w, http.StatusOK, userCliques)
+}
+
+func (c Controller) putCliquesHandler(w http.ResponseWriter, r *http.Request) {
+	facebookUserID := middlewares.FBUserIDFromContext(r.Context())
+	facebookUser, _ := c.userRedis.FindByID(facebookUserID)
+
+	vars := mux.Vars(r)
+	idClique := vars["id"]
+
+	clique, err := c.friendRedis.GetCliqueByIDAndUser(idClique, facebookUser)
+	if err != nil {
+		c.render.JSON(w, http.StatusNotFound, nil)
+		return
+	}
+
+	categories := c.categoryRedis.GetAll()
+
+	clique, err = FromPutRequest(r, clique, categories)
+	if err != nil {
+		c.render.JSON(w, http.StatusBadRequest, nil)
+		return
+	}
+
+	c.friendRedis.AddCliqueToUserID(facebookUser.ID, clique)
+
+	//dbClique := domain.DBCliqueFromCacheClique(clique)
+	// TODO: Persist in DB
+
+	c.render.JSON(w, http.StatusOK, clique)
 }
 
 func (c Controller) getFriendsHandler(w http.ResponseWriter, r *http.Request) {

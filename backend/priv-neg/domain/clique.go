@@ -4,8 +4,9 @@ import "github.com/satori/go.uuid"
 
 // CacheClique - Representation of a user's cached clique memberships. Stored as `<userID>:cliques`: cliqueID: {}
 type CacheClique struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Blocked []string `json:"blocked"`
 }
 
 // WebClique - Representation of Clique submitted via Websocket
