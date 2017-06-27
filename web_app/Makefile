@@ -2,7 +2,7 @@ GIT_VERSION = $(shell git describe --always)
 ENVIRONMENT ?= beta
 
 install:
-	docker run --rm -v ${CURDIR}/priv-neg:/app -w /app node:8 npm install --silent
+	docker run --rm -v ${CURDIR}/priv-neg:/app -w /app node:8 yarn install
 
 serve:
 	cd priv-neg && \
