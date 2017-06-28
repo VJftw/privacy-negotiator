@@ -13,8 +13,8 @@ data "template_file" "ecs_def_worker-auth-queue" {
 
     rabbitmq_user     = "${var.rabbitmq_user}"
     rabbitmq_pass     = "${var.rabbitmq_pass}"
-    rabbitmq_hostname = "rabbitmq_${var.environment}"
-    redis_host        = "redis_${var.environment}"
+    rabbitmq_hostname = "rabbitmq-${var.environment}.weave.local"
+    redis_host        = "redis-${var.environment}.weave.local"
 
     postgres_user     = "${var.postgres_user}"
     postgres_dbname   = "privneg_${var.environment}"

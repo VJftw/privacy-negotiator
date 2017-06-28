@@ -4,6 +4,7 @@
     "image": "rabbitmq:management",
     "essential": true,
     "memoryReservation": 256,
+    "hostname": "rabbitmq-${environment}.weave.local",
     "portMappings": [
       {
         "containerPort": 5672

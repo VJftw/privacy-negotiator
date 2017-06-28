@@ -82,40 +82,40 @@ resource "aws_spot_fleet_request" "cheap_compute" {
 
   launch_specification {
     instance_type               = "m4.large"
-    ami                         = "ami-13c8f475"
+    ami                         = "ami-a8d2d7ce"
     spot_price                  = "0.03"
     user_data                   = "${data.template_file.user_data.rendered}"
     iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
     availability_zone           = "eu-west-1a"
     subnet_id                   = "${aws_subnet.app.0.id}"
     vpc_security_group_ids      = ["${aws_security_group.instance_sg.id}"]
-    key_name                    = "test"
+    key_name                    = "vjftw_ecs_ubuntu"
     associate_public_ip_address = true
   }
 
   launch_specification {
     instance_type               = "m4.large"
-    ami                         = "ami-13c8f475"
+    ami                         = "ami-a8d2d7ce"
     spot_price                  = "0.03"
     user_data                   = "${data.template_file.user_data.rendered}"
     iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
     availability_zone           = "eu-west-1b"
     subnet_id                   = "${aws_subnet.app.1.id}"
     vpc_security_group_ids      = ["${aws_security_group.instance_sg.id}"]
-    key_name                    = "test"
+    key_name                    = "vjftw_ecs_ubuntu"
     associate_public_ip_address = true
   }
 
   launch_specification {
     instance_type               = "m4.large"
-    ami                         = "ami-13c8f475"
+    ami                         = "ami-a8d2d7ce"
     spot_price                  = "0.03"
     user_data                   = "${data.template_file.user_data.rendered}"
     iam_instance_profile        = "${aws_iam_instance_profile.app.name}"
     availability_zone           = "eu-west-1c"
     subnet_id                   = "${aws_subnet.app.2.id}"
     vpc_security_group_ids      = ["${aws_security_group.instance_sg.id}"]
-    key_name                    = "test"
+    key_name                    = "vjftw_ecs_ubuntu"
     associate_public_ip_address = true
   }
 }

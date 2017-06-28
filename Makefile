@@ -11,7 +11,7 @@ tf-fmt:
 	docker run --rm \
 	--volume ${CURDIR}:/app \
 	--workdir /app/infrastructure/cluster \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	fmt
 
 cluster-init: tf-fmt
@@ -21,7 +21,7 @@ cluster-init: tf-fmt
 	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	init
 
 cluster-plan: cluster-init
@@ -31,7 +31,7 @@ cluster-plan: cluster-init
 	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	plan
 
 cluster-apply: cluster-plan
@@ -41,7 +41,7 @@ cluster-apply: cluster-plan
 	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	apply
 
 cluster-destroy: cluster-init
@@ -51,7 +51,7 @@ cluster-destroy: cluster-init
 	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	destroy --force
 
 deploy-init: tf-fmt
@@ -70,7 +70,7 @@ deploy-init: tf-fmt
 	--env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	init
 
 deploy-plan: deploy-init
@@ -81,7 +81,7 @@ deploy-plan: deploy-init
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 	--env TF_VAR_version=${GIT_VERSION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	plan
 
 deploy-apply: build deploy-plan
@@ -97,7 +97,7 @@ deploy-apply: build deploy-plan
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 	--env TF_VAR_version=${GIT_VERSION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	apply
 
 	# Upload static Web to S3
@@ -129,5 +129,5 @@ deploy-destroy: deploy-init
 	--env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 	--env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 	--env TF_VAR_version=${GIT_VERSION} \
-	hashicorp/terraform:0.9.7 \
+	hashicorp/terraform:0.9.9 \
 	destroy --force

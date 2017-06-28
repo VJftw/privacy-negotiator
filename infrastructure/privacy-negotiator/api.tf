@@ -14,8 +14,8 @@ data "template_file" "ecs_def_api" {
     jwt_secret        = "${var.jwt_secret}"
     rabbitmq_user     = "${var.rabbitmq_user}"
     rabbitmq_pass     = "${var.rabbitmq_pass}"
-    rabbitmq_hostname = "rabbitmq_${var.environment}"
-    redis_host        = "redis_${var.environment}"
+    rabbitmq_hostname = "rabbitmq-${var.environment}.weave.local"
+    redis_host        = "redis-${var.environment}.weave.local"
   }
 }
 
@@ -90,7 +90,7 @@ resource "aws_alb_target_group" "api" {
   vpc_id   = "${data.aws_vpc.app_cluster.id}"
 
   health_check {
-    path = "/v1/health"
+    path                = "/v1/health"
     healthy_threshold   = 5
     unhealthy_threshold = 2
     timeout             = 5

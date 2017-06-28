@@ -4,6 +4,7 @@
     "image": "redis",
     "essential": true,
     "memoryReservation": 512,
+    "hostname": "redis-${environment}.weave.local",
     "portMappings": [
       {
         "containerPort": 6379
