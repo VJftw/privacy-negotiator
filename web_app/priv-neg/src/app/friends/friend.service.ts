@@ -99,6 +99,11 @@ export class FriendService implements Channel {
 
   public updateClique(id: string, clique: Clique) {
     this.cliques.set(id, clique);
+    const uri = '/v1/cliques/' + id;
+
+    this.apiService.put(uri, APIClique.FromClique(clique))
+      .then(res => console.log(res))
+    ;
   }
 
 

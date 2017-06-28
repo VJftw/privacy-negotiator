@@ -67,5 +67,5 @@ func FromPutRequest(r *http.Request, clique *domain.CacheClique, categories []st
 
 type requestPUT struct {
 	Name              string   `json:"name"`
-	BlockedCategories []string `json:"blocked"`
+	BlockedCategories []string `json:"categories"`
 }
