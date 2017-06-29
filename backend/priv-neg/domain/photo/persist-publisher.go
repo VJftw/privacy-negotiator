@@ -16,7 +16,7 @@ type PersistPublisher struct {
 	logger  *log.Logger
 }
 
-// NewPublisher - Returns a new Publisher.
+// NewPersistPublisher - Returns a new Publisher.
 func NewPersistPublisher(
 	queueLogger *log.Logger,
 	ch *amqp.Channel,

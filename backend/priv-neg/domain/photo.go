@@ -62,6 +62,7 @@ func CachePhotoFromWebPhoto(webPhoto *WebPhoto) *CachePhoto {
 	}
 }
 
+// DBPhotoFromCachePhoto - Converts a Cache Photo partially into a DBPhoto. Beware when Saving this.
 func DBPhotoFromCachePhoto(cachePhoto *CachePhoto) *DBPhoto {
 	dbPhoto := DBPhoto{
 		ID:       cachePhoto.ID,

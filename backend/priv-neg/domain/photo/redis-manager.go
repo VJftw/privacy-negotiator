@@ -84,7 +84,7 @@ func (m *RedisManager) GetCategoriesForPhoto(p *domain.CachePhoto) []string {
 	return categories
 }
 
-// SaveCategoryForPhoto - Adds a given category to the Photo
+// SaveCategoriesForPhoto - Saves a CachePhotos categories.
 func (m *RedisManager) SaveCategoriesForPhoto(p *domain.CachePhoto) error {
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
