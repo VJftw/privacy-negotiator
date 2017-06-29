@@ -16,11 +16,12 @@ import (
 
 // Controller - Handles users
 type Controller struct {
-	logger        *log.Logger
-	render        *render.Render
-	userRedis     *user.RedisManager
-	friendRedis   *RedisManager
-	categoryRedis *category.RedisManager
+	logger                 *log.Logger
+	render                 *render.Render
+	userRedis              *user.RedisManager
+	friendRedis            *RedisManager
+	categoryRedis          *category.RedisManager
+	friendPersistPublisher *PersistPublisher
 }
 
 // NewController - returns a new controller for users.
@@ -30,13 +31,15 @@ func NewController(
 	userRedisManager *user.RedisManager,
 	friendRedisManager *RedisManager,
 	categoryRedisManager *category.RedisManager,
+	friendPersistPublisher *PersistPublisher,
 ) *Controller {
 	return &Controller{
-		logger:        controllerLogger,
-		render:        renderer,
-		userRedis:     userRedisManager,
-		friendRedis:   friendRedisManager,
-		categoryRedis: categoryRedisManager,
+		logger:                 controllerLogger,
+		render:                 renderer,
+		userRedis:              userRedisManager,
+		friendRedis:            friendRedisManager,
+		categoryRedis:          categoryRedisManager,
+		friendPersistPublisher: friendPersistPublisher,
 	}
 }
 
@@ -98,8 +101,9 @@ func (c Controller) putCliquesHandler(w http.ResponseWriter, r *http.Request) {
 
 	c.friendRedis.AddCliqueToUserID(facebookUser.ID, clique)
 
-	//dbClique := domain.DBCliqueFromCacheClique(clique)
 	// TODO: Persist in DB
+	dbUserClique := domain.DBUserCliqueFromCacheCliqueAndUserID(clique, facebookUser.ID)
+	c.friendPersistPublisher.Publish(dbUserClique)
 
 	c.render.JSON(w, http.StatusOK, clique)
 }

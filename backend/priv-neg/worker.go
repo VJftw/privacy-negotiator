@@ -68,9 +68,14 @@ func NewPrivNegWorker(queue string) App {
 	case "community-detection":
 		q = friend.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, friendRedisManager, cliqueDBManager)
 		break
+	case "persist-user-clique":
+		q = friend.NewPersistConsumer(queueLogger, rabbitMQ, cliqueDBManager)
+		break
 	default:
 		panic("Invalid queue selected")
 	}
+
+	log.Printf("[worker] Started queue: %s", queue)
 
 	privNegWorker.channel = rabbitMQ
 	privNegWorker.conn = conn

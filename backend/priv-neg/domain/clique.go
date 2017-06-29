@@ -24,9 +24,10 @@ type DBClique struct {
 
 // DBUserClique - Represents a user belonging to a Clique
 type DBUserClique struct {
-	CliqueID string `gorm:"primary_key"`
-	UserID   string `gorm:"primary_key"`
-	Name     string
+	CliqueID   string       `gorm:"primary_key"`
+	UserID     string       `gorm:"primary_key"`
+	Name       string       `gorm:"type:varchar(100)"`
+	Categories []DBCategory `gorm:"many2many:user-clique_categories"`
 }
 
 // GetUserIDs - returns the user ides for a DBClique
@@ -58,9 +59,14 @@ func DBCliqueFromCacheClique(cacheClique *CacheClique) *DBClique {
 
 // DBUserCliqueFromCacheCliqueAndUserID - Returns a DBUserClique from CacheClique and UserID
 func DBUserCliqueFromCacheCliqueAndUserID(cacheClique *CacheClique, userID string) *DBUserClique {
+	categories := []DBCategory{}
+	for _, cat := range cacheClique.Categories {
+		categories = append(categories, DBCategory{Name: cat})
+	}
 	return &DBUserClique{
-		CliqueID: cacheClique.ID,
-		Name:     cacheClique.Name,
-		UserID:   userID,
+		CliqueID:   cacheClique.ID,
+		Name:       cacheClique.Name,
+		UserID:     userID,
+		Categories: categories,
 	}
 }

@@ -45,6 +45,7 @@ func NewPrivNegAPI() App {
 	syncPublisher := photo.NewPublisher(queueLogger, rabbitMQ)
 	categoryPublisher := category.NewPublisher(queueLogger, rabbitMQ)
 	friendPublisher := friend.NewPublisher(queueLogger, rabbitMQ)
+	friendCliquePersistPublisher := friend.NewPersistPublisher(queueLogger, rabbitMQ)
 
 	renderer := render.New()
 
@@ -52,7 +53,7 @@ func NewPrivNegAPI() App {
 	userController := user.NewController(controllerLogger, renderer, userRedisManager)
 	photoController := photo.NewController(controllerLogger, renderer, photoRedisManager, userRedisManager, categoryRedisManager, syncPublisher)
 	categoryController := category.NewController(controllerLogger, renderer, userRedisManager, categoryRedisManager, categoryPublisher)
-	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager, categoryRedisManager)
+	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager, categoryRedisManager, friendCliquePersistPublisher)
 	websocketController := websocket.NewController(wsLogger, renderer, redisCache)
 	healthController := routers.NewHealthController(controllerLogger, renderer, []persisters.Publisher{
 		authPublisher,
