@@ -129,13 +129,65 @@ services:
       - "db:postgres"
       - "cache:redis"
 
-  worker-category-persist:
+  worker-persist-category:
     build:
       context: ./backend/
       dockerfile: Dockerfile
     environment:
       TYPE: WORKER
-      QUEUE: category-persist
+      QUEUE: persist-category
+      RABBITMQ_HOSTNAME: rabbit
+      RABBITMQ_USER: privneg
+      RABBITMQ_PASS: privneg
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: privneg
+      POSTGRES_DBNAME: privneg
+      POSTGRES_PASSWORD: privneg
+      REDIS_HOST: redis
+      FACEBOOK_APP_ID: 431282593918092
+      FACEBOOK_APP_SECRET: 5208ed76bd97a1f30533bda1478bc594
+    depends_on:
+      - queue
+      - db
+      - cache
+    links:
+      - "queue:rabbit"
+      - "db:postgres"
+      - "cache:redis"
+
+  worker-persist-user-clique:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    environment:
+      TYPE: WORKER
+      QUEUE: persist-user-clique
+      RABBITMQ_HOSTNAME: rabbit
+      RABBITMQ_USER: privneg
+      RABBITMQ_PASS: privneg
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: privneg
+      POSTGRES_DBNAME: privneg
+      POSTGRES_PASSWORD: privneg
+      REDIS_HOST: redis
+      FACEBOOK_APP_ID: 431282593918092
+      FACEBOOK_APP_SECRET: 5208ed76bd97a1f30533bda1478bc594
+    depends_on:
+      - queue
+      - db
+      - cache
+    links:
+      - "queue:rabbit"
+      - "db:postgres"
+      - "cache:redis"
+
+  worker-persist-photo:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    environment:
+      TYPE: WORKER
+      QUEUE: persist-photo
       RABBITMQ_HOSTNAME: rabbit
       RABBITMQ_USER: privneg
       RABBITMQ_PASS: privneg
