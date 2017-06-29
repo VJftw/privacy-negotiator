@@ -1,7 +1,7 @@
 <br><br>
-<h1 class="header center blue-text">Privacy Negotiator</h1>
+<h1 class="header center blue-text">Privacy Manager</h1>
 <div class="row center">
-  <h5 class="header col s12 light">An automated way to manage privacy on multi-party photographs on Facebook.</h5>
+  <h5 class="header col s12 light">A way to manage collective privacy on Facebook.</h5>
 </div>
 <div class="row center">
   <div *ngIf="loading" class="preloader-wrapper big active">
@@ -17,5 +17,27 @@
   </div>
 
   <button *ngIf="!loading" class="btn-large waves-effect waves-light blue" (click)="loginWithFacebook()">Start!</button>
+</div>
+<div class="row center">
+  <p>(Logs in with Facebook)</p>
+  <p><a (click)="this.toggleLearnMore()">More information</a></p>
+</div>
+
+<div *ngIf="learnMore" class="row animated fadeIn">
+  <h3 class="header orange-text">Why?</h3>
+  <p>When we upload photos to Facebook, tag our friends and family; only we, the uploader, can modify who can see those photos.
+    This gives zero power to the people depicted in those photos to autonomously manage their privacy and in many cases their privacy is breached.
+    No social network currently offers a way to collectively manage privacy between co-owners of media.
+  </p>
+  <h3 class="header orange-text">What this tool does</h3>
+  <p>
+    This web application interacts with the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> to:
+  </p>
+  <ul class="browser-default">
+    <li>Present photos that you are tagged in.</li>
+  </ul>
+  <h4 class="header orange-text">Requested Facebook permissions</h4>
+  <p>
+  </p>
 </div>
 <br><br>

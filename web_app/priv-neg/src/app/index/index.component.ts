@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 export class IndexComponent {
 
   public loading: boolean;
+  public learnMore = false;
 
   constructor(
     private authService: AuthService,
@@ -18,5 +19,9 @@ export class IndexComponent {
   loginWithFacebook(): void {
     this.loading = true;
     this.authService.authenticate();
+  }
+
+  public toggleLearnMore() {
+    this.learnMore = !this.learnMore;
   }
 }
