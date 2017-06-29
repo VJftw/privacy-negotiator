@@ -61,3 +61,20 @@ func CachePhotoFromWebPhoto(webPhoto *WebPhoto) *CachePhoto {
 		Categories:  webPhoto.Categories,
 	}
 }
+
+func DBPhotoFromCachePhoto(cachePhoto *CachePhoto) *DBPhoto {
+	dbPhoto := DBPhoto{
+		ID:       cachePhoto.ID,
+		Uploader: cachePhoto.Uploader,
+	}
+
+	for _, id := range cachePhoto.TaggedUsers {
+		dbPhoto.TaggedUsers = append(dbPhoto.TaggedUsers, DBUser{ID: id})
+	}
+
+	for _, cat := range cachePhoto.Categories {
+		dbPhoto.Categories = append(dbPhoto.Categories, DBCategory{Name: cat})
+	}
+
+	return &dbPhoto
+}

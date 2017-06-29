@@ -23,8 +23,6 @@ type DBUser struct {
 	LongLivedToken string
 	TokenExpires   time.Time
 
-	Categories []DBCategory
-
 	DBUserCliques []DBUserClique `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
 }
 

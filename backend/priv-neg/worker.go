@@ -49,6 +49,7 @@ func NewPrivNegWorker(queue string) App {
 	userDBManager := user.NewDBManager(dbLogger, gormDB)
 	categoryDBManager := category.NewDBManager(dbLogger, gormDB)
 	cliqueDBManager := friend.NewDBManager(dbLogger, gormDB)
+	photoDBManager := photo.NewDBManager(dbLogger, gormDB)
 
 	rabbitMQ, conn := persisters.NewQueue(queueLogger)
 
@@ -60,9 +61,9 @@ func NewPrivNegWorker(queue string) App {
 		q = auth.NewConsumer(queueLogger, rabbitMQ, userDBManager, friendPublisher)
 		break
 	case "photo-tags":
-		q = photo.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, photoRedisManager)
+		q = photo.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, photoRedisManager, photoDBManager)
 		break
-	case "category-persist":
+	case "persist-category":
 		q = category.NewConsumer(queueLogger, rabbitMQ, categoryDBManager, categoryRedisManager)
 		break
 	case "community-detection":
@@ -70,6 +71,9 @@ func NewPrivNegWorker(queue string) App {
 		break
 	case "persist-user-clique":
 		q = friend.NewPersistConsumer(queueLogger, rabbitMQ, cliqueDBManager)
+		break
+	case "persist-photo":
+		q = photo.NewPersistConsumer(queueLogger, rabbitMQ, photoDBManager, userDBManager)
 		break
 	default:
 		panic("Invalid queue selected")

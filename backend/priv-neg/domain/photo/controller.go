@@ -17,12 +17,13 @@ import (
 
 // Controller - Handles photos
 type Controller struct {
-	logger         *log.Logger
-	render         *render.Render
-	photoRedis     *RedisManager
-	userRedis      *user.RedisManager
-	categoryRedis  *category.RedisManager
-	photoPublisher *Publisher
+	logger                *log.Logger
+	render                *render.Render
+	photoRedis            *RedisManager
+	userRedis             *user.RedisManager
+	categoryRedis         *category.RedisManager
+	photoPublisher        *Publisher
+	photoPersistPublisher *PersistPublisher
 }
 
 // NewController - Returns a new controller for photos.
@@ -33,14 +34,16 @@ func NewController(
 	userRedisManager *user.RedisManager,
 	categoryRedisManager *category.RedisManager,
 	photoPublisher *Publisher,
+	photoPersistPublisher *PersistPublisher,
 ) *Controller {
 	return &Controller{
-		logger:         controllerLogger,
-		render:         renderer,
-		photoRedis:     photoRedisManager,
-		userRedis:      userRedisManager,
-		photoPublisher: photoPublisher,
-		categoryRedis:  categoryRedisManager,
+		logger:                controllerLogger,
+		render:                renderer,
+		photoRedis:            photoRedisManager,
+		userRedis:             userRedisManager,
+		photoPublisher:        photoPublisher,
+		categoryRedis:         categoryRedisManager,
+		photoPersistPublisher: photoPersistPublisher,
 	}
 }
 
@@ -128,12 +131,12 @@ func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cachePhoto = domain.CachePhotoFromWebPhoto(webPhoto)
-	for _, cat := range cachePhoto.Categories {
-		c.photoRedis.SaveCategoryForPhoto(cachePhoto, cat)
-	}
+	webCachePhoto := domain.CachePhotoFromWebPhoto(webPhoto)
+	cachePhoto.Categories = webCachePhoto.Categories
+	c.photoRedis.SaveCategoriesForPhoto(cachePhoto)
 
-	// TODO: Add to DB queue to persist relational data
+	dbPhoto := domain.DBPhotoFromCachePhoto(cachePhoto)
+	c.photoPersistPublisher.Publish(dbPhoto)
 
 	c.render.JSON(w, http.StatusOK, webPhoto)
 }

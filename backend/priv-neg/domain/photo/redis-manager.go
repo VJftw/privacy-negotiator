@@ -85,14 +85,21 @@ func (m *RedisManager) GetCategoriesForPhoto(p *domain.CachePhoto) []string {
 }
 
 // SaveCategoryForPhoto - Adds a given category to the Photo
-func (m *RedisManager) SaveCategoryForPhoto(p *domain.CachePhoto, c string) error {
+func (m *RedisManager) SaveCategoriesForPhoto(p *domain.CachePhoto) error {
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
 	redisConn.Do(
-		"SADD",
+		"DEL",
 		fmt.Sprintf("p%s:categories", p.ID),
-		c,
 	)
+
+	for _, cat := range p.Categories {
+		redisConn.Do(
+			"SADD",
+			fmt.Sprintf("p%s:categories", p.ID),
+			cat,
+		)
+	}
 
 	m.cacheLogger.Printf("Added categories for %s", p.ID)
 

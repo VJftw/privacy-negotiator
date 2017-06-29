@@ -39,7 +39,7 @@ func (m *DBManager) Save(u *domain.DBClique) error {
 
 // SaveUserClique - Saves a DBUserClique
 func (m *DBManager) SaveUserClique(uC *domain.DBUserClique) error {
-	err := m.gorm.Debug().Where(domain.DBUserClique{
+	err := m.gorm.Where(domain.DBUserClique{
 		CliqueID: uC.CliqueID,
 		UserID:   uC.UserID,
 	}).Assign(domain.DBUserClique{

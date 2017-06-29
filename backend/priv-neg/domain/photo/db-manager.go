@@ -27,10 +27,21 @@ func NewDBManager(
 
 // Save - Saves a given photo to the Database.
 func (m *DBManager) Save(p *domain.DBPhoto) error {
-	err := m.gorm.Where(domain.DBPhoto{ID: p.ID}).Assign(p).FirstOrCreate(p).Error
-	if err != nil {
-		return err
+
+	existingDBPhoto := domain.DBPhoto{}
+	err := m.gorm.Debug().Where("id = ?", p.ID).First(&existingDBPhoto).Error
+	if err != nil { // Not found, create
+		err = m.gorm.Debug().Create(p).Error
+		if err != nil {
+			return err
+		}
+	} else {
+		categories := p.Categories
+		m.gorm.Debug().Model(p).Association("Categories").Clear()
+		p.Categories = categories
+		m.gorm.Debug().Save(p)
 	}
+
 	m.dbLogger.Printf("Saved photo %s", p.ID)
 
 	return nil

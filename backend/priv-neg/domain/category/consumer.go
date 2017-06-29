@@ -28,7 +28,7 @@ func NewConsumer(
 	categoryRedisManager *RedisManager,
 ) *Consumer {
 	queue, err := ch.QueueDeclare(
-		"category-persist", // name
+		"persist-category", // name
 		true,               // durable
 		false,              // delete when unused
 		false,              // exclusive

@@ -27,10 +27,18 @@ func NewDBManager(
 
 // Save - Saves a given user to the Database.
 func (m *DBManager) Save(u *domain.DBUser) error {
-	err := m.gorm.Where(domain.DBUser{ID: u.ID}).Assign(u).FirstOrCreate(u).Error
-	if err != nil {
-		return err
+
+	existingDBUser := domain.DBUser{}
+	err := m.gorm.Debug().Where("id = ?", u.ID).First(&existingDBUser).Error
+	if err != nil { // Not found, create
+		err = m.gorm.Debug().Create(u).Error
+		if err != nil {
+			return err
+		}
+	} else {
+		m.gorm.Save(u)
 	}
+
 	m.dbLogger.Printf("Saved user %s", u.ID)
 
 	return nil

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"io/ioutil"
+
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
@@ -21,6 +23,7 @@ type Consumer struct {
 	userDB     *user.DBManager
 	photoRedis *RedisManager
 	userRedis  *user.RedisManager
+	photoDB    *DBManager
 }
 
 // NewConsumer - Returns a new consumer.
@@ -30,6 +33,7 @@ func NewConsumer(
 	userDBManager *user.DBManager,
 	userRedisManager *user.RedisManager,
 	photoRedisManager *RedisManager,
+	photoDBManager *DBManager,
 ) *Consumer {
 	queue, err := ch.QueueDeclare(
 		"photo-tags", // name
@@ -47,6 +51,7 @@ func NewConsumer(
 		userDB:     userDBManager,
 		userRedis:  userRedisManager,
 		photoRedis: photoRedisManager,
+		photoDB:    photoDBManager,
 	}
 }
 
@@ -94,6 +99,22 @@ func (c *Consumer) process(d amqp.Delivery) {
 		c.userRedis.Publish(user, "photo", webPhoto)
 	}
 
+	dbPhoto := domain.DBPhotoFromCachePhoto(cachePhoto)
+
+	c.logger.Printf("DEBUG: CachePhoto: %s", cachePhoto.Uploader)
+	c.logger.Printf("DEBUG: DBPhoto: %s", dbPhoto.Uploader)
+
+	dbUsers := []domain.DBUser{}
+	for _, user := range dbPhoto.TaggedUsers {
+		dbUser, err := c.userDB.FindByID(user.ID)
+		if err == nil {
+			dbUsers = append(dbUsers, *dbUser)
+		}
+	}
+	dbPhoto.TaggedUsers = dbUsers
+
+	c.photoDB.Save(dbPhoto)
+
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed SyncPhoto for %s in %s", cachePhoto.ID, elapsed)
 }
@@ -106,13 +127,19 @@ func updatePhotoFromGraphAPI(p *domain.CachePhoto, u *domain.DBUser) {
 		u.LongLivedToken,
 	))
 
-	photoResponse := &fbResponsePhoto{}
-	err := json.NewDecoder(res.Body).Decode(photoResponse)
+	photoResponse := fbResponsePhoto{}
+	resBody := res.Body
+	bodyBytes, _ := ioutil.ReadAll(resBody)
+	bodyString := string(bodyBytes)
+	log.Printf("DEBUG: %s", bodyString)
+	err := json.Unmarshal(bodyBytes, &photoResponse)
 	defer res.Body.Close()
 	if err != nil {
 		log.Printf("Error: %s", err)
 	}
 	p.Uploader = photoResponse.From.ID
+
+	log.Printf("DEBUG: %v", photoResponse)
 
 	for _, taggedUser := range photoResponse.Tags.Data {
 		p.TaggedUsers = append(p.TaggedUsers, taggedUser.ID)

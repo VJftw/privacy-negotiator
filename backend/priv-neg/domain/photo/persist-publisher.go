@@ -1,37 +1,36 @@
-package category
+package photo
 
 import (
-	"log"
-
 	"encoding/json"
+	"log"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
 )
 
-// Publisher - Publishes messages to the queue for persisting categories.
-type Publisher struct {
+// PersistPublisher - Publishes messages to the queue for performing community detection.
+type PersistPublisher struct {
 	queue   amqp.Queue
 	channel *amqp.Channel
 	logger  *log.Logger
 }
 
 // NewPublisher - Returns a new Publisher.
-func NewPublisher(
+func NewPersistPublisher(
 	queueLogger *log.Logger,
 	ch *amqp.Channel,
-) *Publisher {
+) *PersistPublisher {
 	queue, err := ch.QueueDeclare(
-		"persist-category", // name
-		true,               // durable
-		false,              // delete when unused
-		false,              // exclusive
-		false,              // no-wait
-		nil,                // arguments
+		"persist-photo", // name
+		true,            // durable
+		false,           // delete when unused
+		false,           // exclusive
+		false,           // no-wait
+		nil,             // arguments
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
-	return &Publisher{
+	return &PersistPublisher{
 		logger:  queueLogger,
 		channel: ch,
 		queue:   queue,
@@ -39,7 +38,7 @@ func NewPublisher(
 }
 
 // Publish - Publishes a given message onto the Queue.
-func (q *Publisher) Publish(i persisters.Queueable) {
+func (q *PersistPublisher) Publish(i persisters.Queueable) {
 	b, err := json.Marshal(i)
 	if err != nil {
 		log.Println(err)
@@ -60,6 +59,6 @@ func (q *Publisher) Publish(i persisters.Queueable) {
 }
 
 // GetMessageTotal - returns the total amount of messages in the queue.
-func (q *Publisher) GetMessageTotal() int {
+func (q *PersistPublisher) GetMessageTotal() int {
 	return q.queue.Messages
 }
