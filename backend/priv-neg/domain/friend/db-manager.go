@@ -78,6 +78,32 @@ func (m *DBManager) FindCliqueByID(id string) (*domain.DBClique, error) {
 	}
 
 	m.dbLogger.Printf("Got clique %s", id)
-	m.dbLogger.Printf("DEBUG %v", dbClique)
+	m.dbLogger.Printf("DEBUG: Clique Users: %v", dbClique.GetUserIDs())
 	return &dbClique, nil
+}
+
+func (m *DBManager) GetUserCliquesByUser(u domain.DBUser) ([]domain.DBUserClique, error) {
+
+	dbUserCliques := []domain.DBUserClique{}
+
+	err := m.gorm.Debug().Model(&u).Related(&dbUserCliques, "DBUserCliques").Error
+	if err != nil {
+		m.dbLogger.Printf("Error: %v", err)
+		return nil, err
+	}
+
+	returnDbUserCliques := []domain.DBUserClique{}
+
+	for _, dbUserClique := range dbUserCliques {
+		categories := []domain.DBCategory{}
+		err = m.gorm.Debug().Model(&dbUserClique).Related(&categories, "Categories").Error
+		if err != nil {
+			m.dbLogger.Printf("Error: %v", err)
+			return nil, err
+		}
+		dbUserClique.Categories = categories
+		returnDbUserCliques = append(returnDbUserCliques, dbUserClique)
+	}
+
+	return returnDbUserCliques, nil
 }

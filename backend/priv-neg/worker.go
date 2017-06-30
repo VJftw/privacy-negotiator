@@ -7,6 +7,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/conflict"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/friend"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
@@ -50,10 +51,12 @@ func NewPrivNegWorker(queue string) App {
 	categoryDBManager := category.NewDBManager(dbLogger, gormDB)
 	cliqueDBManager := friend.NewDBManager(dbLogger, gormDB)
 	photoDBManager := photo.NewDBManager(dbLogger, gormDB)
+	friendDBManager := friend.NewDBManager(dbLogger, gormDB)
 
 	rabbitMQ, conn := persisters.NewQueue(queueLogger)
 
 	friendPublisher := friend.NewPublisher(queueLogger, rabbitMQ)
+	conflictPublisher := conflict.NewPublisher(queueLogger, rabbitMQ)
 
 	var q persisters.Consumer
 	switch queue {
@@ -73,7 +76,10 @@ func NewPrivNegWorker(queue string) App {
 		q = friend.NewPersistConsumer(queueLogger, rabbitMQ, cliqueDBManager)
 		break
 	case "persist-photo":
-		q = photo.NewPersistConsumer(queueLogger, rabbitMQ, photoDBManager, userDBManager)
+		q = photo.NewPersistConsumer(queueLogger, rabbitMQ, photoDBManager, userDBManager, conflictPublisher)
+		break
+	case "conflict-detection-and-resolution":
+		q = conflict.NewConsumer(queueLogger, rabbitMQ, friendDBManager)
 		break
 	default:
 		panic("Invalid queue selected")

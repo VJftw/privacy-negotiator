@@ -60,7 +60,7 @@ func (c *Consumer) Consume() {
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
-		true,         // auto-ack
+		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -88,32 +88,45 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	c.logger.Printf("Started processing for %s", cachePhoto.ID)
 
-	dbUser, _ := c.userDB.FindByID(cachePhoto.Uploader)
+	dbUser, err := c.userDB.FindByID(cachePhoto.Uploader)
 
-	updatePhotoFromGraphAPI(cachePhoto, dbUser)
+	if err != nil || dbUser.LongLivedToken == "" {
+		d.Nack(false, true)
+		c.logger.Printf("Negative Acknowledge: Missing User information: %s", cachePhoto.Uploader)
+	} else {
+		updatePhotoFromGraphAPI(cachePhoto, dbUser)
 
-	c.photoRedis.Save(cachePhoto)
+		c.photoRedis.Save(cachePhoto)
 
-	webPhoto := domain.WebPhotoFromCachePhoto(cachePhoto)
-	for _, user := range cachePhoto.TaggedUsers {
-		c.userRedis.Publish(user, "photo", webPhoto)
-	}
-
-	dbPhoto := domain.DBPhotoFromCachePhoto(cachePhoto)
-
-	c.logger.Printf("DEBUG: CachePhoto: %s", cachePhoto.Uploader)
-	c.logger.Printf("DEBUG: DBPhoto: %s", dbPhoto.Uploader)
-
-	dbUsers := []domain.DBUser{}
-	for _, user := range dbPhoto.TaggedUsers {
-		dbUser, err := c.userDB.FindByID(user.ID)
-		if err == nil {
-			dbUsers = append(dbUsers, *dbUser)
+		webPhoto := domain.WebPhotoFromCachePhoto(cachePhoto)
+		for _, user := range cachePhoto.TaggedUsers {
+			c.userRedis.Publish(user, "photo", webPhoto)
 		}
-	}
-	dbPhoto.TaggedUsers = dbUsers
 
-	c.photoDB.Save(dbPhoto)
+		dbPhoto := domain.DBPhotoFromCachePhoto(cachePhoto)
+
+		c.logger.Printf("DEBUG: CachePhoto: %s", cachePhoto.Uploader)
+		c.logger.Printf("DEBUG: DBPhoto: %s", dbPhoto.Uploader)
+
+		dbUsers := []domain.DBUser{}
+		for _, user := range dbPhoto.TaggedUsers {
+			dbUser, err := c.userDB.FindByID(user.ID)
+			if err == nil {
+				dbUsers = append(dbUsers, *dbUser)
+			} else {
+				newUser := domain.DBUser{
+					ID: user.ID,
+				}
+				c.userDB.Save(&newUser)
+				dbUsers = append(dbUsers, newUser)
+			}
+		}
+		dbPhoto.TaggedUsers = dbUsers
+
+		c.photoDB.Save(dbPhoto)
+
+		d.Ack(false)
+	}
 
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed SyncPhoto for %s in %s", cachePhoto.ID, elapsed)

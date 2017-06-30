@@ -2,11 +2,12 @@ package domain
 
 // CachePhoto - The representation of a Photo stored on the Cache.
 type CachePhoto struct {
-	ID          string   `json:"id"`
-	TaggedUsers []string `json:"taggedUsers"`
-	Uploader    string   `json:"uploader"`
-	Pending     bool     `json:"pending"`
-	Categories  []string `json:"categories"`
+	ID          string        `json:"id"`
+	TaggedUsers []string      `json:"taggedUsers"`
+	Uploader    string        `json:"uploader"`
+	Pending     bool          `json:"pending"`
+	Categories  []string      `json:"categories"`
+	Conflict    CacheConflict `json:"conflict"` // nil if no conflict exists
 }
 
 // WebPhoto - The photo representation sent to a web client.
@@ -26,6 +27,10 @@ type DBPhoto struct {
 	TaggedUsers []DBUser `gorm:"many2many:photo_users"`
 
 	Categories []DBCategory `gorm:"many2many:photo_categories"`
+}
+
+func (p DBPhoto) TableName() string {
+	return "photos"
 }
 
 // WebPhotoFromCachePhoto - Converts a CachePhoto into a WebPhoto.

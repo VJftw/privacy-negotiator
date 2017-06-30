@@ -2,9 +2,6 @@ package domain
 
 import "time"
 
-// User - The FacebookUser entity.
-type User interface{}
-
 // CacheUser - a representation of a User stored in the cache.
 type CacheUser struct {
 	ID           string    `json:"id"`
@@ -24,6 +21,10 @@ type DBUser struct {
 	TokenExpires   time.Time
 
 	DBUserCliques []DBUserClique `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
+}
+
+func (u DBUser) TableName() string {
+	return "users"
 }
 
 // CacheUserFromAuthUser - Translates a AuthUser to a CacheUser.

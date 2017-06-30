@@ -4,7 +4,11 @@ package domain
 type DBCategory struct {
 	Name        string         `gorm:"primary_key"`
 	Photos      []DBPhoto      `gorm:"many2many:photo_categories"`
-	UserCliques []DBUserClique `gorm:"many2many:user-clique_categories"`
+	UserCliques []DBUserClique `gorm:"many2many:user_clique_categories"`
+}
+
+func (c DBCategory) TableName() string {
+	return "categories"
 }
 
 // WebCategory - Category representation to web_app.

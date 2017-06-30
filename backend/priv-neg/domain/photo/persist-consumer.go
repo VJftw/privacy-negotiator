@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/conflict"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
@@ -13,11 +14,12 @@ import (
 
 // PersistConsumer - Consumer for getting Community Detection.
 type PersistConsumer struct {
-	queue   amqp.Queue
-	channel *amqp.Channel
-	logger  *log.Logger
-	photoDB *DBManager
-	userDB  *user.DBManager
+	queue             amqp.Queue
+	channel           *amqp.Channel
+	logger            *log.Logger
+	photoDB           *DBManager
+	userDB            *user.DBManager
+	conflictPublisher *conflict.Publisher
 }
 
 // NewPersistConsumer - Returns a new consumer.
@@ -26,6 +28,7 @@ func NewPersistConsumer(
 	ch *amqp.Channel,
 	photoDBManager *DBManager,
 	userDBManager *user.DBManager,
+	conflictPublisher *conflict.Publisher,
 ) *PersistConsumer {
 	queue, err := ch.QueueDeclare(
 		"persist-photo", // name
@@ -37,11 +40,12 @@ func NewPersistConsumer(
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
 	return &PersistConsumer{
-		logger:  queueLogger,
-		channel: ch,
-		queue:   queue,
-		photoDB: photoDBManager,
-		userDB:  userDBManager,
+		logger:            queueLogger,
+		channel:           ch,
+		queue:             queue,
+		photoDB:           photoDBManager,
+		userDB:            userDBManager,
+		conflictPublisher: conflictPublisher,
 	}
 }
 
@@ -88,6 +92,8 @@ func (c *PersistConsumer) process(d amqp.Delivery) {
 	dbPhoto.Uploader = dbUploader.ID
 
 	c.photoDB.Save(&dbPhoto)
+
+	c.conflictPublisher.Publish(dbPhoto)
 
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed photo %s in %s", dbPhoto.ID, elapsed)

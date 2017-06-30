@@ -22,12 +22,20 @@ type DBClique struct {
 	DBUserCliques []DBUserClique `gorm:"ForeignKey:CliqueID"`
 }
 
+func (c DBClique) TableName() string {
+	return "cliques"
+}
+
 // DBUserClique - Represents a user belonging to a Clique
 type DBUserClique struct {
 	CliqueID   string       `gorm:"primary_key"`
 	UserID     string       `gorm:"primary_key"`
 	Name       string       `gorm:"type:varchar(100)"`
-	Categories []DBCategory `gorm:"many2many:user-clique_categories"`
+	Categories []DBCategory `gorm:"many2many:user_clique_categories"`
+}
+
+func (uC DBUserClique) TableName() string {
+	return "user_cliques"
 }
 
 // GetUserIDs - returns the user ides for a DBClique

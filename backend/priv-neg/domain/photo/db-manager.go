@@ -50,8 +50,23 @@ func (m *DBManager) Save(p *domain.DBPhoto) error {
 // FindByID - Returns a Photo given its ID, nil if not found.
 func (m *DBManager) FindByID(id string) (*domain.DBPhoto, error) {
 	dbPhoto := &domain.DBPhoto{}
+	dbCategories := []domain.DBCategory{}
+	dbTaggedUsers := []domain.DBUser{}
 
-	m.gorm.Where("id = ?", id).First(dbPhoto)
+	m.gorm.Where(
+		"id = ?", id,
+	).First(
+		dbPhoto,
+	).Related(
+		&dbCategories,
+		"Categories",
+	).Related(
+		&dbTaggedUsers,
+		"TaggedUsers",
+	)
+	dbPhoto.Categories = dbCategories
+	dbPhoto.TaggedUsers = dbTaggedUsers
+
 	if dbPhoto.ID == "" {
 		m.dbLogger.Printf("Could not find photo %s", id)
 		return nil, errors.New("Not found")
