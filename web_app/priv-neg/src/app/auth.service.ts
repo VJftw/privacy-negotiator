@@ -74,10 +74,11 @@ export class AuthService implements CanActivate {
           }
           this.authenticateWithApi(response)
             .then(() => {
-              this.categoryService.updateCategories();
-              this.apiService.webSocketService.addChannel(this.photoService);
-              this.apiService.webSocketService.addChannel(this.friendSerivce);
-              this.router.navigate(['/photos']);
+              this.categoryService.updateCategories().then(() => {
+                this.apiService.webSocketService.addChannel(this.photoService);
+                this.apiService.webSocketService.addChannel(this.friendSerivce);
+                this.router.navigate(['/photos']);
+              });
             });
         });
       })

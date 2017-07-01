@@ -15,9 +15,7 @@ export class FriendsComponent implements OnInit, AfterViewChecked {
   public lock = false;
 
   constructor(
-    private authService: AuthService,
     public friendService: FriendService,
-    public categoryService: CategoryService
   ) {}
 
   ngOnInit() {
@@ -39,8 +37,8 @@ export class FriendsComponent implements OnInit, AfterViewChecked {
       clique.editing = true;
     } else {
       clique.editing = false;
+      this.friendService.updateClique(cliqueId, clique);
     }
-    this.friendService.updateClique(cliqueId, clique);
     console.log(clique);
   }
 

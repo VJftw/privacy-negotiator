@@ -10,16 +10,21 @@
       </div>
       <div class="card-content">
         by: {{photo.from.name}}
+
       </div>
       <div class="card-action">
-        <div *ngIf="photo.negotiable" class="valign-wrapper">
-          <div class="col s6">
+        <div *ngIf="photo.negotiable" class="row" style="margin-bottom: 0;">
+          <div class="valign-wrapper col s2">
             <i class="material-icons">face</i> {{photo.taggedUsers.length}}
+          </div>
+          <div class="valign-wrapper col s2">
             <i class="material-icons">folder</i> {{photo.categories.length}}
           </div>
-          <div *ngIf="photo.conflict" class="col s6 right">
-            <i class="material-icons right">done</i>
-            <i class="material-icons right">group_work</i>
+          <div class="valign-wrapper col s2 right">
+            <i *ngIf="photo.conflict && photo.conflict.id && photo.conflict.resolved"  class="material-icons right">done</i>
+          </div>
+          <div class="valign-wrapper col s2 right">
+            <i *ngIf="photo.conflict && photo.conflict.id"  class="material-icons right">group_work</i>
           </div>
         </div>
       </div>

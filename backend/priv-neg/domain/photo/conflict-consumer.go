@@ -100,8 +100,10 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 		userInitialBlocked := []string{}
 		taggedUserCliques, _ := c.friendDB.GetUserCliquesByUser(taggedUser)
 		for _, taggedUserClique := range taggedUserCliques {
+			c.logger.Printf("DEBUG: UserCliqueCategories: %v", taggedUserClique.Categories)
 			hasCategory := false
 			for _, cliqueCat := range taggedUserClique.Categories {
+				c.logger.Printf("DEBUG: Allowing UserClique: %s", taggedUserClique.CliqueID)
 				if isIn(cliqueCat, dbPhoto.Categories) {
 					hasCategory = true
 					break
