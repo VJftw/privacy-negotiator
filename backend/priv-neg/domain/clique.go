@@ -22,6 +22,7 @@ type DBClique struct {
 	DBUserCliques []DBUserClique `gorm:"ForeignKey:CliqueID"`
 }
 
+// TableName - Returns the table name for the entity.
 func (c DBClique) TableName() string {
 	return "cliques"
 }
@@ -34,6 +35,7 @@ type DBUserClique struct {
 	Categories []DBCategory `gorm:"many2many:user_clique_categories"`
 }
 
+// TableName - Returns the table name for the entity.
 func (uC DBUserClique) TableName() string {
 	return "user_cliques"
 }

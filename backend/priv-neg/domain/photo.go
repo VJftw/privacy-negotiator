@@ -30,6 +30,7 @@ type DBPhoto struct {
 	Categories []DBCategory `gorm:"many2many:photo_categories"`
 }
 
+// TableName - Returns the table name for the entity.
 func (p DBPhoto) TableName() string {
 	return "photos"
 }

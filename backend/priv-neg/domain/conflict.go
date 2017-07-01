@@ -2,6 +2,7 @@ package domain
 
 import "github.com/satori/go.uuid"
 
+// DBConflict - Represents a conflict stored in the database.
 type DBConflict struct {
 	ID       string  `gorm:"primary_key"`
 	Photo    DBPhoto `gorm:"ForeignKey:PhotoID"`
@@ -11,6 +12,7 @@ type DBConflict struct {
 	Resolved bool
 }
 
+// NewDBConflict - Returns a new DBConflict.
 func NewDBConflict() DBConflict {
 	return DBConflict{
 		ID:       uuid.NewV4().String(),
@@ -20,10 +22,12 @@ func NewDBConflict() DBConflict {
 	}
 }
 
+// TableName - Returns the table name for the entity.
 func (c DBConflict) TableName() string {
 	return "conflicts"
 }
 
+// CacheConflict - Represents a conflict stored in the Cache.
 type CacheConflict struct {
 	ID       string   `json:"id"`
 	Targets  []string `json:"targets"`
@@ -31,6 +35,7 @@ type CacheConflict struct {
 	Resolved bool     `json:"resolved"`
 }
 
+// CacheConflictFromDBConflict - Returns a CacheConflict given a DBConflict
 func CacheConflictFromDBConflict(dbConflict DBConflict) CacheConflict {
 	cC := CacheConflict{
 		ID:       dbConflict.ID,

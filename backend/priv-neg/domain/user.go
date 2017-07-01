@@ -23,6 +23,7 @@ type DBUser struct {
 	DBUserCliques []DBUserClique `gorm:"ForeignKey:UserID;AssociationForeignKey:ID"`
 }
 
+// TableName - Returns the table name for the entity.
 func (u DBUser) TableName() string {
 	return "users"
 }

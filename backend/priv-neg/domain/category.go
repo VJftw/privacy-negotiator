@@ -7,6 +7,7 @@ type DBCategory struct {
 	UserCliques []DBUserClique `gorm:"many2many:user_clique_categories"`
 }
 
+// TableName - Returns the table name for the entity.
 func (c DBCategory) TableName() string {
 	return "categories"
 }

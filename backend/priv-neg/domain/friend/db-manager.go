@@ -82,6 +82,7 @@ func (m *DBManager) FindCliqueByID(id string) (*domain.DBClique, error) {
 	return &dbClique, nil
 }
 
+// GetUserCliquesByUser - Returns the UserCliques for a User.
 func (m *DBManager) GetUserCliquesByUser(u domain.DBUser) ([]domain.DBUserClique, error) {
 
 	dbUserCliques := []domain.DBUserClique{}
