@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/conflict"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 	"github.com/streadway/amqp"
@@ -19,7 +18,7 @@ type PersistConsumer struct {
 	logger            *log.Logger
 	photoDB           *DBManager
 	userDB            *user.DBManager
-	conflictPublisher *conflict.Publisher
+	conflictPublisher *ConflictPublisher
 }
 
 // NewPersistConsumer - Returns a new consumer.
@@ -28,7 +27,7 @@ func NewPersistConsumer(
 	ch *amqp.Channel,
 	photoDBManager *DBManager,
 	userDBManager *user.DBManager,
-	conflictPublisher *conflict.Publisher,
+	conflictPublisher *ConflictPublisher,
 ) *PersistConsumer {
 	queue, err := ch.QueueDeclare(
 		"persist-photo", // name

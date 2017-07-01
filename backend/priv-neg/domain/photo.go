@@ -12,11 +12,12 @@ type CachePhoto struct {
 
 // WebPhoto - The photo representation sent to a web client.
 type WebPhoto struct {
-	ID          string   `json:"id"`
-	TaggedUsers []string `json:"taggedUsers"`
-	Uploader    string   `json:"from"`
-	Pending     bool     `json:"pending"`
-	Categories  []string `json:"categories"`
+	ID          string        `json:"id"`
+	TaggedUsers []string      `json:"taggedUsers"`
+	Uploader    string        `json:"from"`
+	Pending     bool          `json:"pending"`
+	Categories  []string      `json:"categories"`
+	Conflict    CacheConflict `json:"conflict"`
 }
 
 // DBPhoto - The entity stored on the database
@@ -47,6 +48,7 @@ func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
 		Pending:     cachePhoto.Pending,
 		Uploader:    cachePhoto.Uploader,
 		Categories:  cachePhoto.Categories,
+		Conflict:    cachePhoto.Conflict,
 	}
 }
 

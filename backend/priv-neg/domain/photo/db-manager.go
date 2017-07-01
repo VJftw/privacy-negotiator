@@ -75,3 +75,16 @@ func (m *DBManager) FindByID(id string) (*domain.DBPhoto, error) {
 	m.dbLogger.Printf("Got photo %s", dbPhoto.ID)
 	return dbPhoto, nil
 }
+
+// Save - Saves a given Conflict to the Database.
+func (m *DBManager) SaveConflict(c *domain.DBConflict) error {
+	err := m.gorm.Where(domain.DBConflict{
+		ID: c.ID,
+	}).Assign(c).FirstOrCreate(c).Error
+	if err != nil {
+		return err
+	}
+	m.dbLogger.Printf("Saved conflict %s", c.ID)
+
+	return nil
+}

@@ -7,7 +7,6 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/auth"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
-	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/conflict"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/friend"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
@@ -39,6 +38,7 @@ func NewPrivNegWorker(queue string) App {
 		&domain.DBCategory{},
 		&domain.DBClique{},
 		&domain.DBUserClique{},
+		&domain.DBConflict{},
 	)
 	redisCache := persisters.NewRedisDB(cacheLogger)
 
@@ -56,7 +56,7 @@ func NewPrivNegWorker(queue string) App {
 	rabbitMQ, conn := persisters.NewQueue(queueLogger)
 
 	friendPublisher := friend.NewPublisher(queueLogger, rabbitMQ)
-	conflictPublisher := conflict.NewPublisher(queueLogger, rabbitMQ)
+	conflictPublisher := photo.NewConflictPublisher(queueLogger, rabbitMQ)
 
 	var q persisters.Consumer
 	switch queue {
@@ -79,7 +79,7 @@ func NewPrivNegWorker(queue string) App {
 		q = photo.NewPersistConsumer(queueLogger, rabbitMQ, photoDBManager, userDBManager, conflictPublisher)
 		break
 	case "conflict-detection-and-resolution":
-		q = conflict.NewConsumer(queueLogger, rabbitMQ, friendDBManager)
+		q = photo.NewConflictConsumer(queueLogger, rabbitMQ, friendDBManager, userDBManager, photoDBManager, photoRedisManager, userRedisManager)
 		break
 	default:
 		panic("Invalid queue selected")

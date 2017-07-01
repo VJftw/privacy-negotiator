@@ -1,4 +1,4 @@
-package conflict
+package photo
 
 import (
 	"encoding/json"
@@ -9,18 +9,18 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Publisher - Publishes messages to the queue for getting tagged users in a photo.
-type Publisher struct {
+// ConflictPublisher - Publishes messages to the queue for getting tagged users in a photo.
+type ConflictPublisher struct {
 	queue   amqp.Queue
 	channel *amqp.Channel
 	logger  *log.Logger
 }
 
-// NewPublisher - Returns a new Publisher.
-func NewPublisher(
+// NewConflictPublisher - Returns a new ConflictPublisher.
+func NewConflictPublisher(
 	queueLogger *log.Logger,
 	ch *amqp.Channel,
-) *Publisher {
+) *ConflictPublisher {
 	queue, err := ch.QueueDeclare(
 		"conflict-detection-and-resolution", // name
 		true,  // durable
@@ -30,7 +30,7 @@ func NewPublisher(
 		nil,   // arguments
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
-	return &Publisher{
+	return &ConflictPublisher{
 		logger:  queueLogger,
 		channel: ch,
 		queue:   queue,
@@ -38,7 +38,7 @@ func NewPublisher(
 }
 
 // Publish - Publishes a given message onto the Queue.
-func (q *Publisher) Publish(i persisters.Queueable) {
+func (q *ConflictPublisher) Publish(i persisters.Queueable) {
 	b, err := json.Marshal(i)
 	if err != nil {
 		log.Println(err)
@@ -59,6 +59,6 @@ func (q *Publisher) Publish(i persisters.Queueable) {
 }
 
 // GetMessageTotal - returns the total amount of messages in the queue.
-func (q *Publisher) GetMessageTotal() int {
+func (q *ConflictPublisher) GetMessageTotal() int {
 	return q.queue.Messages
 }

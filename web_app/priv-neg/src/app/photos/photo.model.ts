@@ -29,6 +29,8 @@ export class Photo {
   pending = false;
   taggedUsers: FBUser[] = [];
   categories: string[] = [];
+  conflict: Conflict;
+
 
   public static fromFBPhoto(fp: FBPhoto): Photo {
     const p = new Photo();
@@ -52,9 +54,17 @@ export class Photo {
     }
 
     p.categories = ap.categories;
+    p.conflict = ap.conflict;
 
     return p;
   }
+}
+
+export class Conflict {
+  id: string;
+  targets: string[] = [];
+  parties: string[] = [];
+  resolved: boolean;
 }
 
 export class APIPhoto {
@@ -62,6 +72,7 @@ export class APIPhoto {
   taggedUsers: string[] = [];
   pending = false;
   categories: string[] = [];
+  conflict: Conflict;
 }
 
 export class FBUser {

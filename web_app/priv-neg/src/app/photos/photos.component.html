@@ -13,8 +13,14 @@
       </div>
       <div class="card-action">
         <div *ngIf="photo.negotiable" class="valign-wrapper">
-          <i class="material-icons">tag_faces</i> {{photo.taggedUsers.length}}
-          <i class="material-icons">folder</i> {{photo.categories.length}}
+          <div class="col s6">
+            <i class="material-icons">face</i> {{photo.taggedUsers.length}}
+            <i class="material-icons">folder</i> {{photo.categories.length}}
+          </div>
+          <div *ngIf="photo.conflict" class="col s6 right">
+            <i class="material-icons right">done</i>
+            <i class="material-icons right">group_work</i>
+          </div>
         </div>
       </div>
     </div>

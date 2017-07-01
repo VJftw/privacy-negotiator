@@ -25,3 +25,8 @@
     </ul>
   </div>
 </div>
+<div *ngIf="photo.conflict" class="row">
+  <div class="col s12">
+    {{photo.conflict | json}}
+  </div>
+</div>
