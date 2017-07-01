@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { PhotoService } from './photos/photo.service';
 import { Photo } from './photos/photo.model';
+import {FriendService} from './friends/friend.service';
 
 @Injectable()
 export class WebSocketService {

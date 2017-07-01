@@ -15,6 +15,10 @@ export class Clique {
   public getFriends(): Friend[] {
     return Array.from(this.friends.values());
   }
+
+  public removeFriend(userID: string) {
+    this.friends.delete(userID);
+  }
 }
 
 export class APIClique {

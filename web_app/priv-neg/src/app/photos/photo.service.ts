@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
 import { Photo, FBPhoto, APIPhoto } from './photo.model';
 import { APIService } from '../api.service';
-import { WebSocketService, Channel } from '../websocket.service';
+import { Channel } from '../websocket.service';
 
 
 @Injectable()
@@ -14,10 +14,8 @@ export class PhotoService implements Channel {
   constructor(
     private fb: FacebookService,
     private apiService: APIService,
-    private websocketService: WebSocketService,
   ) {
     this.photos = new Map();
-    this.websocketService.addChannel(this);
   }
 
   public getName(): string {

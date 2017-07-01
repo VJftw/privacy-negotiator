@@ -17,7 +17,7 @@ export class APIService {
 
   constructor(
     private http: Http,
-    private webSocketService: WebSocketService
+    public webSocketService: WebSocketService
   ) {}
 
   public setAuthorization(authToken: string) {

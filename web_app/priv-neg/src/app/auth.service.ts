@@ -5,6 +5,8 @@ import { environment } from '../environments/environment';
 import { Router, CanActivate } from '@angular/router';
 import { APIService } from './api.service';
 import {CategoryService} from './categories/category.service';
+import {FriendService} from './friends/friend.service';
+import {PhotoService} from './photos/photo.service';
 
 @Injectable()
 export class AuthService implements CanActivate {
@@ -15,6 +17,8 @@ export class AuthService implements CanActivate {
     public fb: FacebookService,
     private apiService: APIService,
     private categoryService: CategoryService,
+    private photoService: PhotoService,
+    private friendSerivce: FriendService,
     private router: Router,
 
   ) {
@@ -71,6 +75,8 @@ export class AuthService implements CanActivate {
           this.authenticateWithApi(response)
             .then(() => {
               this.categoryService.updateCategories();
+              this.apiService.webSocketService.addChannel(this.photoService);
+              this.apiService.webSocketService.addChannel(this.friendSerivce);
               this.router.navigate(['/photos']);
             });
         });

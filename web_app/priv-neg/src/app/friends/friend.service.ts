@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import {Injectable, NgZone} from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
 import {APIFriend, FBFriend, Friend} from './friend.model';
 import {APIService} from '../api.service';
 import {APIClique, Clique} from './clique.model';
-import {Channel, WebSocketService} from '../websocket.service';
+import {Channel} from '../websocket.service';
 import {CategoryService} from '../categories/category.service';
 import {CategorySelection} from '../photos/photo-detail.component';
 
@@ -20,7 +20,7 @@ export class FriendService implements Channel {
     private fb: FacebookService,
     private apiService: APIService,
     private categoryService: CategoryService,
-    private websocketService: WebSocketService,
+    private _zone: NgZone,
   ) {
     this.friends = new Map();
     this.cliques = new Map();
@@ -29,7 +29,6 @@ export class FriendService implements Channel {
     c.name = 'Not Grouped';
     c.friends = new Map();
     this.cliques.set(c.id, c);
-    this.websocketService.addChannel(this);
   }
 
   public getCliques(): Clique[] {
@@ -41,18 +40,28 @@ export class FriendService implements Channel {
   }
 
   public onWebsocketMessage(data) {
-    const apiClique = data as APIClique;
-    if (!this.cliques.has(apiClique.id)) {
-      const c = new Clique();
-      c.name = apiClique.name;
-      for (const userId of apiClique.users) {
-        c.friends.set(userId, this.friends.get(userId));
-      }
-      this.cliques.set(apiClique.id, c);
-    } else {
-      // Merge cliques
-      // this.cliques.get(apiClique)
-    }
+    this._zone.run(() => {
+      // const apiClique = data as APIClique;
+      // if (!this.cliques.has(apiClique.id)) {
+      //   const c = new Clique();
+      //   c.name = apiClique.name;
+      //   for (const cat of this.categoryService.getCategories()) {
+      //     c.categories.push( new CategorySelection(cat, false));
+      //   }
+      //   for (const userId of apiClique.users) {
+      //     c.friends.set(userId, this.friends.get(userId));
+      //     this.cliques.get('NA').removeFriend(userId);
+      //   }
+      //
+      //   this.cliques.set(apiClique.id, c);
+      // } else {
+      //   // Merge cliques
+      //   // this.cliques.get(apiClique)
+      // }
+      // console.log(this.cliques);
+      // console.log(this.friends);
+      this.updateFriends().then();
+    });
   }
 
   public updateCliquesFromAPI(): Promise<any> {
@@ -149,6 +158,7 @@ export class FriendService implements Channel {
             if (this.cliques.has(cliqueID)) {
               const clique = this.cliques.get(cliqueID);
               clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id));
+              this.cliques.get('NA').removeFriend(apiFriend.id);
 
               this.cliques.set(cliqueID, clique);
             } else {
