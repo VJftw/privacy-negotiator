@@ -1,6 +1,6 @@
 import { AuthService } from '../auth.service';
 import { Component, OnInit } from '@angular/core';
-import { Photo } from './photo.model';
+import { Photo } from '../domain/photo.model';
 import { PhotoService } from './photo.service';
 import {Router} from '@angular/router';
 
@@ -39,7 +39,7 @@ export class PhotosComponent implements OnInit {
   updateTaggedPhotos() {
     if (!this.lock) {
       this.lock = true;
-      this.photoService.updateTaggedPhotos()
+      this.photoService.getPhotosFromFBGraph()
         .then(() => this.lock = false)
       ;
     }

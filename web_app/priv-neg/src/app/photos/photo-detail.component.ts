@@ -2,7 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {PhotoService} from './photo.service';
-import {Photo} from './photo.model';
+import {Photo} from '../domain/photo.model';
+import {CategorySelection} from '../domain/category.model';
 import {CategoryService} from '../categories/category.service';
 
 
@@ -65,12 +66,4 @@ export class PhotoDetailComponent implements OnInit {
 
 }
 
-export class CategorySelection {
-  name: string;
-  isActive: boolean;
 
-  constructor(name: string, isActive = false) {
-    this.name = name;
-    this.isActive = isActive;
-  }
-}

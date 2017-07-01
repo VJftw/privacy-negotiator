@@ -1,8 +1,5 @@
-import { AuthService } from '../auth.service';
 import {AfterViewChecked, Component, OnInit} from '@angular/core';
 import { FriendService } from './friend.service';
-import {CategorySelection} from '../photos/photo-detail.component';
-import {CategoryService} from '../categories/category.service';
 
 declare var Materialize: any;
 

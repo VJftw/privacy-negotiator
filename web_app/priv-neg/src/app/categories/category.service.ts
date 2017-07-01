@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {APIService} from '../api.service';
-import {Category} from './category.model';
+import {Category} from '../domain/category.model';
 
 @Injectable()
 export class CategoryService {

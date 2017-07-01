@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { PhotoService } from './photos/photo.service';
-import { Photo } from './photos/photo.model';
+import { Photo } from './domain/photo.model';
 import {FriendService} from './friends/friend.service';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class WebSocketService {
 
     if (this.channels.has(wsMessage.type)) {
       const channel = this.channels.get(wsMessage.type);
-      channel.onWebsocketMessage(wsMessage.data);
+      channel.onWebSocketMessage(wsMessage.data);
     } else {
       console.error('No channel found for: ' + wsMessage.type);
     }
@@ -43,7 +43,7 @@ export class WebSocketService {
 
 export interface Channel {
   getName(): string;
-  onWebsocketMessage(data);
+  onWebSocketMessage(data);
 }
 
 class WSMessage {

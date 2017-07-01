@@ -86,8 +86,8 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	dbPhoto := domain.DBPhoto{}
 	json.Unmarshal(d.Body, &dbPhoto)
 
-	taggedUserAllowedUsers := map[string]map[string]bool{} // taggedUserID: cliqueUserID
-	taggedUserBlockedUsers := map[string]map[string]bool{} // taggedUserID: cliqueUserID
+	taggedUserAllowedUsers := map[string][]string{} // taggedUserID: cliqueUserID
+	taggedUserBlockedUsers := map[string][]string{} // taggedUserID: cliqueUserID
 
 	c.logger.Printf("DEBUG: TaggedUsers: %d, Categories: %d", len(dbPhoto.TaggedUsers), len(dbPhoto.Categories))
 	taggedUserIDs := []string{}
@@ -117,16 +117,17 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 			}
 		}
 
-		taggedUserAllowedUsers[taggedUser.ID] = map[string]bool{}
-		taggedUserBlockedUsers[taggedUser.ID] = map[string]bool{}
+		taggedUserAllowedUsers[taggedUser.ID] = []string{}
+		taggedUserBlockedUsers[taggedUser.ID] = []string{}
 
 		for _, blockedUserID := range userInitialBlocked {
 			if !utils.IsIn(blockedUserID, userInitialAllowed) && !utils.IsIn(blockedUserID, taggedUserIDs) {
-				taggedUserBlockedUsers[taggedUser.ID][blockedUserID] = true
+				taggedUserBlockedUsers[taggedUser.ID] = append(taggedUserBlockedUsers[taggedUser.ID], blockedUserID)
 			}
 		}
 		for _, allowedUserID := range userInitialAllowed {
-			taggedUserAllowedUsers[taggedUser.ID][allowedUserID] = true
+			taggedUserAllowedUsers[taggedUser.ID] = append(taggedUserAllowedUsers[taggedUser.ID], allowedUserID)
+
 		}
 	}
 
@@ -138,18 +139,29 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	dbConflict.Photo = dbPhoto
 	dbConflict.PhotoID = dbPhoto.ID
 
+	cachePhoto, _ := c.photoRedis.FindByID(dbPhoto.ID)
+	// Update AllowedUsers and BlockedUsers for CachedPhoto as well as finding conflicts.
 	for taggedUserIDAllowed, allowedUserIDs := range taggedUserAllowedUsers {
-		for allowedUserID := range allowedUserIDs {
-			for taggedUserIDBlocked := range taggedUserBlockedUsers {
-				if _, ok := taggedUserBlockedUsers[taggedUserIDBlocked][allowedUserID]; ok {
-					// conflict
-					c.logger.Printf("Found conflict between %s and %s with %s", taggedUserIDAllowed, taggedUserIDBlocked, allowedUserID)
-					allowedUser, _ := c.userDB.FindByID(allowedUserID)
-					dbConflict.Targets = append(dbConflict.Targets, *allowedUser)
-					taggedUserAllowed, _ := c.userDB.FindByID(taggedUserIDAllowed)
-					taggedUserBlocked, _ := c.userDB.FindByID(taggedUserIDBlocked)
-					dbConflict.Parties = append(dbConflict.Parties, *taggedUserBlocked, *taggedUserAllowed)
+		for _, allowedUserID := range allowedUserIDs {
+			conflict := false
+			for taggedUserIDBlocked, blockedUserIDs := range taggedUserBlockedUsers {
+				for _, blockedUserID := range blockedUserIDs {
+					if allowedUserID == blockedUserID {
+						// conflict
+						c.logger.Printf("Found conflict between %s and %s with %s", taggedUserIDAllowed, taggedUserIDBlocked, allowedUserID)
+						allowedUser, _ := c.userDB.FindByID(allowedUserID)
+						dbConflict.Targets = append(dbConflict.Targets, *allowedUser)
+						taggedUserAllowed, _ := c.userDB.FindByID(taggedUserIDAllowed)
+						taggedUserBlocked, _ := c.userDB.FindByID(taggedUserIDBlocked)
+						dbConflict.Parties = append(dbConflict.Parties, *taggedUserBlocked, *taggedUserAllowed)
+						conflict = true
+					} else if !utils.IsIn(blockedUserID, cachePhoto.BlockedUserIDs) {
+						cachePhoto.BlockedUserIDs = append(cachePhoto.BlockedUserIDs, blockedUserID)
+					}
 				}
+			}
+			if !conflict && !utils.IsIn(allowedUserID, cachePhoto.AllowedUserIDs) {
+				cachePhoto.AllowedUserIDs = append(cachePhoto.AllowedUserIDs, allowedUserID)
 			}
 		}
 	}
@@ -157,14 +169,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	if len(dbConflict.Targets) > 0 {
 		// We have conflicts. Save to Cache and DB and suggest resolution
 		cacheConflict := domain.CacheConflictFromDBConflict(dbConflict)
-		cachePhoto, _ := c.photoRedis.FindByID(dbPhoto.ID)
 		cachePhoto.Conflict = cacheConflict
-		c.photoRedis.Save(cachePhoto)
-
-		// TODO: Update WebSocket
-		for _, user := range dbPhoto.TaggedUsers {
-			c.userRedis.Publish(user.ID, "photo", domain.WebPhotoFromCachePhoto(cachePhoto))
-		}
 
 		err := c.photoDB.SaveConflict(&dbConflict)
 		if err != nil {
@@ -175,6 +180,12 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 		// Find which party user has the highest tie-strength to target user.
 		// Suggest policy of that party user
 
+	}
+
+	c.photoRedis.Save(cachePhoto)
+
+	for _, u := range dbPhoto.TaggedUsers {
+		c.userRedis.Publish(u.ID, "photo", domain.WebPhotoFromCachePhoto(cachePhoto))
 	}
 
 	elapsed := time.Since(start)

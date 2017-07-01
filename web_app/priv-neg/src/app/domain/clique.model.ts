@@ -1,18 +1,20 @@
-import {Friend} from './friend.model';
-import {CategorySelection} from '../photos/photo-detail.component';
+
+import {CategorySelection} from './category.model';
+import {User} from './user.model';
 
 export class Clique {
   id: string;
   name: string;
-  friends: Map<string, Friend>;
+  friends: Map<string, User>;
   editing = false;
   categories: CategorySelection[] = [];
 
   constructor() {
+    this.name = 'Unnamed';
     this.friends = new Map();
   }
 
-  public getFriends(): Friend[] {
+  public getFriends(): User[] {
     return Array.from(this.friends.values());
   }
 

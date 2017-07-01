@@ -1,19 +1,21 @@
-export class FBPhoto {
+import {User} from './user.model';
+
+export class FbGraphPhoto {
   id: string;
   created_time: string;
-  from: FBUser;
-  images: FBPlatformImageSource[];
+  from: User;
+  images: FbPlatformImageSource[];
 
-  album: FBAlbum;
+  album: FbGraphAlbum;
 }
 
-export class FBAlbum {
+export class FbGraphAlbum {
   id: string;
   name: string;
-  from: FBUser;
+  from: User;
 }
 
-export class FBPlatformImageSource {
+export class FbPlatformImageSource {
   height: number;
   source: string;
   width: number;
@@ -24,15 +26,16 @@ export class Photo {
   createdTime: string;
   url: string;
   albumId: string;
-  from: FBUser;
+  from: User;
   negotiable = false;
   pending = false;
-  taggedUsers: FBUser[] = [];
+  taggedUsers: User[] = [];
   categories: string[] = [];
   conflict: Conflict;
+  allowedUsers: User[];
+  blockedUsers: User[];
 
-
-  public static fromFBPhoto(fp: FBPhoto): Photo {
+  public static fromFBPhoto(fp: FbGraphPhoto): Photo {
     const p = new Photo();
 
     p.id = fp.id;
@@ -46,13 +49,6 @@ export class Photo {
   public static fromAPIPhoto(ap: APIPhoto, p: Photo = new Photo()): Photo {
     p.id = ap.id;
     p.pending = ap.pending;
-
-    for (const taggedUser of ap.taggedUsers) {
-      const fbUser = new FBUser();
-      fbUser.id = taggedUser;
-      p.taggedUsers.push(fbUser);
-    }
-
     p.categories = ap.categories;
     p.conflict = ap.conflict;
 
@@ -73,9 +69,7 @@ export class APIPhoto {
   pending = false;
   categories: string[] = [];
   conflict: Conflict;
+  allowedUsers: string[];
+  blockedUsers: string[];
 }
 
-export class FBUser {
-  id: string;
-  name: string;
-}

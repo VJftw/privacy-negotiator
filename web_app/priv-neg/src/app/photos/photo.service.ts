@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
-import { Photo, FBPhoto, APIPhoto } from './photo.model';
+import {Photo, APIPhoto, FbGraphPhoto} from '../domain/photo.model';
 import { APIService } from '../api.service';
 import { Channel } from '../websocket.service';
+import {FriendService} from '../friends/friend.service';
 
 
 @Injectable()
@@ -14,6 +15,7 @@ export class PhotoService implements Channel {
   constructor(
     private fb: FacebookService,
     private apiService: APIService,
+    private friendService: FriendService,
   ) {
     this.photos = new Map();
   }
@@ -22,7 +24,7 @@ export class PhotoService implements Channel {
     return 'photo';
   }
 
-  public onWebsocketMessage(data) {
+  public onWebSocketMessage(data) {
     const apiPhoto = data as APIPhoto;
     const photo = this.getPhotoById(apiPhoto.id);
     this.photos.set(apiPhoto.id, Photo.fromAPIPhoto(apiPhoto, photo));
@@ -47,7 +49,7 @@ export class PhotoService implements Channel {
     return this.photos.get(photoId);
   }
 
-  public updateTaggedPhotos(): Promise<void> {
+  public getPhotosFromFBGraph(): Promise<void> {
     let uri = '/me/photos?fields=id,created_time,from,target,images,album';
 
     if (this.offset) {
@@ -59,14 +61,14 @@ export class PhotoService implements Channel {
         if (response.paging) {
           this.offset = response.paging.cursors.after;
         }
-        const fbPhotos = response.data as FBPhoto[];
-        return this.processFBPhotos(fbPhotos);
+        const fbPhotos = response.data as FbGraphPhoto[];
+        return this.processFBGraphPhotos(fbPhotos);
       })
       .catch(e => console.error(e))
     ;
   }
 
-  private processFBPhotos(fbPhotos: FBPhoto[]) {
+  private processFBGraphPhotos(fbPhotos: FbGraphPhoto[]) {
 
     const uploaderIds = [];
     for (const fbPhoto of fbPhotos) {
@@ -108,24 +110,44 @@ export class PhotoService implements Channel {
       '/v1/photos?ids=' + JSON.stringify(photoIds)
     ).then(response => {
       const foundPhotos = response.json() as APIPhoto[];
-      console.log(foundPhotos);
 
       for (const photo of negotiablePhotos) {
-        let f = null;
+        let found = false;
         for (const foundPhoto of foundPhotos) {
           if (foundPhoto.id === photo.id) {
-            f = foundPhoto;
+            this.saveToPhotoRepository(foundPhoto, photo);
+            found = true;
             break;
           }
         }
-        if (f) {
-          this.photos.set(photo.id, Photo.fromAPIPhoto(f, photo));
-        } else {
+        if (!found) {
           // POST new photo
           this.savePhoto(photo);
         }
       }
     });
+  }
+
+  private saveToPhotoRepository(foundPhoto: APIPhoto, photo: Photo) {
+    const p = Photo.fromAPIPhoto(foundPhoto, photo);
+    p.allowedUsers = [];
+    for (const userID of foundPhoto.allowedUsers) {
+      this.friendService.getUserById(userID).then(
+        u => p.allowedUsers.push(u)
+      );
+    }
+    p.blockedUsers = [];
+    for (const userID of foundPhoto.blockedUsers) {
+      this.friendService.getUserById(userID).then(
+        u => p.blockedUsers.push(u)
+      );
+    }
+    for (const userID of foundPhoto.taggedUsers) {
+      this.friendService.getUserById(userID).then(
+        u => p.taggedUsers.push(u)
+      );
+    }
+    this.photos.set(photo.id, p);
   }
 
   public savePhoto(photo: Photo) {

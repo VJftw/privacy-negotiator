@@ -1,17 +1,23 @@
 import {Injectable, NgZone} from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
-import {APIFriend, FBFriend, Friend} from './friend.model';
+import {APIFriend} from '../domain/friend.model';
 import {APIService} from '../api.service';
-import {APIClique, Clique} from './clique.model';
+import {APIClique, Clique} from '../domain/clique.model';
 import {Channel} from '../websocket.service';
 import {CategoryService} from '../categories/category.service';
-import {CategorySelection} from '../photos/photo-detail.component';
+import {CategorySelection} from '../domain/category.model';
+import {FbGraphUser} from '../auth.service';
+import {User} from '../domain/user.model';
 
+class PromiseUser {
+  promise: Promise<any>;
+  user: User;
+}
 
 @Injectable()
 export class FriendService implements Channel {
 
-  private friends: Map<string, Friend>;
+  private friends: Map<string, PromiseUser>;
   private cliques: Map<string, Clique>;
   protected offset: string;
 
@@ -31,6 +37,31 @@ export class FriendService implements Channel {
     this.cliques.set(c.id, c);
   }
 
+  public getUserById(id: string): Promise<User> {
+    return new Promise((resolve, reject) => {
+      if (!this.friends.has(id)) {
+        const pU = new PromiseUser();
+        pU.promise = this.fb.api('/' + id + '?fields=id,name,picture{url}').then(response => {
+          const friend = response as FbGraphUser;
+          const user = User.FromFBGraphUser(friend);
+          const promiseUser = this.friends.get(user.id);
+          promiseUser.user = user;
+          this.friends.set(user.id, promiseUser);
+          console.log(response);
+          resolve(this.friends.get(user.id).user);
+        });
+        this.friends.set(id, pU);
+      } else {
+        const pU = this.friends.get(id);
+        if (pU.user) {
+          resolve(this.friends.get(id).user);
+        } else {
+          pU.promise.then(() => resolve(this.friends.get(id).user));
+        }
+      }
+    });
+  }
+
   public getCliques(): Clique[] {
     return Array.from(this.cliques.values());
   }
@@ -39,27 +70,8 @@ export class FriendService implements Channel {
     return 'clique';
   }
 
-  public onWebsocketMessage(data) {
+  public onWebSocketMessage(data) {
     this._zone.run(() => {
-      // const apiClique = data as APIClique;
-      // if (!this.cliques.has(apiClique.id)) {
-      //   const c = new Clique();
-      //   c.name = apiClique.name;
-      //   for (const cat of this.categoryService.getCategories()) {
-      //     c.categories.push( new CategorySelection(cat, false));
-      //   }
-      //   for (const userId of apiClique.users) {
-      //     c.friends.set(userId, this.friends.get(userId));
-      //     this.cliques.get('NA').removeFriend(userId);
-      //   }
-      //
-      //   this.cliques.set(apiClique.id, c);
-      // } else {
-      //   // Merge cliques
-      //   // this.cliques.get(apiClique)
-      // }
-      // console.log(this.cliques);
-      // console.log(this.friends);
       this.updateFriends().then();
     });
   }
@@ -128,7 +140,7 @@ export class FriendService implements Channel {
         if (response.paging) {
           this.offset = response.paging.cursors.after;
         }
-        const fbFriends = response.data as FBFriend[];
+        const fbFriends = response.data as FbGraphUser[];
         console.log(fbFriends);
         this.processFriends(fbFriends);
       })
@@ -136,13 +148,16 @@ export class FriendService implements Channel {
     ;
   }
 
-  private processFriends(fbFriends: FBFriend[]) {
+  private processFriends(fbFriends: FbGraphUser[]) {
     const friendIds = [];
     for (const fbFriend of fbFriends) {
-      const friend = Friend.FromFBFriend(fbFriend);
+      const friend = User.FromFBGraphUser(fbFriend);
       friendIds.push(fbFriend.id);
 
-      this.friends.set(friend.id, friend);
+      const promiseUser = new PromiseUser();
+      promiseUser.user = friend;
+
+      this.friends.set(friend.id, promiseUser);
     }
 
     this.apiService.get(
@@ -151,13 +166,13 @@ export class FriendService implements Channel {
       for (const apiFriend of response.json() as APIFriend[]) {
         if (apiFriend.cliques.length < 1) {
           const clique = this.cliques.get('NA');
-          clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id));
+          clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);
           this.cliques.set('NA', clique);
         } else {
           for (const cliqueID of apiFriend.cliques) {
             if (this.cliques.has(cliqueID)) {
               const clique = this.cliques.get(cliqueID);
-              clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id));
+              clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);
               this.cliques.get('NA').removeFriend(apiFriend.id);
 
               this.cliques.set(cliqueID, clique);
@@ -165,8 +180,11 @@ export class FriendService implements Channel {
               const clique = new Clique();
               clique.id = cliqueID;
               clique.name = 'Unnamed';
+              for (const cat of this.categoryService.getCategories()) {
+                clique.categories.push(new CategorySelection(cat, false));
+              }
               clique.friends = new Map();
-              clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id));
+              clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);
               this.cliques.set(cliqueID, clique);
             }
           }
@@ -175,6 +193,4 @@ export class FriendService implements Channel {
     });
 
   }
-
-
 }

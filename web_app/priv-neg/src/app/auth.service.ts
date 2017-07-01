@@ -116,23 +116,23 @@ export class SessionUser {
   }
 }
 
-class FbGraphUser {
+export class FbGraphUser {
   id: string;
   name: string;
   picture: FbGraphUserPicture;
   cover: FbGraphCover;
 }
 
-class FbGraphUserPicture {
+export class FbGraphUserPicture {
   data: FbGraphUserPictureData;
 }
 
 
-class FbGraphUserPictureData {
+export class FbGraphUserPictureData {
   url: string;
 }
 
-class FbGraphCover {
+export class FbGraphCover {
   id: string;
   source: string;
 }

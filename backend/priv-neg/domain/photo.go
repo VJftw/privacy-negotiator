@@ -2,22 +2,26 @@ package domain
 
 // CachePhoto - The representation of a Photo stored on the Cache.
 type CachePhoto struct {
-	ID          string        `json:"id"`
-	TaggedUsers []string      `json:"taggedUsers"`
-	Uploader    string        `json:"uploader"`
-	Pending     bool          `json:"pending"`
-	Categories  []string      `json:"categories"`
-	Conflict    CacheConflict `json:"conflict"` // nil if no conflict exists
+	ID             string        `json:"id"`
+	TaggedUsers    []string      `json:"taggedUsers"`
+	Uploader       string        `json:"uploader"`
+	Pending        bool          `json:"pending"`
+	Categories     []string      `json:"categories"`
+	Conflict       CacheConflict `json:"conflict"` // nil if no conflict exists
+	AllowedUserIDs []string      `json:"allowedUsers"`
+	BlockedUserIDs []string      `json:"blockedUsers"`
 }
 
 // WebPhoto - The photo representation sent to a web client.
 type WebPhoto struct {
-	ID          string        `json:"id"`
-	TaggedUsers []string      `json:"taggedUsers"`
-	Uploader    string        `json:"from"`
-	Pending     bool          `json:"pending"`
-	Categories  []string      `json:"categories"`
-	Conflict    CacheConflict `json:"conflict"`
+	ID             string        `json:"id"`
+	TaggedUsers    []string      `json:"taggedUsers"`
+	Uploader       string        `json:"from"`
+	Pending        bool          `json:"pending"`
+	Categories     []string      `json:"categories"`
+	Conflict       CacheConflict `json:"conflict"`
+	AllowedUserIDs []string      `json:"allowedUsers"`
+	BlockedUserIDs []string      `json:"blockedUsers"`
 }
 
 // DBPhoto - The entity stored on the database
@@ -43,13 +47,21 @@ func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
 	if cachePhoto.Categories == nil {
 		cachePhoto.Categories = []string{}
 	}
+	if cachePhoto.AllowedUserIDs == nil {
+		cachePhoto.AllowedUserIDs = []string{}
+	}
+	if cachePhoto.BlockedUserIDs == nil {
+		cachePhoto.BlockedUserIDs = []string{}
+	}
 	return &WebPhoto{
-		ID:          cachePhoto.ID,
-		TaggedUsers: cachePhoto.TaggedUsers,
-		Pending:     cachePhoto.Pending,
-		Uploader:    cachePhoto.Uploader,
-		Categories:  cachePhoto.Categories,
-		Conflict:    cachePhoto.Conflict,
+		ID:             cachePhoto.ID,
+		TaggedUsers:    cachePhoto.TaggedUsers,
+		Pending:        cachePhoto.Pending,
+		Uploader:       cachePhoto.Uploader,
+		Categories:     cachePhoto.Categories,
+		Conflict:       cachePhoto.Conflict,
+		AllowedUserIDs: cachePhoto.AllowedUserIDs,
+		BlockedUserIDs: cachePhoto.BlockedUserIDs,
 	}
 }
 
@@ -60,6 +72,12 @@ func CachePhotoFromWebPhoto(webPhoto *WebPhoto) *CachePhoto {
 	}
 	if webPhoto.Categories == nil {
 		webPhoto.Categories = []string{}
+	}
+	if webPhoto.AllowedUserIDs == nil {
+		webPhoto.AllowedUserIDs = []string{}
+	}
+	if webPhoto.BlockedUserIDs == nil {
+		webPhoto.BlockedUserIDs = []string{}
 	}
 	return &CachePhoto{
 		ID:          webPhoto.ID,
