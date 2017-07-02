@@ -93,6 +93,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 	if err != nil || dbUser.LongLivedToken == "" {
 		d.Nack(false, true)
 		c.logger.Printf("Negative Acknowledge: Missing User information: %s", cachePhoto.Uploader)
+		time.Sleep(3 * time.Second)
 	} else {
 		updatePhotoFromGraphAPI(cachePhoto, dbUser)
 

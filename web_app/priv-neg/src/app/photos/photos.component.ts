@@ -46,6 +46,8 @@ export class PhotosComponent implements OnInit {
   }
 
   public selectPhoto(photo: Photo) {
-    this.router.navigate(['photos', photo.id]);
+    if (photo.negotiable) {
+      this.router.navigate(['photos', photo.id]);
+    }
   }
 }
