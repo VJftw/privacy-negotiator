@@ -25,7 +25,7 @@
 
 <div *ngIf="learnMore" class="row animated fadeIn">
   <h3 class="header grey-text">Why?</h3>
-  <p>When we upload photos to Facebook, tag our friends and family; only we, the uploader, can modify who can see those photos.
+  <p>When we upload photos to Facebook and tag our friends and family, only we, the uploader, can modify who can see those photos.
     This gives zero power to the people depicted in those photos to autonomously manage their privacy and in many cases their privacy is breached.
     No social network currently offers a way to collectively manage privacy between co-owners of media.
   </p>
@@ -36,7 +36,7 @@
   <ul class="browser-default">
     <li>Present photos that you are tagged in:
       <ul class="browser-default">
-        <li>Greyscaled photos are publicly viewable and searchable by anyone. The uploader's of those need to authorize this tool for us to mediate on them.</li>
+        <li>Greyscaled photos are publicly viewable and searchable by anyone. The uploaders of those need to authorize this tool for us to mediate on them.</li>
         <li>Coloured photos are considered <em>negotiable</em>. With these, you can:
           <ul class="browser-default">
             <li>View the users that are tagged.</li>
@@ -52,7 +52,7 @@
       <ul class="browser-default">
         <li>Cliques are determined by the Clique Percolation Method (CPM), and are stored in bipartites (<a href="https://arxiv.org/pdf/0805.1449.pdf" target="_blank">A sequential algorithm for fast clique percolation</a>).</li>
         <li>Tie-strengths are determined by similarities in Facebook profiles. See requested permissions below.</li>
-        <li>You can manage your preferences for what contexts/categories a clique is allowed to view.</li>
+        <li>You can manage your preferences for whichh contexts/categories a clique is allowed to view.</li>
       </ul>
     </li>
   </ul>
@@ -69,9 +69,9 @@
       </ul>
     </li>
     <li>As this tool is only aware of mutually authorised friends, it is only able to apply a photo's privacy concerning those users it is aware of.</li>
-    <li>Determine categories/context for a photo automatically. This would be a whole other project as there currently isn't any AI that can interemt photos well. They can describe objects but cannot decide on suitable contexts.</li>
+    <li>Determine categories/context for a photo automatically. This would be a whole other project as there currently isn't any AI that can interept photos well. They can describe objects but cannot decide on suitable contexts.</li>
   </ul>
-  <p>There may be some bugs as I've only had 1 month to create this, resulting in no test coverage. This should improve as I commit further patches.</p>
+  <p>I created this in a month with no test coverage so there may be some bugs. They should be resolved in further patches.</p>
   <img style="width:auto; max-height: 10em;" src="https://media.giphy.com/media/QQZgTehcKrD2w/giphy.gif"/>
   <p>
     <sup id="fn1">1. <a href="https://developers.facebook.com/docs/graph-api/reference/photo" target="_blank">https://developers.facebook.com/docs/graph-api/reference/photo</a></sup><br/>
@@ -83,7 +83,7 @@
   </p>
   <ul class="browser-default">
     <li><em>user_friends</em> - See your friends that also use the application to generate cliques and manage privacy policies</li>
-    <li><em>user_photos</em> - See your photos to present them and store privacy policies.</li>
+    <li><em>user_photos</em> - See your photos to present them and store privacy policies</li>
     <li><em>user_posts</em> - See any photos published to your timeline</li>
     <li><em>user_education_history</em> - See your education history for tie-strength generation</li>
     <li><em>user_hometown</em> - See your hometown for tie-strength generation</li>
