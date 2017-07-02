@@ -48,9 +48,10 @@
         </li>
       </ul>
     </li>
-    <li>Present your friends (that have authorised this tool) in automatically generated cliques.
+    <li>Present your friends (that have authorised this tool) with generated tie-strengths and generated cliques.
       <ul class="browser-default">
-        <li>Cliques are determined by the Clique Percolation Method (CPM), and are stored in bi-partites (<a href="https://arxiv.org/pdf/0805.1449.pdf">A sequential algorithm for fast clique percolation</a>).</li>
+        <li>Cliques are determined by the Clique Percolation Method (CPM), and are stored in bipartites (<a href="https://arxiv.org/pdf/0805.1449.pdf" target="_blank">A sequential algorithm for fast clique percolation</a>).</li>
+        <li>Tie-strengths are determined by similarities in Facebook profiles. See requested permissions below.</li>
         <li>You can manage your preferences for what contexts/categories a clique is allowed to view.</li>
       </ul>
     </li>
@@ -60,8 +61,15 @@
   <ul class="browser-default">
     <li>Present existing privacy settings for a photo. The Graph API does not allow privacy to be read from a photo. <sup><a href="#fn1" id="ref1">1</a></sup></li>
     <li>Show all friends. The Graph API only allows the tool to see friends that have mutually authorised it. <sup><a href="#fn2" id="ref2">2</a></sup></li>
+    <li>The tie-strength algorithm does not take into account:
+      <ul class="browser-default">
+        <li>Friendship duration.</li>
+        <li>Communication through Facebook Messenger.</li>
+        <li>Granular details about education, work, location, likes (graduation year, concentration, date started etc.).</li>
+      </ul>
+    </li>
     <li>As this tool is only aware of mutually authorised friends, it is only able to apply a photo's privacy concerning those users it is aware of.</li>
-    <li>Determine categories/context for a photo automatically. This would be a whole other project as there currently isn't any AI that can interpret photos well. They can describe objects but cannot decide on suitable contexts.</li>
+    <li>Determine categories/context for a photo automatically. This would be a whole other project as there currently isn't any AI that can interemt photos well. They can describe objects but cannot decide on suitable contexts.</li>
   </ul>
   <p>There may be some bugs as I've only had 1 month to create this, resulting in no test coverage. This should improve as I commit further patches.</p>
   <img style="width:auto; max-height: 10em;" src="https://media.giphy.com/media/QQZgTehcKrD2w/giphy.gif"/>
@@ -71,7 +79,23 @@
   </p>
   <h4 class="header grey-text">Requested Facebook permissions</h4>
   <p>
+    This tool only <strong>reads</strong> information from the Graph API. It will only ever <strong>write</strong> when applying a privacy policy to a photo.
   </p>
+  <ul class="browser-default">
+    <li><em>user_friends</em> - See your friends that also use the application to generate cliques and manage privacy policies</li>
+    <li><em>user_photos</em> - See your photos to present them and store privacy policies.</li>
+    <li><em>user_posts</em> - See any photos published to your timeline</li>
+    <li><em>user_education_history</em> - See your education history for tie-strength generation</li>
+    <li><em>user_hometown</em> - See your hometown for tie-strength generation</li>
+    <li><em>user_likes</em> - See your likes for tie-strength generation</li>
+    <li><em>user_location</em> - See your location for tie-strength generation</li>
+    <li><em>user_relationship_details</em> - See your relationship details for tie-strength generation</li>
+    <li><em>user_relationships</em> - See your relationships for tie-strength generation</li>
+    <li><em>user_religion_politics</em> - See your religion and politics for tie-strength generation</li>
+    <li><em>user_work_history</em> - See your work history for tie-strength generation</li>
+    <li><em>user_events</em> - See your events for tie-strength generation</li>
+    <li><em>user_managed_groups</em> - See your groups for tie-strength generation</li>
+  </ul>
 
 </div>
 <br><br>

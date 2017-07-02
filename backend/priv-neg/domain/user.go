@@ -51,3 +51,21 @@ func DBUserFromAuthUser(authUser *AuthUser) *DBUser {
 		ID: authUser.ID,
 	}
 }
+
+// CacheUserProfile - Cache representation of a User Profile
+type CacheUserProfile struct {
+	Gender              string   `json:"gender"`
+	AgeRange            string   `json:"ageRange"`
+	Hometown            string   `json:"hometown"`
+	Location            string   `json:"location"`
+	Education           []string `json:"education"`
+	FavouriteTeams      []string `json:"favouriteTeams"`
+	InspirationalPeople []string `json:"inspirationalPeople"`
+	Languages           []string `json:"languages"`
+	Family              []string `json:"languages"`
+	Music               []string `json:"music"`
+	Movies              []string `json:"movies"`
+	Likes               []string `json:"likes"`
+	Groups              []string `json:"groups"`
+	Events              []string `json:"events"`
+}

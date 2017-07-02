@@ -25,7 +25,7 @@
           </div>
         </div>
         <div class="col s1">
-          <a class="btn-floating btn-small waves-effect waves-light right" (click)="this.toggleEdit(clique.id)">
+          <a class="btn-floating btn-small waves-effect waves-light right" [ngClass]="{'orange': !clique.editing, 'red': clique.editing}" (click)="this.toggleEdit(clique.id)">
             <i class="material-icons left">
               <span *ngIf="!clique.editing">mode_edit</span>
               <span *ngIf="clique.editing">save</span>
@@ -37,7 +37,7 @@
     <li style="min-height: 0;" class="collection-item avatar" *ngFor="let friend of clique.getFriends()">
       <img style="width:25px; height:25px;" src="{{friend.picture}}" alt="" class="circle">
       <span class="title">{{friend.name}}</span>
-      <span class="new badge" data-badge-caption="strength">< tie ></span>
+      <span class="new badge blue" data-badge-caption="strength">{{ friend.tieStrength }}</span>
     </li>
   </ul>
 

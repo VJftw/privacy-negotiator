@@ -46,6 +46,8 @@ func NewPrivNegAPI() App {
 	categoryPublisher := category.NewPublisher(queueLogger, rabbitMQ)
 	friendPublisher := friend.NewPublisher(queueLogger, rabbitMQ)
 	friendCliquePersistPublisher := friend.NewPersistPublisher(queueLogger, rabbitMQ)
+	friendTieStrengthPublisher := friend.NewTieStrengthPublisher(queueLogger, rabbitMQ)
+	photoConflictPublisher := photo.NewConflictPublisher(queueLogger, rabbitMQ)
 	photoPersistPublisher := photo.NewPersistPublisher(queueLogger, rabbitMQ)
 
 	renderer := render.New()
@@ -63,6 +65,8 @@ func NewPrivNegAPI() App {
 		friendPublisher,
 		friendCliquePersistPublisher,
 		photoPersistPublisher,
+		friendTieStrengthPublisher,
+		photoConflictPublisher,
 	})
 
 	privNegAPI.Router = routers.NewMuxRouter([]routers.Routable{

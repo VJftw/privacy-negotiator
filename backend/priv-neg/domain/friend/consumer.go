@@ -17,13 +17,14 @@ import (
 
 // Consumer - Consumer for getting Community Detection.
 type Consumer struct {
-	queue       amqp.Queue
-	channel     *amqp.Channel
-	logger      *log.Logger
-	userDB      *user.DBManager
-	userRedis   *user.RedisManager
-	friendRedis *RedisManager
-	cliqueDB    *DBManager
+	queue                amqp.Queue
+	channel              *amqp.Channel
+	logger               *log.Logger
+	userDB               *user.DBManager
+	userRedis            *user.RedisManager
+	friendRedis          *RedisManager
+	cliqueDB             *DBManager
+	tieStrengthPublisher *TieStrengthPublisher
 }
 
 // NewConsumer - Returns a new consumer.
@@ -34,6 +35,7 @@ func NewConsumer(
 	userRedisManager *user.RedisManager,
 	friendRedisManager *RedisManager,
 	cliqueDBManager *DBManager,
+	tieStrengthPublisher *TieStrengthPublisher,
 ) *Consumer {
 	queue, err := ch.QueueDeclare(
 		"community-detection", // name
@@ -45,13 +47,14 @@ func NewConsumer(
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
 	return &Consumer{
-		logger:      queueLogger,
-		channel:     ch,
-		queue:       queue,
-		userDB:      userDBManager,
-		userRedis:   userRedisManager,
-		friendRedis: friendRedisManager,
-		cliqueDB:    cliqueDBManager,
+		logger:               queueLogger,
+		channel:              ch,
+		queue:                queue,
+		userDB:               userDBManager,
+		userRedis:            userRedisManager,
+		friendRedis:          friendRedisManager,
+		cliqueDB:             cliqueDBManager,
+		tieStrengthPublisher: tieStrengthPublisher,
 	}
 }
 
@@ -121,8 +124,14 @@ func (c *Consumer) process(d amqp.Delivery) {
 		}
 		cacheUser := domain.CacheUserFromDatabaseUser(dbUser)
 		cacheFriendship := &domain.CacheFriendship{ID: friendID}
-		// Add to tie-strength queue
 		c.friendRedis.Save(cacheUser, cacheFriendship)
+
+		// Add to tie-strength queue
+		queueFriendship := &domain.QueueFriendship{
+			From: dbUser.ID,
+			To:   friendID,
+		}
+		c.tieStrengthPublisher.Publish(queueFriendship)
 	}
 
 	alreadyUserReducedUsers := []string{}
@@ -182,7 +191,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 				}
 
 				// TODO: Merge cliques when necessary
-				c.logger.Printf("DEBUG: This should == 1: %v (if it's greater, then the cliques need merging)", mutualCliqueIDs)
+				c.logger.Printf("WARNING: This should == 1: %v (if it's greater, then the cliques need merging)", mutualCliqueIDs)
 				mutualCliqueID := mutualCliqueIDs[0]
 				clique := &domain.CacheClique{
 					ID: mutualCliqueID,

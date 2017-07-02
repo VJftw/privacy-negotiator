@@ -155,6 +155,9 @@ export class FriendService implements Channel {
       '/v1/friends?ids=' + JSON.stringify(friendIds)
     ).then(response => {
       for (const apiFriend of response.json() as APIFriend[]) {
+        const friend = this.friends.get(apiFriend.id);
+        friend.user.tieStrength = apiFriend.tieStrength;
+        this.friends.set(friend.user.id, friend);
         if (apiFriend.cliques.length <= 0) {
           const clique = this.cliques.get('NA');
           clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);

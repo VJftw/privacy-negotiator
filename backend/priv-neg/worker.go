@@ -57,11 +57,12 @@ func NewPrivNegWorker(queue string) App {
 
 	friendPublisher := friend.NewPublisher(queueLogger, rabbitMQ)
 	conflictPublisher := photo.NewConflictPublisher(queueLogger, rabbitMQ)
+	tieStrengthPublisher := friend.NewTieStrengthPublisher(queueLogger, rabbitMQ)
 
 	var q persisters.Consumer
 	switch queue {
 	case "auth-long-token":
-		q = auth.NewConsumer(queueLogger, rabbitMQ, userDBManager, friendPublisher)
+		q = auth.NewConsumer(queueLogger, rabbitMQ, userDBManager, friendPublisher, userRedisManager)
 		break
 	case "photo-tags":
 		q = photo.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, photoRedisManager, photoDBManager)
@@ -70,7 +71,7 @@ func NewPrivNegWorker(queue string) App {
 		q = category.NewConsumer(queueLogger, rabbitMQ, categoryDBManager, categoryRedisManager)
 		break
 	case "community-detection":
-		q = friend.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, friendRedisManager, cliqueDBManager)
+		q = friend.NewConsumer(queueLogger, rabbitMQ, userDBManager, userRedisManager, friendRedisManager, cliqueDBManager, tieStrengthPublisher)
 		break
 	case "persist-user-clique":
 		q = friend.NewPersistConsumer(queueLogger, rabbitMQ, cliqueDBManager)
@@ -80,6 +81,9 @@ func NewPrivNegWorker(queue string) App {
 		break
 	case "conflict-detection-and-resolution":
 		q = photo.NewConflictConsumer(queueLogger, rabbitMQ, friendDBManager, userDBManager, photoDBManager, photoRedisManager, userRedisManager)
+		break
+	case "tie-strength":
+		q = friend.NewTieStrengthConsumer(queueLogger, rabbitMQ, userRedisManager, friendRedisManager)
 		break
 	default:
 		panic("Invalid queue selected")

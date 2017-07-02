@@ -53,7 +53,20 @@ export class AuthService implements CanActivate {
 
   public authenticate(): Promise<any> {
     const options: LoginOptions = {
-      scope: 'user_friends,user_photos,user_posts'
+      scope:
+      'user_friends,' +
+      'user_photos,' +
+      'user_posts,' +
+      'user_education_history,' +
+      'user_hometown,' +
+      'user_likes,' +
+      'user_location,' +
+      'user_relationship_details,' +
+      'user_relationships,' +
+      'user_religion_politics,' +
+      'user_work_history,' +
+      'user_events,' +
+      'user_managed_groups'
     };
 
     return this.fb.login(options)

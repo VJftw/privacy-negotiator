@@ -29,7 +29,8 @@ func CacheFriendshipFromWebFriendship(w *WebFriendship) *CacheFriendship {
 // WebFriendshipFromCacheFriendshipAndCliques - Converts a CacheFriendship and authenticated user into a WebFriendship
 func WebFriendshipFromCacheFriendshipAndCliques(c *CacheFriendship, cliques []string) *WebFriendship {
 	return &WebFriendship{
-		ID:      c.ID,
-		Cliques: cliques,
+		ID:          c.ID,
+		TieStrength: c.TieStrength,
+		Cliques:     cliques,
 	}
 }

@@ -17,7 +17,7 @@
   </div>
 
   <div class="col s12">
-    <a class="btn-floating btn-small waves-effect waves-light left" (click)="this.toggleEdit()">
+    <a class="btn-floating btn-small waves-effect waves-light left" (click)="this.toggleEdit()" [ngClass]="{'orange': !editing, 'red': editing}" >
       <i class="material-icons left">
         <span *ngIf="!editing">mode_edit</span>
         <span *ngIf="editing">save</span>

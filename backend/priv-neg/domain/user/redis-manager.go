@@ -44,6 +44,25 @@ func (m *RedisManager) Save(u *domain.CacheUser) error {
 	return nil
 }
 
+// SaveProfile - Saves a profile to a user id
+func (m *RedisManager) SaveProfile(id string, p *domain.CacheUserProfile) error {
+	jsonUser, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
+		"SET",
+		fmt.Sprintf("u%s:profile", id),
+		jsonUser,
+	)
+	m.cacheLogger.Printf("Saved user profile: %s", id)
+
+	return nil
+}
+
 // Publish - Publishes a given message to a user pubsub channel (websocket).
 func (m *RedisManager) Publish(uID string, channel string, data interface{}) {
 	redisConn := m.redis.Get()
@@ -79,5 +98,30 @@ func (m *RedisManager) FindByID(id string) (*domain.CacheUser, error) {
 	}
 
 	m.cacheLogger.Printf("Could not find user:%s", user.ID)
+	return nil, errors.New("Not found")
+}
+
+// GetProfileByID - Returns a user Profile given an ID
+func (m *RedisManager) GetProfileByID(id string) (*domain.CacheUserProfile, error) {
+	cacheUserProfile := &domain.CacheUserProfile{}
+
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	userJSON, err := redis.Bytes(redisConn.Do(
+		"GET",
+		fmt.Sprintf("u%s:profile", id),
+	))
+	if err != nil {
+		return nil, err
+	}
+
+	if userJSON != nil {
+		json.Unmarshal(userJSON, cacheUserProfile)
+		m.cacheLogger.Printf("Got u%s:profile", id)
+
+		return cacheUserProfile, nil
+	}
+
+	m.cacheLogger.Printf("Could not find u%s:profile", id)
 	return nil, errors.New("Not found")
 }
