@@ -9,8 +9,9 @@ export class Clique {
   editing = false;
   categories: CategorySelection[] = [];
 
-  constructor() {
-    this.name = 'Unnamed';
+  constructor(id: string, name = 'Unnamed') {
+    this.id = id;
+    this.name = name;
     this.friends = new Map();
   }
 

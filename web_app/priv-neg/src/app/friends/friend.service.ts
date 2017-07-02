@@ -1,4 +1,4 @@
-import {Injectable, NgZone} from '@angular/core';
+import {Injectable} from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
 import {APIFriend} from '../domain/friend.model';
 import {APIService} from '../api.service';
@@ -26,13 +26,10 @@ export class FriendService implements Channel {
     private fb: FacebookService,
     private apiService: APIService,
     private categoryService: CategoryService,
-    private _zone: NgZone,
   ) {
     this.friends = new Map();
     this.cliques = new Map();
-    const c = new Clique();
-    c.id = 'NA';
-    c.name = 'Not Grouped';
+    const c = new Clique('NA', 'Not Grouped');
     c.friends = new Map();
     this.cliques.set(c.id, c);
   }
@@ -47,7 +44,7 @@ export class FriendService implements Channel {
           const promiseUser = this.friends.get(user.id);
           promiseUser.user = user;
           this.friends.set(user.id, promiseUser);
-          console.log(response);
+          // console.log(response);
           resolve(this.friends.get(user.id).user);
         });
         this.friends.set(id, pU);
@@ -71,9 +68,7 @@ export class FriendService implements Channel {
   }
 
   public onWebSocketMessage(data) {
-    this._zone.run(() => {
-      this.updateFriends().then();
-    });
+    this.updateFriends().then(() => console.log(this.cliques));
   }
 
   public updateCliquesFromAPI(): Promise<any> {
@@ -81,21 +76,18 @@ export class FriendService implements Channel {
       '/v1/cliques'
     ).then(response => {
       const apiCliques = response.json() as APIClique[];
-      console.log(response.json());
 
       for (const apiClique of apiCliques) {
+        let clique: Clique;
         if (this.cliques.has(apiClique.id)) {
-          const clique = this.cliques.get(apiClique.id);
-          clique.name = apiClique.name;
-          this.cliques.set(clique.id, clique);
+          clique = this.cliques.get(apiClique.id);
         } else {
-          const clique = new Clique();
-          clique.id = apiClique.id;
-          if (apiClique.name === '') {
-            clique.name = 'Unnamed';
-          } else {
-            clique.name = apiClique.name;
-          }
+          clique = new Clique(apiClique.id);
+        }
+        if (apiClique.name.length < 1) {
+          clique.name = 'Unnamed';
+        }
+        if (clique.categories.length < 1) {
           for (const cat of this.categoryService.getCategories()) {
             let category;
             if (apiClique.categories.includes(cat)) {
@@ -105,8 +97,8 @@ export class FriendService implements Channel {
             }
             clique.categories.push(category);
           }
-          this.cliques.set(clique.id, clique);
         }
+        this.cliques.set(clique.id, clique);
       }
     });
   }
@@ -141,7 +133,6 @@ export class FriendService implements Channel {
           this.offset = response.paging.cursors.after;
         }
         const fbFriends = response.data as FbGraphUser[];
-        console.log(fbFriends);
         this.processFriends(fbFriends);
       })
       .catch(e => console.error(e))
@@ -164,7 +155,7 @@ export class FriendService implements Channel {
       '/v1/friends?ids=' + JSON.stringify(friendIds)
     ).then(response => {
       for (const apiFriend of response.json() as APIFriend[]) {
-        if (apiFriend.cliques.length < 1) {
+        if (apiFriend.cliques.length <= 0) {
           const clique = this.cliques.get('NA');
           clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);
           this.cliques.set('NA', clique);
@@ -174,18 +165,15 @@ export class FriendService implements Channel {
               const clique = this.cliques.get(cliqueID);
               clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);
               this.cliques.get('NA').removeFriend(apiFriend.id);
-
               this.cliques.set(cliqueID, clique);
-            } else {
-              const clique = new Clique();
-              clique.id = cliqueID;
-              clique.name = 'Unnamed';
+            } else if (cliqueID.length > 0) {
+              const clique = new Clique(cliqueID);
               for (const cat of this.categoryService.getCategories()) {
                 clique.categories.push(new CategorySelection(cat, false));
               }
               clique.friends = new Map();
               clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);
-              this.cliques.set(cliqueID, clique);
+              this.cliques.set(clique.id, clique);
             }
           }
         }

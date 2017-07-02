@@ -27,7 +27,8 @@ export class PhotoService implements Channel {
   public onWebSocketMessage(data) {
     const apiPhoto = data as APIPhoto;
     const photo = this.getPhotoById(apiPhoto.id);
-    this.photos.set(apiPhoto.id, Photo.fromAPIPhoto(apiPhoto, photo));
+    this.saveToPhotoRepository(apiPhoto, photo);
+    // this.photos.set(apiPhoto.id, Photo.fromAPIPhoto(apiPhoto, photo));
   }
 
   public getPhotos(): Photo[] {
@@ -142,6 +143,7 @@ export class PhotoService implements Channel {
         u => p.blockedUsers.push(u)
       );
     }
+    p.taggedUsers = [];
     for (const userID of foundPhoto.taggedUsers) {
       this.friendService.getUserById(userID).then(
         u => p.taggedUsers.push(u)
