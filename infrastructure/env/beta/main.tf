@@ -16,7 +16,7 @@ module "main" {
   cluster_name = "privacy-negotiator"
 
   environment = "beta"
-  domain      = "beta.privacy-negotiator.vjpatel.me"
+  domain      = "beta.cpm.vjpatel.me"
 
   version = "${var.version}"
   weave_cidr = "10.32.101.0/24"

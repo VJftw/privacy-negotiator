@@ -1,7 +1,7 @@
 GIT_VERSION = $(shell git describe --always)
 AWS_DEFAULT_REGION ?= eu-west-1
 ENVIRONMENT ?= beta
-DOMAIN ?= beta.privacy-negotiator.vjpatel.me
+DOMAIN ?= beta.cpm.vjpatel.me
 
 build:
 	cd web_app && make build
