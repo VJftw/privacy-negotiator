@@ -140,6 +140,8 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	dbConflict.PhotoID = dbPhoto.ID
 
 	cachePhoto, _ := c.photoRedis.FindByID(dbPhoto.ID)
+	cachePhoto.AllowedUserIDs = []string{}
+	cachePhoto.BlockedUserIDs = []string{}
 	// Update AllowedUsers and BlockedUsers for CachedPhoto as well as finding conflicts.
 	for taggedUserIDAllowed, allowedUserIDs := range taggedUserAllowedUsers {
 		for _, allowedUserID := range allowedUserIDs {
@@ -166,6 +168,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 		}
 	}
 
+	cachePhoto.Conflict = domain.CacheConflict{}
 	if len(dbConflict.Targets) > 0 {
 		// We have conflicts. Save to Cache and DB and suggest resolution
 		cacheConflict := domain.CacheConflictFromDBConflict(dbConflict)
