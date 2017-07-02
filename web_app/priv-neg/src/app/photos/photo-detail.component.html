@@ -7,7 +7,7 @@
 
   <div class="col s12 l6">
     <ul class="collection with-header">
-      <li class="collection-header"><span class="badge">({{photo.taggedUsers.length}})</span>Tagged Users</li>
+      <li class="collection-header blue white-text"><span class="badge white-text">{{photo.taggedUsers.length}}</span>Tagged Users</li>
       <li style="min-height: 0;" class="collection-item avatar" *ngFor="let taggedUser of photo.taggedUsers">
         <img style="width:25px; height:25px;" src="{{taggedUser.picture}}" alt="" class="circle">
         <span class="title">{{taggedUser.name}}</span>
@@ -36,23 +36,23 @@
 </div>
 
 <div *ngIf="photo.allowedUsers.length > 0 || photo.blockedUsers.length > 0" class="row">
-  <div class="col s6">
+  <div class="col s12 l6">
     <ul class="collection with-header">
-      <li class="collection-header"><span class="badge new green" data-badge-caption="">{{photo.allowedUsers.length}}</span>Allowed Users</li>
+      <li class="collection-header green white-text"><span class="badge white-text">{{photo.allowedUsers.length}}</span>Allowed Users</li>
       <li style="min-height: 0;" class="collection-item avatar" *ngFor="let allowedUser of photo.allowedUsers">
         <img style="width:25px; height:25px;" src="{{allowedUser.picture}}" alt="" class="circle">
         <span class="title">{{allowedUser.name}}</span>
-        <span *ngIf="photo.conflict && photo.conflict.targets && photo.conflict.targets.includes(allowedUser.id)" data-badge-caption="" class="new badge blue">conflicted</span>
+        <span *ngIf="photo.conflict && photo.conflict.targets && photo.conflict.targets.includes(allowedUser.id)" data-badge-caption="" class="new badge purple">conflicted</span>
       </li>
     </ul>
   </div>
-  <div class="col s6">
+  <div class="col s12 l6">
     <ul class="collection with-header">
-      <li class="collection-header"><span class="badge new red" data-badge-caption="">{{photo.blockedUsers.length}}</span>Blocked Users</li>
+      <li class="collection-header red white-text"><span class="badge white-text">{{photo.blockedUsers.length}}</span>Blocked Users</li>
       <li style="min-height: 0;" class="collection-item avatar" *ngFor="let blockedUser of photo.blockedUsers">
         <img style="width:25px; height:25px;" src="{{blockedUser.picture}}" alt="" class="circle">
         <span class="title">{{blockedUser.name}}</span>
-        <span *ngIf="photo.conflict && photo.conflict.targets && photo.conflict.targets.includes(blockedUser.id)" data-badge-caption="" class="new badge blue">conflicted</span>
+        <span *ngIf="photo.conflict && photo.conflict.targets && photo.conflict.targets.includes(blockedUser.id)" data-badge-caption="" class="new badge purple">conflicted</span>
       </li>
     </ul>
   </div>

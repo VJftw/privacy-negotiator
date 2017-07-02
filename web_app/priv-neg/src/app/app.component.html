@@ -1,4 +1,4 @@
-<nav class="blue" role="navigation">
+<nav class="grey darken-3" role="navigation">
   <div class="nav-wrapper container">
     <a id="logo-container" class="brand-logo">Privacy Manager</a>
     <ul class="right hide-on-med-and-down">
@@ -27,7 +27,7 @@
           <img class="responsive-img" src="{{authService.getUser().coverPicture}}">
         </div>
         <a><img class="circle" style="width:35px; height:35px;" src="{{authService.getUser().picture}}" ></a>
-        <a><span class="name">Hi, {{authService.getUser().name.split(" ")[0]}}!</span></a>
+        <a><span class="name" [ngClass]="{ 'black-text': !authService.getUser().coverPicture }">Hi, {{authService.getUser().name.split(" ")[0]}}!</span></a>
         <a><span class="email"></span></a>
       </div></li>
       <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>

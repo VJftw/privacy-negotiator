@@ -24,20 +24,53 @@
 </div>
 
 <div *ngIf="learnMore" class="row animated fadeIn">
-  <h3 class="header orange-text">Why?</h3>
+  <h3 class="header grey-text">Why?</h3>
   <p>When we upload photos to Facebook, tag our friends and family; only we, the uploader, can modify who can see those photos.
     This gives zero power to the people depicted in those photos to autonomously manage their privacy and in many cases their privacy is breached.
     No social network currently offers a way to collectively manage privacy between co-owners of media.
   </p>
-  <h3 class="header orange-text">What this tool does</h3>
+  <h3 class="header grey-text">What this tool does</h3>
   <p>
-    This web application interacts with the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> to:
+    This web application utilises the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> to:
   </p>
   <ul class="browser-default">
-    <li>Present photos that you are tagged in.</li>
+    <li>Present photos that you are tagged in:
+      <ul class="browser-default">
+        <li>Greyscaled photos are publicly viewable and searchable by anyone. The uploader's of those need to authorize this tool for us to mediate on them.</li>
+        <li>Coloured photos are considered <em>negotiable</em>. With these, you can:
+          <ul class="browser-default">
+            <li>View the users that are tagged.</li>
+            <li>Modify the categories/context of the photo. This is shared between all users.</li>
+            <li>View who is allowed to see the photo.</li>
+            <li>View who is blocked from seeing the photo.</li>
+            <li>View which co-owners are in conflict and whom they are in conflict over.</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li>Present your friends (that have authorised this tool) in automatically generated cliques.
+      <ul class="browser-default">
+        <li>Cliques are determined by the Clique Percolation Method (CPM), and are stored in bi-partites (<a href="https://arxiv.org/pdf/0805.1449.pdf">A sequential algorithm for fast clique percolation</a>).</li>
+        <li>You can manage your preferences for what contexts/categories a clique is allowed to view.</li>
+      </ul>
+    </li>
   </ul>
-  <h4 class="header orange-text">Requested Facebook permissions</h4>
+  <h4 class="header grey-text">What this tool can't do</h4>
+  <p>This tool is limited by any limitations that the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> exhibits.</p>
+  <ul class="browser-default">
+    <li>Present existing privacy settings for a photo. The Graph API does not allow privacy to be read from a photo. <sup><a href="#fn1" id="ref1">1</a></sup></li>
+    <li>Show all friends. The Graph API only allows the tool to see friends that have mutually authorised it. <sup><a href="#fn2" id="ref2">2</a></sup></li>
+    <li>Determine categories/context for a photo automatically. This would be a whole other project as there currently isn't any AI that can interpret photos well. They can describe objects but cannot decide on suitable contexts.</li>
+  </ul>
+  <p>There may be some bugs as I've only had 1 month to create this, resulting in no test coverage. This should improve as I commit further patches.</p>
+  <img style="width:auto; max-height: 10em;" src="https://media.giphy.com/media/QQZgTehcKrD2w/giphy.gif"/>
+  <p>
+    <sup id="fn1">1. <a href="https://developers.facebook.com/docs/graph-api/reference/photo" target="_blank">https://developers.facebook.com/docs/graph-api/reference/photo</a></sup><br/>
+    <sup id="fn2">2. <a href="https://developers.facebook.com/bugs/1502515636638396/" target="_blank">https://developers.facebook.com/bugs/1502515636638396/</a></sup>
+  </p>
+  <h4 class="header grey-text">Requested Facebook permissions</h4>
   <p>
   </p>
+
 </div>
 <br><br>
