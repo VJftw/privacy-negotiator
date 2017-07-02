@@ -60,6 +60,7 @@
   <ul class="browser-default">
     <li>Present existing privacy settings for a photo. The Graph API does not allow privacy to be read from a photo. <sup><a href="#fn1" id="ref1">1</a></sup></li>
     <li>Show all friends. The Graph API only allows the tool to see friends that have mutually authorised it. <sup><a href="#fn2" id="ref2">2</a></sup></li>
+    <li>As this tool is only aware of mutually authorised friends, it is only able to apply a photo's privacy concerning those users it is aware of.</li>
     <li>Determine categories/context for a photo automatically. This would be a whole other project as there currently isn't any AI that can interpret photos well. They can describe objects but cannot decide on suitable contexts.</li>
   </ul>
   <p>There may be some bugs as I've only had 1 month to create this, resulting in no test coverage. This should improve as I commit further patches.</p>
