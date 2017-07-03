@@ -14,14 +14,15 @@ import (
 
 // ConflictConsumer - ConflictConsumer for conflict detection and suggested resolution.
 type ConflictConsumer struct {
-	queue      amqp.Queue
-	channel    *amqp.Channel
-	logger     *log.Logger
-	friendDB   *friend.DBManager
-	userDB     *user.DBManager
-	photoDB    *DBManager
-	photoRedis *RedisManager
-	userRedis  *user.RedisManager
+	queue       amqp.Queue
+	channel     *amqp.Channel
+	logger      *log.Logger
+	friendDB    *friend.DBManager
+	userDB      *user.DBManager
+	photoDB     *DBManager
+	photoRedis  *RedisManager
+	userRedis   *user.RedisManager
+	friendRedis *friend.RedisManager
 }
 
 // NewConflictConsumer - Returns a new consumer.
@@ -33,6 +34,7 @@ func NewConflictConsumer(
 	photoDBManager *DBManager,
 	photoRedisManager *RedisManager,
 	userRedisManager *user.RedisManager,
+	friendRedisManager *friend.RedisManager,
 ) *ConflictConsumer {
 	queue, err := ch.QueueDeclare(
 		"conflict-detection-and-resolution", // name
@@ -44,14 +46,15 @@ func NewConflictConsumer(
 	)
 	utils.FailOnError(err, "Failed to declare a queue")
 	return &ConflictConsumer{
-		logger:     queueLogger,
-		channel:    ch,
-		queue:      queue,
-		friendDB:   friendDBManager,
-		userDB:     userDBManager,
-		photoDB:    photoDBManager,
-		photoRedis: photoRedisManager,
-		userRedis:  userRedisManager,
+		logger:      queueLogger,
+		channel:     ch,
+		queue:       queue,
+		friendDB:    friendDBManager,
+		userDB:      userDBManager,
+		photoDB:     photoDBManager,
+		photoRedis:  photoRedisManager,
+		userRedis:   userRedisManager,
+		friendRedis: friendRedisManager,
 	}
 }
 
@@ -135,14 +138,12 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	c.logger.Printf("DEBUG: Blocked Users %v", taggedUserBlockedUsers)
 
 	// Find Conflicts
-	dbConflict := domain.NewDBConflict()
-	dbConflict.Photo = dbPhoto
-	dbConflict.PhotoID = dbPhoto.ID
-
 	cachePhoto, _ := c.photoRedis.FindByID(dbPhoto.ID)
 	cachePhoto.AllowedUserIDs = []string{}
 	cachePhoto.BlockedUserIDs = []string{}
-	// Update AllowedUsers and BlockedUsers for CachedPhoto as well as finding conflicts.
+	conflictTargets := []string{}
+	conflicts := []domain.DBConflict{}
+	// Update AllowedUsers for CachedPhoto as well as finding conflicts.
 	for taggedUserIDAllowed, allowedUserIDs := range taggedUserAllowedUsers {
 		for _, allowedUserID := range allowedUserIDs {
 			conflict := false
@@ -151,11 +152,16 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 					if allowedUserID == blockedUserID {
 						// conflict
 						c.logger.Printf("Found conflict between %s and %s with %s", taggedUserIDAllowed, taggedUserIDBlocked, allowedUserID)
+						conflictTargets = append(conflictTargets, allowedUserID)
 						allowedUser, _ := c.userDB.FindByID(allowedUserID)
-						dbConflict.Targets = append(dbConflict.Targets, *allowedUser)
+						dbConflict := domain.NewDBConflict()
+						dbConflict.Photo = dbPhoto
+						dbConflict.PhotoID = dbPhoto.ID
+						dbConflict.Target = *allowedUser
 						taggedUserAllowed, _ := c.userDB.FindByID(taggedUserIDAllowed)
 						taggedUserBlocked, _ := c.userDB.FindByID(taggedUserIDBlocked)
 						dbConflict.Parties = append(dbConflict.Parties, *taggedUserBlocked, *taggedUserAllowed)
+						conflicts = append(conflicts, dbConflict)
 						conflict = true
 					}
 				}
@@ -166,31 +172,65 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 		}
 	}
 
+	// Update BlockedUsers
 	for _, blockedUserIDs := range taggedUserBlockedUsers {
 		for _, blockedUserID := range blockedUserIDs {
-			if !utils.IsIn(blockedUserID, cachePhoto.BlockedUserIDs) && !isUserIDIn(blockedUserID, dbConflict.Targets) {
-				c.logger.Printf("DEBUG: Targets: %v", dbConflict.Targets)
-				c.logger.Printf("DEBUG: Blocked UserID: %s", blockedUserID)
+			if !utils.IsIn(blockedUserID, cachePhoto.BlockedUserIDs) && !utils.IsIn(blockedUserID, conflictTargets) {
 				cachePhoto.BlockedUserIDs = append(cachePhoto.BlockedUserIDs, blockedUserID)
 			}
 		}
 	}
+	cachePhoto.Conflicts = []domain.CacheConflict{}
+	if len(conflicts) > 0 {
 
-	cachePhoto.Conflict = domain.CacheConflict{}
-	if len(dbConflict.Targets) > 0 {
-		// We have conflicts. Save to Cache and DB and suggest resolution
-		cacheConflict := domain.CacheConflictFromDBConflict(dbConflict)
-		cachePhoto.Conflict = cacheConflict
+		for _, dbConflict := range conflicts {
+			// We have conflicts. Save to Cache and DB and suggest resolution
+			cacheConflict := domain.CacheConflictFromDBConflict(dbConflict)
+			err := c.photoDB.SaveConflict(&dbConflict)
+			if err != nil {
+				c.logger.Printf("ERROR: %v", err)
+			}
+			// Add party users with all sentiment to the user, their tie-strength is the weight of their vote.
+			// Positive outcome means they should be allowed. Negative means they should be blocked.
+			// (I love Democracy. I love the Republic)
+			pointsAllow := 0
+			for _, partyUser := range dbConflict.Parties {
+				cacheUser := domain.CacheUserFromDatabaseUser(&partyUser)
+				cacheFriendship, err := c.friendRedis.FindByIDAndUser(cacheConflict.Target, cacheUser)
+				if err != nil {
+					c.logger.Printf("DEBUG: %s:%s do not have a friendship", partyUser.ID, cacheConflict.Target)
+					break
+				}
+				if shouldAllow(taggedUserAllowedUsers, taggedUserBlockedUsers, partyUser.ID, cacheConflict.Target) {
+					pointsAllow += cacheFriendship.TieStrength
+					cacheConflict.Reasoning = append(
+						cacheConflict.Reasoning,
+						domain.Reason{
+							UserID: partyUser.ID,
+							Vote:   cacheFriendship.TieStrength,
+						},
+					)
+				} else {
+					pointsAllow -= cacheFriendship.TieStrength
+					cacheConflict.Reasoning = append(
+						cacheConflict.Reasoning,
+						domain.Reason{
+							UserID: partyUser.ID,
+							Vote:   -cacheFriendship.TieStrength,
+						},
+					)
+				}
+			}
 
-		err := c.photoDB.SaveConflict(&dbConflict)
-		if err != nil {
-			c.logger.Printf("ERROR: %v", err)
+			if pointsAllow > 0 {
+				cacheConflict.Result = "allow"
+			} else if pointsAllow < 0 {
+				cacheConflict.Result = "block"
+			} else {
+				cacheConflict.Result = "indeterminate"
+			}
+			cachePhoto.Conflicts = append(cachePhoto.Conflicts, cacheConflict)
 		}
-
-		// For every target user
-		// Find which party user has the highest tie-strength to target user.
-		// Suggest policy of that party user
-
 	}
 
 	c.photoRedis.Save(cachePhoto)
@@ -203,18 +243,31 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	c.logger.Printf("Processed photo %s conflicts in %s", dbPhoto.ID, elapsed)
 }
 
-func isIn(needle domain.DBCategory, haystack []domain.DBCategory) bool {
-	for _, cat := range haystack {
-		if needle.Name == cat.Name {
+func shouldAllow(
+	taggedUserAllowedUsers map[string][]string,
+	taggedUserBlockedUsers map[string][]string,
+	partyUserID string,
+	targetUserID string,
+) bool {
+	for _, allowedUserID := range taggedUserAllowedUsers[partyUserID] {
+		if targetUserID == allowedUserID {
 			return true
 		}
 	}
-	return false
+
+	for _, blockedUserID := range taggedUserBlockedUsers[partyUserID] {
+		if targetUserID == blockedUserID {
+			return false
+		}
+	}
+
+	log.Printf("WARNING: Could not find preference for %s with %s", partyUserID, targetUserID)
+	return true // default true as abstained users do not care
 }
 
-func isUserIDIn(needle string, haystack []domain.DBUser) bool {
-	for _, dbUser := range haystack {
-		if needle == dbUser.ID {
+func isIn(needle domain.DBCategory, haystack []domain.DBCategory) bool {
+	for _, cat := range haystack {
+		if needle.Name == cat.Name {
 			return true
 		}
 	}

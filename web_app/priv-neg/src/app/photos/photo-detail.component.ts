@@ -5,6 +5,7 @@ import {PhotoService} from './photo.service';
 import {Photo} from '../domain/photo.model';
 import {CategorySelection} from '../domain/category.model';
 import {CategoryService} from '../categories/category.service';
+import {User} from '../domain/user.model';
 
 
 @Component({
@@ -63,6 +64,20 @@ export class PhotoDetailComponent implements OnInit {
       this.photoService.updatePhoto(this.photo);
     }
   }
+
+  isInConflict(taggedUser: User): boolean {
+    for (const conflict of this.photo.conflicts) {
+      for (const partyUser of conflict.parties) {
+        if (partyUser.id === taggedUser.id) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+
 
 }
 

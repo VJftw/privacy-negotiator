@@ -4,21 +4,21 @@ import "github.com/satori/go.uuid"
 
 // DBConflict - Represents a conflict stored in the database.
 type DBConflict struct {
-	ID       string  `gorm:"primary_key"`
-	Photo    DBPhoto `gorm:"ForeignKey:PhotoID"`
-	PhotoID  string
-	Targets  []DBUser `gorm:"many2many:conflict_targets"`
-	Parties  []DBUser `gorm:"many2many:conflict_parties"`
-	Resolved bool
+	ID      string  `gorm:"primary_key"`
+	Photo   DBPhoto `gorm:"ForeignKey:PhotoID"`
+	PhotoID string
+	Target  DBUser   `gorm:"many2many:conflict_target"`
+	Parties []DBUser `gorm:"many2many:conflict_parties"`
+	Result  string
 }
 
 // NewDBConflict - Returns a new DBConflict.
 func NewDBConflict() DBConflict {
 	return DBConflict{
-		ID:       uuid.NewV4().String(),
-		Targets:  []DBUser{},
-		Parties:  []DBUser{},
-		Resolved: false,
+		ID:      uuid.NewV4().String(),
+		Target:  DBUser{},
+		Parties: []DBUser{},
+		Result:  "indeterminate",
 	}
 }
 
@@ -29,21 +29,27 @@ func (c DBConflict) TableName() string {
 
 // CacheConflict - Represents a conflict stored in the Cache.
 type CacheConflict struct {
-	ID       string   `json:"id"`
-	Targets  []string `json:"targets"`
-	Parties  []string `json:"parties"`
-	Resolved bool     `json:"resolved"`
+	ID        string   `json:"id"`
+	Target    string   `json:"target"`
+	Parties   []string `json:"parties"`
+	Reasoning []Reason `json:"reasoning"` // reason
+	Result    string   `json:"result"`    // result
+}
+
+// Reason - Represents a result reason in the cache.
+type Reason struct {
+	UserID string `json:"id"`
+	Vote   int    `json:"vote"`
 }
 
 // CacheConflictFromDBConflict - Returns a CacheConflict given a DBConflict
 func CacheConflictFromDBConflict(dbConflict DBConflict) CacheConflict {
 	cC := CacheConflict{
-		ID:       dbConflict.ID,
-		Resolved: dbConflict.Resolved,
+		ID:        dbConflict.ID,
+		Reasoning: []Reason{},
+		Target:    dbConflict.Target.ID,
 	}
-	for _, user := range dbConflict.Targets {
-		cC.Targets = append(cC.Targets, user.ID)
-	}
+
 	for _, user := range dbConflict.Parties {
 		cC.Parties = append(cC.Parties, user.ID)
 	}

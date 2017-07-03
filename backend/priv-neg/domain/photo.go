@@ -2,26 +2,26 @@ package domain
 
 // CachePhoto - The representation of a Photo stored on the Cache.
 type CachePhoto struct {
-	ID             string        `json:"id"`
-	TaggedUsers    []string      `json:"taggedUsers"`
-	Uploader       string        `json:"uploader"`
-	Pending        bool          `json:"pending"`
-	Categories     []string      `json:"categories"`
-	Conflict       CacheConflict `json:"conflict"` // nil if no conflict exists
-	AllowedUserIDs []string      `json:"allowedUsers"`
-	BlockedUserIDs []string      `json:"blockedUsers"`
+	ID             string          `json:"id"`
+	TaggedUsers    []string        `json:"taggedUsers"`
+	Uploader       string          `json:"uploader"`
+	Pending        bool            `json:"pending"`
+	Categories     []string        `json:"categories"`
+	Conflicts      []CacheConflict `json:"conflicts"`
+	AllowedUserIDs []string        `json:"allowedUsers"`
+	BlockedUserIDs []string        `json:"blockedUsers"`
 }
 
 // WebPhoto - The photo representation sent to a web client.
 type WebPhoto struct {
-	ID             string        `json:"id"`
-	TaggedUsers    []string      `json:"taggedUsers"`
-	Uploader       string        `json:"from"`
-	Pending        bool          `json:"pending"`
-	Categories     []string      `json:"categories"`
-	Conflict       CacheConflict `json:"conflict"`
-	AllowedUserIDs []string      `json:"allowedUsers"`
-	BlockedUserIDs []string      `json:"blockedUsers"`
+	ID             string          `json:"id"`
+	TaggedUsers    []string        `json:"taggedUsers"`
+	Uploader       string          `json:"from"`
+	Pending        bool            `json:"pending"`
+	Categories     []string        `json:"categories"`
+	Conflicts      []CacheConflict `json:"conflicts"`
+	AllowedUserIDs []string        `json:"allowedUsers"`
+	BlockedUserIDs []string        `json:"blockedUsers"`
 }
 
 // DBPhoto - The entity stored on the database
@@ -53,13 +53,16 @@ func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
 	if cachePhoto.BlockedUserIDs == nil {
 		cachePhoto.BlockedUserIDs = []string{}
 	}
+	if cachePhoto.Conflicts == nil {
+		cachePhoto.Conflicts = []CacheConflict{}
+	}
 	return &WebPhoto{
 		ID:             cachePhoto.ID,
 		TaggedUsers:    cachePhoto.TaggedUsers,
 		Pending:        cachePhoto.Pending,
 		Uploader:       cachePhoto.Uploader,
 		Categories:     cachePhoto.Categories,
-		Conflict:       cachePhoto.Conflict,
+		Conflicts:      cachePhoto.Conflicts,
 		AllowedUserIDs: cachePhoto.AllowedUserIDs,
 		BlockedUserIDs: cachePhoto.BlockedUserIDs,
 	}

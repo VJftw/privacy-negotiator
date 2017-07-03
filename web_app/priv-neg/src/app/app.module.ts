@@ -21,6 +21,7 @@ import { AuthService } from './auth.service';
 import { PhotoService } from './photos/photo.service';
 import { CategoryService } from './categories/category.service';
 import { FriendService } from './friends/friend.service';
+import {PhotoResolver} from './photos/photo.resolver';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { FriendService } from './friends/friend.service';
     FacebookService,
     PhotoService,
     CategoryService,
-    FriendService
+    FriendService,
+    PhotoResolver,
   ],
   bootstrap: [AppComponent]
 })

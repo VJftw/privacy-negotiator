@@ -80,7 +80,7 @@ func NewPrivNegWorker(queue string) App {
 		q = photo.NewPersistConsumer(queueLogger, rabbitMQ, photoDBManager, userDBManager, conflictPublisher)
 		break
 	case "conflict-detection-and-resolution":
-		q = photo.NewConflictConsumer(queueLogger, rabbitMQ, friendDBManager, userDBManager, photoDBManager, photoRedisManager, userRedisManager)
+		q = photo.NewConflictConsumer(queueLogger, rabbitMQ, friendDBManager, userDBManager, photoDBManager, photoRedisManager, userRedisManager, friendRedisManager)
 		break
 	case "tie-strength":
 		q = friend.NewTieStrengthConsumer(queueLogger, rabbitMQ, userRedisManager, friendRedisManager)

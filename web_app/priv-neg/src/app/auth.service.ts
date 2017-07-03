@@ -72,12 +72,13 @@ export class AuthService implements CanActivate {
     return this.fb.login(options)
       .then((response: LoginResponse) => {
         console.log('Authenticated with Facebook. Getting /me');
-        this.fb.api('/me?fields=id,name,picture{url},cover').then(res => {
+        this.fb.api('/me?fields=id,first_name,last_name,picture{url},cover').then(res => {
           const user = res as FbGraphUser;
           console.log(user);
           this.fbUser = new SessionUser(
             response.authResponse.userID,
-            user.name,
+            user.first_name,
+            user.last_name,
             response.authResponse.accessToken,
             user.picture.data.url
           );
@@ -116,14 +117,16 @@ export class AuthService implements CanActivate {
 
 export class SessionUser {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   shortAccessToken: string;
   picture: string;
   coverPicture: string;
 
-  constructor(id: string, name: string, shortAccessToken: string, picture: string) {
+  constructor(id: string, firstName: string, lastName: string, shortAccessToken: string, picture: string) {
     this.id = id;
-    this.name = name;
+    this.firstName = firstName;
+    this.lastName = lastName;
     this.shortAccessToken = shortAccessToken;
     this.picture = picture;
   }
@@ -131,7 +134,8 @@ export class SessionUser {
 
 export class FbGraphUser {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   picture: FbGraphUserPicture;
   cover: FbGraphCover;
 }

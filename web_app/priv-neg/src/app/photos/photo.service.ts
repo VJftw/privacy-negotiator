@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { FacebookService } from 'ngx-facebook';
-import {Photo, APIPhoto, FbGraphPhoto} from '../domain/photo.model';
+import {Photo, APIPhoto, FbGraphPhoto, Conflict} from '../domain/photo.model';
 import { APIService } from '../api.service';
 import { Channel } from '../websocket.service';
 import {FriendService} from '../friends/friend.service';
+import {PhotoResolver} from './photo.resolver';
 
 
 @Injectable()
@@ -16,6 +17,7 @@ export class PhotoService implements Channel {
     private fb: FacebookService,
     private apiService: APIService,
     private friendService: FriendService,
+    private photoResolver: PhotoResolver,
   ) {
     this.photos = new Map();
   }
@@ -28,7 +30,6 @@ export class PhotoService implements Channel {
     const apiPhoto = data as APIPhoto;
     const photo = this.getPhotoById(apiPhoto.id);
     this.saveToPhotoRepository(apiPhoto, photo);
-    // this.photos.set(apiPhoto.id, Photo.fromAPIPhoto(apiPhoto, photo));
   }
 
   public getPhotos(): Photo[] {
@@ -88,7 +89,8 @@ export class PhotoService implements Channel {
 
       for (const fbPhoto of fbPhotos) {
         if (fbPhoto.album) {
-          const photo = Photo.fromFBPhoto(fbPhoto);
+          // const photo = Photo.fromFBPhoto(fbPhoto);
+          const photo = this.photoResolver.photoFromFBPhoto(fbPhoto);
 
           if (goodUserIds.includes(fbPhoto.from.id)) {
             photo.negotiable = true;
@@ -130,26 +132,9 @@ export class PhotoService implements Channel {
   }
 
   private saveToPhotoRepository(foundPhoto: APIPhoto, photo: Photo) {
-    const p = Photo.fromAPIPhoto(foundPhoto, photo);
-    p.allowedUsers = [];
-    for (const userID of foundPhoto.allowedUsers) {
-      this.friendService.getUserById(userID).then(
-        u => p.allowedUsers.push(u)
-      );
-    }
-    p.blockedUsers = [];
-    for (const userID of foundPhoto.blockedUsers) {
-      this.friendService.getUserById(userID).then(
-        u => p.blockedUsers.push(u)
-      );
-    }
-    p.taggedUsers = [];
-    for (const userID of foundPhoto.taggedUsers) {
-      this.friendService.getUserById(userID).then(
-        u => p.taggedUsers.push(u)
-      );
-    }
+    const p = this.photoResolver.photoUpdateFromAPIPhoto(photo, foundPhoto);
     this.photos.set(photo.id, p);
+    console.log(p);
   }
 
   public savePhoto(photo: Photo) {

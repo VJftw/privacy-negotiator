@@ -38,13 +38,12 @@ export class FriendService implements Channel {
     return new Promise((resolve, reject) => {
       if (!this.friends.has(id)) {
         const pU = new PromiseUser();
-        pU.promise = this.fb.api('/' + id + '?fields=id,name,picture{url}').then(response => {
+        pU.promise = this.fb.api('/' + id + '?fields=id,first_name,last_name,picture{url}').then(response => {
           const friend = response as FbGraphUser;
           const user = User.FromFBGraphUser(friend);
           const promiseUser = this.friends.get(user.id);
           promiseUser.user = user;
           this.friends.set(user.id, promiseUser);
-          // console.log(response);
           resolve(this.friends.get(user.id).user);
         });
         this.friends.set(id, pU);
@@ -121,7 +120,7 @@ export class FriendService implements Channel {
 
 
   public updateFriends(offset = null): Promise<any> {
-    let uri = '/me/friends?fields=id,name,picture{url}';
+    let uri = '/me/friends?fields=id,first_name,last_name,picture{url}';
 
     if (offset) {
       uri += '&after=' + offset;

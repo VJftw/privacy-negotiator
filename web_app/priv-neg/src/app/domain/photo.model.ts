@@ -31,36 +31,35 @@ export class Photo {
   pending = false;
   taggedUsers: User[] = [];
   categories: string[] = [];
-  conflict: Conflict;
-  allowedUsers: User[];
-  blockedUsers: User[];
+  conflicts: Conflict[] = [];
+  allowedUsers: User[] = [];
+  blockedUsers: User[] = [];
 
-  public static fromFBPhoto(fp: FbGraphPhoto): Photo {
-    const p = new Photo();
-
-    p.id = fp.id;
-    p.createdTime = fp.created_time;
-    p.url = fp.images[0].source;
-    p.albumId = fp.album.id;
-    p.from = fp.from;
-    return p;
-  }
-
-  public static fromAPIPhoto(ap: APIPhoto, p: Photo = new Photo()): Photo {
-    p.id = ap.id;
-    p.pending = ap.pending;
-    p.categories = ap.categories;
-    p.conflict = ap.conflict;
-
-    return p;
+  constructor(id: string) {
+    this.id = id;
   }
 }
 
 export class Conflict {
+
+  public static RESULT_ALLOWED = 1;
+  public static RESULT_BLOCKED = -1;
+  public static RESULT_INDETERMINATE = 0;
+
   id: string;
-  targets: string[] = [];
-  parties: string[] = [];
-  resolved: boolean;
+  target: User;
+  parties: User[] = [];
+  reasoning: Reason[] = [];
+  result: string;
+
+  constructor(id: string) {
+    this.id = id;
+  }
+}
+
+export class Reason {
+  user: User;
+  vote: number;
 }
 
 export class APIPhoto {
@@ -68,8 +67,20 @@ export class APIPhoto {
   taggedUsers: string[] = [];
   pending = false;
   categories: string[] = [];
-  conflict: Conflict;
+  conflicts: APIConflict[];
   allowedUsers: string[];
   blockedUsers: string[];
 }
 
+export class APIConflict {
+  id: string;
+  target: string;
+  parties: string[] = [];
+  reasoning: APIReason[] = [];
+  result: string; // allow, block, indeterminate
+}
+
+export class APIReason {
+  id: string;
+  vote: number;
+}
