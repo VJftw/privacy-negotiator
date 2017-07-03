@@ -157,13 +157,21 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 						taggedUserBlocked, _ := c.userDB.FindByID(taggedUserIDBlocked)
 						dbConflict.Parties = append(dbConflict.Parties, *taggedUserBlocked, *taggedUserAllowed)
 						conflict = true
-					} else if !utils.IsIn(blockedUserID, cachePhoto.BlockedUserIDs) {
-						cachePhoto.BlockedUserIDs = append(cachePhoto.BlockedUserIDs, blockedUserID)
 					}
 				}
 			}
 			if !conflict && !utils.IsIn(allowedUserID, cachePhoto.AllowedUserIDs) {
 				cachePhoto.AllowedUserIDs = append(cachePhoto.AllowedUserIDs, allowedUserID)
+			}
+		}
+	}
+
+	for _, blockedUserIDs := range taggedUserBlockedUsers {
+		for _, blockedUserID := range blockedUserIDs {
+			if !utils.IsIn(blockedUserID, cachePhoto.BlockedUserIDs) && !isUserIDIn(blockedUserID, dbConflict.Targets) {
+				c.logger.Printf("DEBUG: Targets: %v", dbConflict.Targets)
+				c.logger.Printf("DEBUG: Blocked UserID: %s", blockedUserID)
+				cachePhoto.BlockedUserIDs = append(cachePhoto.BlockedUserIDs, blockedUserID)
 			}
 		}
 	}
@@ -198,6 +206,15 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 func isIn(needle domain.DBCategory, haystack []domain.DBCategory) bool {
 	for _, cat := range haystack {
 		if needle.Name == cat.Name {
+			return true
+		}
+	}
+	return false
+}
+
+func isUserIDIn(needle string, haystack []domain.DBUser) bool {
+	for _, dbUser := range haystack {
+		if needle == dbUser.ID {
 			return true
 		}
 	}
