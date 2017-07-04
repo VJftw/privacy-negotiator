@@ -62,6 +62,7 @@ func (m *RedisManager) FindByID(id string) (*domain.CachePhoto, error) {
 		m.cacheLogger.Printf("Got photo:%s", photo.ID)
 
 		photo.Categories = m.GetCategoriesForPhoto(photo)
+		photo.UserCategories = map[string][]string{}
 		for _, userID := range photo.TaggedUsers {
 			photo.UserCategories[userID] = m.GetUserCategoriesForPhoto(photo, userID)
 		}
