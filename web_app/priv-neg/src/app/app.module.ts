@@ -22,11 +22,14 @@ import { PhotoService } from './photos/photo.service';
 import { CategoryService } from './categories/category.service';
 import { FriendService } from './friends/friend.service';
 import {PhotoResolver} from './photos/photo.resolver';
+import {CategoriesComponent} from './categories/categories.component';
+import {SessionService} from './session.service';
 
 @NgModule({
   declarations: [
     AppComponent,
     IndexComponent,
+    CategoriesComponent,
     PhotosComponent,
     PhotoDetailComponent,
     FriendsComponent
@@ -41,15 +44,17 @@ import {PhotoResolver} from './photos/photo.resolver';
     RouterModule.forRoot([
       { path: '', redirectTo: '/start', pathMatch: 'full' },
       { path: 'start', component: IndexComponent },
-      { path: 'photos', component: PhotosComponent, canActivate: [AuthService] },
-      { path: 'photos/:id', component: PhotoDetailComponent, canActivate: [AuthService] },
-      { path: 'friends', component: FriendsComponent, canActivate: [AuthService] }
+      { path: 'photos', component: PhotosComponent, canActivate: [SessionService] },
+      { path: 'categories', component: CategoriesComponent, canActivate: [SessionService] },
+      { path: 'photos/:id', component: PhotoDetailComponent, canActivate: [SessionService] },
+      { path: 'friends', component: FriendsComponent, canActivate: [SessionService] }
     ], { useHash: true })
   ],
   providers: [
     APIService,
     WebSocketService,
     AuthService,
+    SessionService,
     FacebookService,
     PhotoService,
     CategoryService,

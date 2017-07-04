@@ -2,11 +2,12 @@
   <div class="nav-wrapper container">
     <a id="logo-container" class="brand-logo">Privacy Manager</a>
     <ul class="right hide-on-med-and-down">
-        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
-        <li *ngIf="authService.isAuthenticated()" ><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
-        <li *ngIf="authService.isAuthenticated()" ><a class="valign-wrapper">
-          <div style="padding-right: 0.5em;">Hi, {{authService.getUser().firstName}}!</div>
-          <img src="{{authService.getUser().picture}}" alt="" class="circle right" style="width:35px; height:35px;">
+      <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/categories" routerLinkActive="active">Categories <i class="material-icons left">folder</i></a></li>
+      <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
+      <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
+        <li *ngIf="sessionService.isAuthenticated()" ><a class="valign-wrapper">
+          <div style="padding-right: 0.5em;">Hi, {{sessionService.getUser().firstName}}!</div>
+          <img src="{{sessionService.getUser().picture}}" alt="" class="circle right" style="width:35px; height:35px;">
         </a>
         </li>
       <li class="info" (click)="cycleInfo()"><a>
@@ -21,19 +22,19 @@
       </a>
       </li>
     </ul>
-    <ul *ngIf="authService.isAuthenticated()" id="nav-mobile" class="side-nav">
+    <ul *ngIf="sessionService.isAuthenticated()" id="nav-mobile" class="side-nav">
       <li><div class="user-view">
         <div class="background">
-          <img class="responsive-img" src="{{authService.getUser().coverPicture}}">
+          <img class="responsive-img" src="{{sessionService.getUser().coverPicture}}">
         </div>
-        <a><img class="circle" style="width:35px; height:35px;" src="{{authService.getUser().picture}}" ></a>
-        <a><span class="name" [ngClass]="{ 'black-text': !authService.getUser().coverPicture }">Hi, {{authService.getUser().firstName}}!</span></a>
+        <a><img class="circle" style="width:35px; height:35px;" src="{{sessionService.getUser().picture}}" ></a>
+        <a><span class="name" [ngClass]="{ 'black-text': !sessionService.getUser().coverPicture }">Hi, {{sessionService.getUser().firstName}}!</span></a>
         <a><span class="email"></span></a>
       </div></li>
       <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
       <li><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
     </ul>
-    <a *ngIf="authService.isAuthenticated()" materialize="sideNav"  class="button-collapse" data-activates="nav-mobile">
+    <a *ngIf="sessionService.isAuthenticated()" materialize="sideNav"  class="button-collapse" data-activates="nav-mobile">
       <i class="material-icons">menu</i>
     </a>
   </div>

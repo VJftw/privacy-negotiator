@@ -4,13 +4,21 @@ import "github.com/satori/go.uuid"
 
 // CacheClique - Representation of a user's cached clique memberships. Stored as `<userID>:cliques`: cliqueID: {}
 type CacheClique struct {
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Categories     []string `json:"categories"`
+	UserCategories []string `json:"userCategories"`
+}
+
+// WebClique - Representation of a user's clique returned to web
+type WebClique struct {
 	ID         string   `json:"id"`
 	Name       string   `json:"name"`
 	Categories []string `json:"categories"`
 }
 
-// WebClique - Representation of Clique submitted via Websocket
-type WebClique struct {
+// WSClique - Representation of Clique submitted via Websocket
+type WSClique struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
 	UserIDs []string `json:"users"`
@@ -71,12 +79,24 @@ func DBCliqueFromCacheClique(cacheClique *CacheClique) *DBClique {
 func DBUserCliqueFromCacheCliqueAndUserID(cacheClique *CacheClique, userID string) *DBUserClique {
 	categories := []DBCategory{}
 	for _, cat := range cacheClique.Categories {
-		categories = append(categories, DBCategory{Name: cat})
+		categories = append(categories, DBCategory{Name: cat, UserID: "none"})
+	}
+	for _, cat := range cacheClique.UserCategories {
+		categories = append(categories, DBCategory{Name: cat, UserID: userID})
 	}
 	return &DBUserClique{
 		CliqueID:   cacheClique.ID,
 		Name:       cacheClique.Name,
 		UserID:     userID,
 		Categories: categories,
+	}
+}
+
+// WebCliqueFromCacheClique - Returns a WebClique from a CacheClique
+func WebCliqueFromCacheClique(clique CacheClique) WebClique {
+	return WebClique{
+		ID:         clique.ID,
+		Name:       clique.Name,
+		Categories: append(clique.Categories, clique.UserCategories...),
 	}
 }

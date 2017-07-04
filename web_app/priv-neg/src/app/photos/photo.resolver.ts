@@ -1,12 +1,16 @@
 import {Injectable} from '@angular/core';
 import {FriendService} from '../friends/friend.service';
 import {APIConflict, APIPhoto, APIReason, Conflict, FbGraphPhoto, Photo, Reason} from '../domain/photo.model';
+import {CategoryService} from '../categories/category.service';
+import {SessionService} from '../session.service';
 
 @Injectable()
 export class PhotoResolver {
 
   constructor(
-    private friendService: FriendService
+    private friendService: FriendService,
+    private categoryService: CategoryService,
+    private sessionService: SessionService,
   ) {}
 
   public photoFromFBPhoto(fbPhoto: FbGraphPhoto): Photo {
@@ -21,8 +25,19 @@ export class PhotoResolver {
   }
 
   public photoUpdateFromAPIPhoto(photo: Photo, apiPhoto: APIPhoto): Photo {
+    console.log(apiPhoto);
     photo.pending = apiPhoto.pending;
-    photo.categories = apiPhoto.categories;
+    photo.categories = [];
+
+    for (const cat of apiPhoto.categories) {
+      photo.categories.push(this.categoryService.getCategory(cat));
+    }
+
+    if (apiPhoto.userCategories[this.sessionService.getUser().id]) {
+      for (const cat of apiPhoto.userCategories[this.sessionService.getUser().id]) {
+        photo.categories.push(this.categoryService.getCategory(cat));
+      }
+    }
 
     photo.taggedUsers = [];
     for (const taggedUserId of apiPhoto.taggedUsers) {
@@ -85,6 +100,27 @@ export class PhotoResolver {
     reason.vote = apiReason.vote;
 
     return reason;
+  }
+
+  public APIPhotoFromPhoto(p: Photo): APIPhoto {
+    const apiPhoto = new APIPhoto();
+
+    apiPhoto.id = p.id;
+    apiPhoto.categories = [];
+    apiPhoto.userCategories = new Map();
+    apiPhoto.userCategories[this.sessionService.getUser().id] = [];
+    for (const cat of p.categories) {
+      if (cat.personal) {
+        const currentUserCats = apiPhoto.userCategories[this.sessionService.getUser().id];
+        currentUserCats.push(cat.name);
+        apiPhoto.userCategories[this.sessionService.getUser().id] = currentUserCats;
+      } else {
+        apiPhoto.categories.push(cat.name);
+      }
+    }
+
+    return apiPhoto;
+
   }
 
 }

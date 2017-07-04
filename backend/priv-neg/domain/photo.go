@@ -2,26 +2,28 @@ package domain
 
 // CachePhoto - The representation of a Photo stored on the Cache.
 type CachePhoto struct {
-	ID             string          `json:"id"`
-	TaggedUsers    []string        `json:"taggedUsers"`
-	Uploader       string          `json:"uploader"`
-	Pending        bool            `json:"pending"`
-	Categories     []string        `json:"categories"`
-	Conflicts      []CacheConflict `json:"conflicts"`
-	AllowedUserIDs []string        `json:"allowedUsers"`
-	BlockedUserIDs []string        `json:"blockedUsers"`
+	ID             string              `json:"id"`
+	TaggedUsers    []string            `json:"taggedUsers"`
+	Uploader       string              `json:"uploader"`
+	Pending        bool                `json:"pending"`
+	Categories     []string            `json:"categories"`
+	UserCategories map[string][]string `json:"userCategories"`
+	Conflicts      []CacheConflict     `json:"conflicts"`
+	AllowedUserIDs []string            `json:"allowedUsers"`
+	BlockedUserIDs []string            `json:"blockedUsers"`
 }
 
 // WebPhoto - The photo representation sent to a web client.
 type WebPhoto struct {
-	ID             string          `json:"id"`
-	TaggedUsers    []string        `json:"taggedUsers"`
-	Uploader       string          `json:"from"`
-	Pending        bool            `json:"pending"`
-	Categories     []string        `json:"categories"`
-	Conflicts      []CacheConflict `json:"conflicts"`
-	AllowedUserIDs []string        `json:"allowedUsers"`
-	BlockedUserIDs []string        `json:"blockedUsers"`
+	ID             string              `json:"id"`
+	TaggedUsers    []string            `json:"taggedUsers"`
+	Uploader       string              `json:"from"`
+	Pending        bool                `json:"pending"`
+	Categories     []string            `json:"categories"`
+	UserCategories map[string][]string `json:"userCategories"`
+	Conflicts      []CacheConflict     `json:"conflicts"`
+	AllowedUserIDs []string            `json:"allowedUsers"`
+	BlockedUserIDs []string            `json:"blockedUsers"`
 }
 
 // DBPhoto - The entity stored on the database
@@ -56,12 +58,16 @@ func WebPhotoFromCachePhoto(cachePhoto *CachePhoto) *WebPhoto {
 	if cachePhoto.Conflicts == nil {
 		cachePhoto.Conflicts = []CacheConflict{}
 	}
+	if cachePhoto.UserCategories == nil {
+		cachePhoto.UserCategories = map[string][]string{}
+	}
 	return &WebPhoto{
 		ID:             cachePhoto.ID,
 		TaggedUsers:    cachePhoto.TaggedUsers,
 		Pending:        cachePhoto.Pending,
 		Uploader:       cachePhoto.Uploader,
 		Categories:     cachePhoto.Categories,
+		UserCategories: cachePhoto.UserCategories,
 		Conflicts:      cachePhoto.Conflicts,
 		AllowedUserIDs: cachePhoto.AllowedUserIDs,
 		BlockedUserIDs: cachePhoto.BlockedUserIDs,
@@ -82,12 +88,16 @@ func CachePhotoFromWebPhoto(webPhoto *WebPhoto) *CachePhoto {
 	if webPhoto.BlockedUserIDs == nil {
 		webPhoto.BlockedUserIDs = []string{}
 	}
+	if webPhoto.UserCategories == nil {
+		webPhoto.UserCategories = map[string][]string{}
+	}
 	return &CachePhoto{
-		ID:          webPhoto.ID,
-		TaggedUsers: webPhoto.TaggedUsers,
-		Pending:     webPhoto.Pending,
-		Uploader:    webPhoto.Uploader,
-		Categories:  webPhoto.Categories,
+		ID:             webPhoto.ID,
+		TaggedUsers:    webPhoto.TaggedUsers,
+		Pending:        webPhoto.Pending,
+		Uploader:       webPhoto.Uploader,
+		Categories:     webPhoto.Categories,
+		UserCategories: webPhoto.UserCategories,
 	}
 }
 
@@ -103,7 +113,13 @@ func DBPhotoFromCachePhoto(cachePhoto *CachePhoto) *DBPhoto {
 	}
 
 	for _, cat := range cachePhoto.Categories {
-		dbPhoto.Categories = append(dbPhoto.Categories, DBCategory{Name: cat})
+		dbPhoto.Categories = append(dbPhoto.Categories, DBCategory{Name: cat, UserID: "none"})
+	}
+
+	for userID, cats := range cachePhoto.UserCategories {
+		for _, cat := range cats {
+			dbPhoto.Categories = append(dbPhoto.Categories, DBCategory{Name: cat, UserID: userID})
+		}
 	}
 
 	return &dbPhoto

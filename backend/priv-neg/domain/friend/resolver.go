@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/utils"
 )
 
 // FromRequest - Returns a WebFriendship from a request and authenticated user.
@@ -36,7 +37,7 @@ type friendshipRequest struct {
 }
 
 // FromPutRequest - Returns a modified CacheClique using a request
-func FromPutRequest(r *http.Request, clique *domain.CacheClique, categories []string) (*domain.CacheClique, error) {
+func FromPutRequest(r *http.Request, clique *domain.CacheClique, categories []string, userCategories []string) (*domain.CacheClique, error) {
 	var jsonClique requestPUT
 	err := json.NewDecoder(r.Body).Decode(&jsonClique)
 	if err != nil {
@@ -48,19 +49,24 @@ func FromPutRequest(r *http.Request, clique *domain.CacheClique, categories []st
 	}
 	clique.Name = jsonClique.Name
 
+	clique.Categories = []string{}
+	clique.UserCategories = []string{}
 	for _, blockedCat := range jsonClique.BlockedCategories {
 		found := false
-		for _, cat := range categories {
-			if cat == blockedCat {
+		if utils.IsIn(blockedCat, categories) {
+			found = true
+			clique.Categories = append(clique.Categories, blockedCat)
+		}
+		if !found {
+			if utils.IsIn(blockedCat, userCategories) {
 				found = true
+				clique.UserCategories = append(clique.UserCategories, blockedCat)
 			}
 		}
 		if !found {
 			return nil, fmt.Errorf("could not find category: %s", blockedCat)
 		}
 	}
-
-	clique.Categories = jsonClique.BlockedCategories
 
 	return clique, nil
 }

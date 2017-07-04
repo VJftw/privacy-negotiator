@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import { environment } from '../environments/environment';
-import {AuthService, SessionUser} from './auth.service';
+import {AuthService} from './auth.service';
 import {APIService} from './api.service';
+import {SessionService} from './session.service';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,7 @@ export class AppComponent implements OnInit  {
   info = 0;
 
   constructor(
-    public authService: AuthService,
+    public sessionService: SessionService,
     private apiService: APIService
   ) {}
 

@@ -49,7 +49,7 @@ func (c *Consumer) loadCategories() {
 	categories := []string{
 		"Family",
 		"Party",
-		"Alcohol",
+		"NSFW (Not Safe For Work)",
 		"Holiday",
 		"Friends",
 	}
@@ -58,7 +58,7 @@ func (c *Consumer) loadCategories() {
 		c.categoryRedis.Save(nameCategory)
 		_, err := c.categoryDB.FindByName(nameCategory)
 		if err != nil {
-			c.categoryDB.Save(&domain.DBCategory{Name: nameCategory})
+			c.categoryDB.Save(&domain.DBCategory{Name: nameCategory, UserID: "none"})
 		}
 	}
 }
@@ -92,10 +92,12 @@ func (c *Consumer) Consume() {
 func (c *Consumer) process(d amqp.Delivery) {
 	start := time.Now()
 
-	dbCategory := &domain.DBCategory{}
-	json.Unmarshal(d.Body, dbCategory)
+	queueCategory := &domain.QueueCategory{}
+	json.Unmarshal(d.Body, queueCategory)
 
-	c.logger.Printf("Started processing for category %s", dbCategory.Name)
+	c.logger.Printf("Started processing for category %s", queueCategory.Name)
+
+	dbCategory := domain.DBCategoryFromQueueCategory(queueCategory)
 
 	c.categoryDB.Save(dbCategory)
 

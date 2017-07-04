@@ -75,7 +75,12 @@ func (c Controller) getCliquesHandler(w http.ResponseWriter, r *http.Request) {
 
 	userCliques := c.friendRedis.GetCliquesForAUserID(facebookUser.ID)
 
-	c.render.JSON(w, http.StatusOK, userCliques)
+	webCliques := []domain.WebClique{}
+	for _, userClique := range userCliques {
+		webCliques = append(webCliques, domain.WebCliqueFromCacheClique(userClique))
+	}
+
+	c.render.JSON(w, http.StatusOK, webCliques)
 }
 
 func (c Controller) putCliquesHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,8 +97,9 @@ func (c Controller) putCliquesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	categories := c.categoryRedis.GetAll()
+	userCategories := c.categoryRedis.GetCategoriesForUser(facebookUser)
 
-	clique, err = FromPutRequest(r, clique, categories)
+	clique, err = FromPutRequest(r, clique, categories, userCategories)
 	if err != nil {
 		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
@@ -101,11 +107,10 @@ func (c Controller) putCliquesHandler(w http.ResponseWriter, r *http.Request) {
 
 	c.friendRedis.AddCliqueToUserID(facebookUser.ID, clique)
 
-	// TODO: Persist in DB
 	dbUserClique := domain.DBUserCliqueFromCacheCliqueAndUserID(clique, facebookUser.ID)
 	c.friendPersistPublisher.Publish(dbUserClique)
 
-	c.render.JSON(w, http.StatusOK, clique)
+	c.render.JSON(w, http.StatusOK, domain.WebCliqueFromCacheClique(*clique))
 }
 
 func (c Controller) getFriendsHandler(w http.ResponseWriter, r *http.Request) {

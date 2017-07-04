@@ -161,7 +161,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 					dbUserClique := domain.DBUserCliqueFromCacheCliqueAndUserID(clique, userID)
 					c.cliqueDB.SaveUserClique(dbUserClique)
 					alreadyUserReducedUsers = append(alreadyUserReducedUsers, userID)
-					webClique := domain.WebClique{
+					webClique := domain.WSClique{
 						ID:      dbUserClique.CliqueID,
 						Name:    "",
 						UserIDs: cliqueMembers,

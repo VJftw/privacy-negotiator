@@ -3,6 +3,9 @@ package category
 import (
 	"log"
 
+	"fmt"
+
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -46,4 +49,32 @@ func (m *RedisManager) GetAll() []string {
 	m.cacheLogger.Printf("Got categories")
 
 	return categories
+}
+
+// GetCategoriesForUser - Returns user defined categories
+func (m *RedisManager) GetCategoriesForUser(cacheUser *domain.CacheUser) []string {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	categories, _ := redis.Strings(redisConn.Do(
+		"SMEMBERS",
+		fmt.Sprintf("u%s:categories", cacheUser.ID),
+	))
+
+	m.cacheLogger.Printf("Got categories for %s", cacheUser.ID)
+
+	return categories
+}
+
+// AddCategoryForUser - Adds a user defined category
+func (m *RedisManager) AddCategoryForUser(cacheUser *domain.CacheUser, c string) error {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
+		"SADD",
+		fmt.Sprintf("u%s:categories", cacheUser.ID),
+		c,
+	)
+	m.cacheLogger.Printf("Added category %s to user %s", c, cacheUser.ID)
+
+	return nil
 }

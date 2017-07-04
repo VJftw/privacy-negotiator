@@ -62,6 +62,9 @@ func (m *RedisManager) FindByID(id string) (*domain.CachePhoto, error) {
 		m.cacheLogger.Printf("Got photo:%s", photo.ID)
 
 		photo.Categories = m.GetCategoriesForPhoto(photo)
+		for _, userID := range photo.TaggedUsers {
+			photo.UserCategories[userID] = m.GetUserCategoriesForPhoto(photo, userID)
+		}
 
 		return photo, nil
 	}
@@ -84,6 +87,25 @@ func (m *RedisManager) GetCategoriesForPhoto(p *domain.CachePhoto) []string {
 	return categories
 }
 
+// GetUserCategoriesForPhoto - Returns all categories for a given photo and user
+func (m *RedisManager) GetUserCategoriesForPhoto(p *domain.CachePhoto, uID string) []string {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	categories, err := redis.Strings(redisConn.Do(
+		"SMEMBERS",
+		fmt.Sprintf("p%s:u%s", p.ID, uID),
+	))
+
+	if err != nil {
+		m.cacheLogger.Printf("WARNING: No categories found for %s:%s", p.ID, uID)
+		return []string{}
+	}
+
+	m.cacheLogger.Printf("Got categories for %s:%s %v", p.ID, uID, categories)
+
+	return categories
+}
+
 // SaveCategoriesForPhoto - Saves a CachePhotos categories.
 func (m *RedisManager) SaveCategoriesForPhoto(p *domain.CachePhoto) error {
 	redisConn := m.redis.Get()
@@ -102,6 +124,34 @@ func (m *RedisManager) SaveCategoriesForPhoto(p *domain.CachePhoto) error {
 	}
 
 	m.cacheLogger.Printf("Added categories for %s", p.ID)
+
+	return nil
+}
+
+// SaveUserCategoriesForPhoto - Saves a CachePhotos user categories.
+func (m *RedisManager) SaveUserCategoriesForPhoto(p *domain.CachePhoto, u *domain.CacheUser) error {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	_, err := redisConn.Do(
+		"DEL",
+		fmt.Sprintf("p%s:u%s", p.ID, u.ID),
+	)
+	if err != nil {
+		m.cacheLogger.Printf("ERROR %v", err)
+	}
+
+	for _, cat := range p.UserCategories[u.ID] {
+		_, err := redisConn.Do(
+			"SADD",
+			fmt.Sprintf("p%s:u%s", p.ID, u.ID),
+			cat,
+		)
+		if err != nil {
+			m.cacheLogger.Printf("ERROR %v", err)
+		}
+	}
+
+	m.cacheLogger.Printf("Added categories for %s:%s", p.ID, u.ID)
 
 	return nil
 }

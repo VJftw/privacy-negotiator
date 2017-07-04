@@ -39,16 +39,25 @@ func (m *DBManager) Save(u *domain.DBClique) error {
 
 // SaveUserClique - Saves a DBUserClique
 func (m *DBManager) SaveUserClique(uC *domain.DBUserClique) error {
-	err := m.gorm.Where(domain.DBUserClique{
+
+	existingDBUserClique := domain.DBUserClique{}
+
+	err := m.gorm.Debug().Where(domain.DBUserClique{
 		CliqueID: uC.CliqueID,
 		UserID:   uC.UserID,
-	}).Assign(domain.DBUserClique{
-		Name:       uC.Name,
-		Categories: uC.Categories,
-	}).FirstOrCreate(uC).Error
-	if err != nil {
-		return err
+	}).First(&existingDBUserClique).Error
+	if err != nil { // Not found, create
+		err = m.gorm.Debug().Create(uC).Error
+		if err != nil {
+			return err
+		}
+	} else {
+		categories := uC.Categories
+		m.gorm.Debug().Model(uC).Association("Categories").Clear()
+		uC.Categories = categories
+		m.gorm.Debug().Save(uC)
 	}
+
 	m.dbLogger.Printf("Saved clique %s for user %s", uC.CliqueID, uC.UserID)
 
 	return nil

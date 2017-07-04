@@ -118,22 +118,24 @@ func (c Controller) putPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	categories := c.categoryRedis.GetAll()
-
-	webPhoto, err := FromPutRequest(r, cachePhoto, categories)
-	if err != nil {
-		c.render.JSON(w, http.StatusBadRequest, nil)
+	if cachePhoto.Uploader != cacheUser.ID && !utils.IsIn(cacheUser.ID, cachePhoto.TaggedUsers) {
+		c.render.JSON(w, http.StatusForbidden, nil)
 		return
 	}
 
-	if cachePhoto.Uploader != cacheUser.ID && !utils.IsIn(cacheUser.ID, cachePhoto.TaggedUsers) {
-		c.render.JSON(w, http.StatusForbidden, nil)
+	categories := c.categoryRedis.GetAll()
+	userCategories := c.categoryRedis.GetCategoriesForUser(cacheUser)
+
+	webPhoto, err := FromPutRequest(r, cachePhoto, categories, userCategories, cacheUser.ID)
+	if err != nil {
+		c.render.JSON(w, http.StatusBadRequest, nil)
 		return
 	}
 
 	webCachePhoto := domain.CachePhotoFromWebPhoto(webPhoto)
 	cachePhoto.Categories = webCachePhoto.Categories
 	c.photoRedis.SaveCategoriesForPhoto(cachePhoto)
+	c.photoRedis.SaveUserCategoriesForPhoto(cachePhoto, cacheUser)
 
 	dbPhoto := domain.DBPhotoFromCachePhoto(cachePhoto)
 	c.photoPersistPublisher.Publish(dbPhoto)

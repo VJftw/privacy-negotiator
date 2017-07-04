@@ -16,7 +16,6 @@ export class PhotoService implements Channel {
   constructor(
     private fb: FacebookService,
     private apiService: APIService,
-    private friendService: FriendService,
     private photoResolver: PhotoResolver,
   ) {
     this.photos = new Map();
@@ -41,7 +40,7 @@ export class PhotoService implements Channel {
     // send PUT request to API
     this.apiService.put(
       '/v1/photos/' + photo.id,
-      photo
+      this.photoResolver.APIPhotoFromPhoto(photo)
     ).then(response => {
       console.log(response);
     });
@@ -140,7 +139,7 @@ export class PhotoService implements Channel {
   public savePhoto(photo: Photo) {
     this.apiService.post(
       '/v1/photos',
-      photo
+      photo,
     ).then(response => {
       console.log(response);
     });

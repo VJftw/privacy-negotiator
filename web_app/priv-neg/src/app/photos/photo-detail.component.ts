@@ -3,7 +3,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {PhotoService} from './photo.service';
 import {Photo} from '../domain/photo.model';
-import {CategorySelection} from '../domain/category.model';
+import {Category, CategorySelection} from '../domain/category.model';
 import {CategoryService} from '../categories/category.service';
 import {User} from '../domain/user.model';
 
@@ -43,10 +43,10 @@ export class PhotoDetailComponent implements OnInit {
 
   public updateChoices() {
     for (const cat of this.categoryService.getCategories()) {
-      if (this.photo.categories.includes(cat)) {
-        this.categorySelection.set(cat, new CategorySelection(cat, true));
+      if (Category.isIn(cat, this.photo.categories)) {
+        this.categorySelection.set(cat.name, new CategorySelection(cat.name, true));
       } else {
-        this.categorySelection.set(cat, new CategorySelection(cat, false));
+        this.categorySelection.set(cat.name, new CategorySelection(cat.name, false));
       }
     }
   }
@@ -57,7 +57,7 @@ export class PhotoDetailComponent implements OnInit {
       this.photo.categories = [];
       for (const categorySelection of this.getCategories()) {
         if (categorySelection.isActive) {
-          this.photo.categories.push(categorySelection.name);
+          this.photo.categories.push(this.categoryService.getCategory(categorySelection.name));
         }
       }
       console.log(this.photo);

@@ -7,18 +7,18 @@ import { APIService } from './api.service';
 import {CategoryService} from './categories/category.service';
 import {FriendService} from './friends/friend.service';
 import {PhotoService} from './photos/photo.service';
+import {SessionService, SessionUser} from './session.service';
 
 @Injectable()
-export class AuthService implements CanActivate {
-
-  private fbUser: SessionUser;
+export class AuthService {
 
   constructor(
     public fb: FacebookService,
     private apiService: APIService,
+    private sessionService: SessionService,
     private categoryService: CategoryService,
     private photoService: PhotoService,
-    private friendSerivce: FriendService,
+    private friendService: FriendService,
     private router: Router,
 
   ) {
@@ -29,26 +29,6 @@ export class AuthService implements CanActivate {
     };
 
     fb.init(initParams);
-  }
-
-  public canActivate(): boolean {
-    if (this.isAuthenticated()) {
-      return true;
-    }
-    this.router.navigate(['']);
-    return false;
-  }
-
-  public isAuthenticated(): boolean {
-    if (this.fbUser) {
-      return this.apiService.isAuthenticated();
-    }
-    console.log('Not authenticated with Facebook.');
-    return false;
-  }
-
-  public getUser(): SessionUser {
-    return this.fbUser;
   }
 
   public authenticate(): Promise<any> {
@@ -75,7 +55,7 @@ export class AuthService implements CanActivate {
         this.fb.api('/me?fields=id,first_name,last_name,picture{url},cover').then(res => {
           const user = res as FbGraphUser;
           console.log(user);
-          this.fbUser = new SessionUser(
+          const fbUser = new SessionUser(
             response.authResponse.userID,
             user.first_name,
             user.last_name,
@@ -84,13 +64,14 @@ export class AuthService implements CanActivate {
           );
           console.log(user);
           if (user.cover && user.cover.source) {
-            this.fbUser.coverPicture = user.cover.source;
+            fbUser.coverPicture = user.cover.source;
           }
+          this.sessionService.setUser(fbUser);
           this.authenticateWithApi(response)
             .then(() => {
-              this.categoryService.updateCategories().then(() => {
+              this.categoryService.updateCategoriesFromAPI().then(() => {
                 this.apiService.webSocketService.addChannel(this.photoService);
-                this.apiService.webSocketService.addChannel(this.friendSerivce);
+                this.apiService.webSocketService.addChannel(this.friendService);
                 this.router.navigate(['/photos']);
               });
             });
@@ -109,27 +90,6 @@ export class AuthService implements CanActivate {
     );
   }
 
-  private handleError(error: any): Promise<any> {
-    console.error('An error occurred', error); // for demo purposes only
-    return Promise.reject(error.message || error);
-  }
-}
-
-export class SessionUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  shortAccessToken: string;
-  picture: string;
-  coverPicture: string;
-
-  constructor(id: string, firstName: string, lastName: string, shortAccessToken: string, picture: string) {
-    this.id = id;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.shortAccessToken = shortAccessToken;
-    this.picture = picture;
-  }
 }
 
 export class FbGraphUser {

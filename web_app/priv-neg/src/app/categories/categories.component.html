@@ -1,0 +1,39 @@
+<div class="row">
+  <ul class="collection with-header animated fadeIn">
+    <li class="collection-header green white-text">
+      <span class="title">Global Categories</span>
+    </li>
+    <li class="collection-item" *ngFor="let category of getGlobalCategories()">
+      <span class="title">{{category.name}}</span>
+    </li>
+  </ul>
+</div>
+
+<div class="row">
+  <ul class="collection with-header animated fadeIn">
+    <li class="collection-header blue white-text">
+      <span class="title">Personal Categories</span>
+    </li>
+    <li class="collection-item" *ngFor="let category of getPersonalCategories()">
+      <span class="title">{{category.name}}</span>
+    </li>
+    <li>
+      <div class="row valign-wrapper" style="margin: 0;">
+        <div class="col s11">
+          <div class="input-field col s12">
+            <input id="category_name" type="text" [disabled]="!editing" [(ngModel)]="newCategory.name">
+            <label class="active" for="category_name">Category name</label>
+          </div>
+        </div>
+        <div class="col s1">
+          <a class="btn-floating btn-small waves-effect waves-light right" [ngClass]="{'orange': !editing, 'red': editing}" (click)="this.toggleEdit()">
+            <i class="material-icons left">
+              <span *ngIf="!editing">add</span>
+              <span *ngIf="editing">save</span>
+            </i>
+          </a>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>

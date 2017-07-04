@@ -1,4 +1,5 @@
 import {User} from './user.model';
+import {Category} from './category.model';
 
 export class FbGraphPhoto {
   id: string;
@@ -30,7 +31,7 @@ export class Photo {
   negotiable = false;
   pending = false;
   taggedUsers: User[] = [];
-  categories: string[] = [];
+  categories: Category[] = [];
   conflicts: Conflict[] = [];
   allowedUsers: User[] = [];
   blockedUsers: User[] = [];
@@ -67,6 +68,7 @@ export class APIPhoto {
   taggedUsers: string[] = [];
   pending = false;
   categories: string[] = [];
+  userCategories; // userID: categories
   conflicts: APIConflict[];
   allowedUsers: string[];
   blockedUsers: string[];

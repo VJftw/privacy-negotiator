@@ -86,16 +86,15 @@ export class FriendService implements Channel {
         if (apiClique.name.length < 1) {
           clique.name = 'Unnamed';
         }
-        if (clique.categories.length < 1) {
-          for (const cat of this.categoryService.getCategories()) {
-            let category;
-            if (apiClique.categories.includes(cat)) {
-              category = new CategorySelection(cat, true);
-            } else {
-              category = new CategorySelection(cat, false);
-            }
-            clique.categories.push(category);
+        clique.categories = [];
+        for (const cat of this.categoryService.getCategories()) {
+          let category;
+          if (apiClique.categories.includes(cat.name)) {
+            category = new CategorySelection(cat.name, true);
+          } else {
+            category = new CategorySelection(cat.name, false);
           }
+          clique.categories.push(category);
         }
         this.cliques.set(clique.id, clique);
       }
@@ -171,7 +170,7 @@ export class FriendService implements Channel {
             } else if (cliqueID.length > 0) {
               const clique = new Clique(cliqueID);
               for (const cat of this.categoryService.getCategories()) {
-                clique.categories.push(new CategorySelection(cat, false));
+                clique.categories.push(new CategorySelection(cat.name, false));
               }
               clique.friends = new Map();
               clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);

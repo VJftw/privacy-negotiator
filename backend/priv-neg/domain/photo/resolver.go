@@ -37,7 +37,7 @@ type photoRequest struct {
 }
 
 //FromPutRequest - Modifies a given FacebookPhoto with data from a request for a given User.
-func FromPutRequest(r *http.Request, p *domain.CachePhoto, categories []string) (*domain.WebPhoto, error) {
+func FromPutRequest(r *http.Request, p *domain.CachePhoto, categories []string, userCategories []string, userID string) (*domain.WebPhoto, error) {
 	var jsonPhoto requestPUT
 	err := json.NewDecoder(r.Body).Decode(&jsonPhoto)
 	if err != nil {
@@ -56,13 +56,31 @@ func FromPutRequest(r *http.Request, p *domain.CachePhoto, categories []string) 
 		}
 	}
 
+	for _, cat := range jsonPhoto.UserCategories[userID] {
+		found := false
+		for _, existCat := range userCategories {
+			if cat == existCat {
+				found = true
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("could not find user category: %s", cat)
+		}
+	}
+
 	webPhoto := &domain.WebPhoto{
-		ID:         p.ID,
-		Categories: []string{},
+		ID:             p.ID,
+		Categories:     []string{},
+		UserCategories: p.UserCategories,
 	}
 
 	for _, cat := range jsonPhoto.Categories {
 		webPhoto.Categories = append(webPhoto.Categories, cat)
+	}
+
+	webPhoto.UserCategories[userID] = []string{}
+	for _, cat := range jsonPhoto.UserCategories[userID] {
+		webPhoto.UserCategories[userID] = append(webPhoto.UserCategories[userID], cat)
 	}
 
 	return webPhoto, nil
@@ -70,5 +88,6 @@ func FromPutRequest(r *http.Request, p *domain.CachePhoto, categories []string) 
 }
 
 type requestPUT struct {
-	Categories []string `json:"categories"`
+	Categories     []string            `json:"categories"`
+	UserCategories map[string][]string `json:"userCategories"`
 }
