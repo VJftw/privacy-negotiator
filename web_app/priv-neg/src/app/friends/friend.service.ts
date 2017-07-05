@@ -29,6 +29,10 @@ export class FriendService implements Channel {
   ) {
     this.friends = new Map();
     this.cliques = new Map();
+  }
+
+  private resetCliques() {
+    this.cliques.clear();
     const c = new Clique('NA', 'Not Grouped');
     c.friends = new Map();
     this.cliques.set(c.id, c);
@@ -67,7 +71,7 @@ export class FriendService implements Channel {
   }
 
   public onWebSocketMessage(data) {
-    this.updateFriends().then(() => console.log(this.cliques));
+    this.updateCliquesFromAPI().then(() => this.updateFriends());
   }
 
   public updateCliquesFromAPI(): Promise<any> {
@@ -75,6 +79,9 @@ export class FriendService implements Channel {
       '/v1/cliques'
     ).then(response => {
       const apiCliques = response.json() as APIClique[];
+      console.log(apiCliques);
+
+      this.resetCliques();
 
       for (const apiClique of apiCliques) {
         let clique: Clique;
@@ -85,6 +92,8 @@ export class FriendService implements Channel {
         }
         if (apiClique.name.length < 1) {
           clique.name = 'Unnamed';
+        } else {
+          clique.name = apiClique.name;
         }
         clique.categories = [];
         for (const cat of this.categoryService.getCategories()) {

@@ -16,6 +16,7 @@ export class PhotoDetailComponent implements OnInit {
 
   public photo: Photo;
   public editing = false;
+  public showConflictHelp = false;
   private categorySelection: Map<string, CategorySelection> = new Map();
 
   constructor(
@@ -77,6 +78,9 @@ export class PhotoDetailComponent implements OnInit {
     return false;
   }
 
+  toggleConflictHelp() {
+    this.showConflictHelp = !this.showConflictHelp;
+  }
 
 
 }

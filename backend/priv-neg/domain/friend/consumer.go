@@ -191,10 +191,69 @@ func (c *Consumer) process(d amqp.Delivery) {
 				}
 
 				// TODO: Merge cliques when necessary
+				// Merging cliques:
+				// Create a new clique.
+				// Go through all of the mutual cliques, add all the users and categories.
+				// Remove old cliques
 				c.logger.Printf("WARNING: This should == 1: %v (if it's greater, then the cliques need merging)", mutualCliqueIDs)
-				mutualCliqueID := mutualCliqueIDs[0]
+
+				newClique := domain.NewCacheClique()
+				dbClique := domain.DBCliqueFromCacheClique(newClique)
+				c.cliqueDB.Save(dbClique)
+				userCliquesCategories := map[string][]domain.DBCategory{}
+				userCliquesNames := map[string]string{}
+
+				for _, mutualCliqueID := range mutualCliqueIDs {
+					mutualDBClique, err := c.cliqueDB.FindCliqueByID(mutualCliqueID)
+					if err != nil {
+						break
+					}
+					for _, userClique := range mutualDBClique.DBUserCliques {
+						if _, ok := userCliquesCategories[userClique.UserID]; !ok {
+							userCliquesCategories[userClique.UserID] = []domain.DBCategory{}
+						}
+						if _, ok := userCliquesNames[userClique.UserID]; !ok {
+							userCliquesNames[userClique.UserID] = ""
+						}
+
+						userCliquesCategories[userClique.UserID] = append(userCliquesCategories[userClique.UserID], userClique.Categories...)
+						userCliquesNames[userClique.UserID] += fmt.Sprintf(" %s", userClique.Name)
+						c.friendRedis.RemoveCliqueByIDFromUserID(userClique.UserID, userClique.CliqueID)
+					}
+					c.cliqueDB.DeleteCliqueByID(mutualCliqueID)
+				}
+
+				for userID, dbCategories := range userCliquesCategories {
+					dbUserClique := domain.DBUserClique{
+						CliqueID:   newClique.ID,
+						UserID:     userID,
+						Categories: dbCategories,
+						Name:       userCliquesNames[userID],
+					}
+					c.cliqueDB.SaveUserClique(&dbUserClique)
+					userCacheClique := domain.CacheClique{
+						ID:             newClique.ID,
+						Name:           userCliquesNames[userID],
+						Categories:     []string{},
+						UserCategories: []string{},
+					}
+					for _, cat := range dbCategories {
+						if cat.UserID == "none" {
+							userCacheClique.Categories = append(userCacheClique.Categories, cat.Name)
+						} else {
+							userCacheClique.UserCategories = append(userCacheClique.UserCategories, cat.Name)
+						}
+					}
+					c.friendRedis.AddCliqueToUserID(userID, &userCacheClique)
+					c.userRedis.Publish(userID, "clique", userCacheClique)
+				}
+
+				mutualCliqueID := newClique.ID
 				clique := &domain.CacheClique{
-					ID: mutualCliqueID,
+					ID:             mutualCliqueID,
+					Name:           "",
+					Categories:     []string{},
+					UserCategories: []string{},
 				}
 
 				c.friendRedis.AddCliqueToUserID(friendID, clique)
@@ -202,10 +261,11 @@ func (c *Consumer) process(d amqp.Delivery) {
 				c.cliqueDB.SaveUserClique(dbUserClique)
 
 				// Update WS
-				dbClique, _ := c.cliqueDB.FindCliqueByID(dbUserClique.CliqueID)
-				for _, userID := range dbClique.GetUserIDs() {
-					c.userRedis.Publish(userID, "clique", clique)
-				}
+				c.userRedis.Publish(friendID, "clique", clique)
+				//dbClique, _ := c.cliqueDB.FindCliqueByID(newClique.ID)
+				//for _, userID := range dbClique.GetUserIDs() {
+				//	c.userRedis.Publish(userID, "clique", clique)
+				//}
 			}
 
 		}

@@ -165,6 +165,19 @@ func (m *RedisManager) AddCliqueToUserID(fUserID string, clique *domain.CacheCli
 	m.cacheLogger.Printf("Added clique %s to %s", clique.ID, fUserID)
 }
 
+// RemoveCliqueByIDFromUserID - Removes a Clique from a UserID
+func (m *RedisManager) RemoveCliqueByIDFromUserID(fUserID string, cliqueID string) {
+	redisConn := m.redis.Get()
+	defer redisConn.Close()
+	redisConn.Do(
+		"HDEL",
+		fmt.Sprintf("u%s:cliques", fUserID),
+		cliqueID,
+	)
+
+	m.cacheLogger.Printf("Removed clique %s from %s", cliqueID, fUserID)
+}
+
 // GetCliqueByIDAndUser - Returns a clique given its ID and user
 func (m *RedisManager) GetCliqueByIDAndUser(cliqueID string, cacheUser *domain.CacheUser) (*domain.CacheClique, error) {
 	cacheClique := &domain.CacheClique{}

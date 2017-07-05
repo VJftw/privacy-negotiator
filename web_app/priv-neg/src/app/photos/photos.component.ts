@@ -1,4 +1,3 @@
-import { AuthService } from '../auth.service';
 import { Component, OnInit } from '@angular/core';
 import { Photo } from '../domain/photo.model';
 import { PhotoService } from './photo.service';

@@ -47,7 +47,10 @@
   </div>
   <div class="col s12 l4">
     <ul class="collection with-header">
-      <li class="collection-header purple white-text"><span class="badge white-text">{{photo.conflicts.length}}</span>Conflicting Users</li>
+      <li class="collection-header purple white-text"><a (click)="toggleConflictHelp()"><span class="badge white-text">?</span></a>Conflicting Users</li>
+      <li *ngIf="showConflictHelp" class="collection-item" style="font-size: 8pt;">
+        This shows the conflicting user's votes where a negative value is a block vote and a positive value is an allow vote. The weight of a user's vote is their generated relationship strength.
+      </li>
       <li style="min-height: 0;" class="collection-item avatar" *ngFor="let conflict of photo.conflicts">
         <div class="row" style="margin-bottom: 0;">
           <div class="col s12">

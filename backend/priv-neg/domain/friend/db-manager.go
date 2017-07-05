@@ -79,7 +79,17 @@ func (m *DBManager) FindCliqueByID(id string) (*domain.DBClique, error) {
 		m.dbLogger.Printf("Error: %v", err)
 		return nil, err
 	}
-	dbClique.DBUserCliques = dbUserCliques
+
+	for _, dbUserClique := range dbUserCliques {
+		categories := []domain.DBCategory{}
+		err = m.gorm.Model(dbUserClique).Related(&categories, "Categories").Error
+		if err != nil {
+			m.dbLogger.Printf("Error: %v", err)
+			break
+		}
+		dbUserClique.Categories = categories
+		dbClique.DBUserCliques = append(dbClique.DBUserCliques, dbUserClique)
+	}
 
 	if dbClique.ID == "" {
 		m.dbLogger.Printf("Could not find clique %s", id)
@@ -116,4 +126,25 @@ func (m *DBManager) GetUserCliquesByUser(u domain.DBUser) ([]domain.DBUserClique
 	}
 
 	return returnDbUserCliques, nil
+}
+
+// DeleteCliqueByID - Removes a clique and its associated UserCliques given a Clique ID.
+func (m *DBManager) DeleteCliqueByID(cliqueID string) error {
+
+	err := m.gorm.Debug().Model(&domain.DBClique{ID: cliqueID}).Association("DBUserCliques").Clear().Error
+
+	if err != nil {
+		m.dbLogger.Printf("Error: %v", err)
+		return err
+	}
+
+	err = m.gorm.Debug().Delete(&domain.DBClique{ID: cliqueID}).Error
+
+	if err != nil {
+		m.dbLogger.Printf("Error: %v", err)
+		return err
+	}
+
+	m.dbLogger.Printf("Deleted Clique %s", cliqueID)
+	return nil
 }

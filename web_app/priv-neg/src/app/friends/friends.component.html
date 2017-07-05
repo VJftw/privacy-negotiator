@@ -37,7 +37,7 @@
     <li style="min-height: 0;" class="collection-item avatar" *ngFor="let friend of clique.getFriends()">
       <img style="width:25px; height:25px;" src="{{friend.picture}}" alt="" class="circle">
       <span class="title">{{friend.name}}</span>
-      <span class="new badge blue" data-badge-caption="strength">{{ friend.tieStrength }}</span>
+      <span class="new badge blue" data-badge-caption="similarity">{{ friend.tieStrength }}</span>
     </li>
   </ul>
 

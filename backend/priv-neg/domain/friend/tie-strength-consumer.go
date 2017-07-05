@@ -181,8 +181,13 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	aCacheFriendship.TieStrength = points
 
 	bCacheUser, _ := c.userRedis.FindByID(queueFriendship.To)
-	bCacheFriendship, _ := c.friendRedis.FindByIDAndUser(queueFriendship.From, bCacheUser)
-	bCacheFriendship.TieStrength = points
+	bCacheFriendship, err := c.friendRedis.FindByIDAndUser(queueFriendship.From, bCacheUser)
+	if err != nil {
+		bCacheFriendship = &domain.CacheFriendship{
+			ID:          aCacheUser.ID,
+			TieStrength: points,
+		}
+	}
 
 	c.friendRedis.Save(aCacheUser, aCacheFriendship)
 	c.friendRedis.Save(bCacheUser, bCacheFriendship)

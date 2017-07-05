@@ -19,9 +19,10 @@ type WebClique struct {
 
 // WSClique - Representation of Clique submitted via Websocket
 type WSClique struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	UserIDs []string `json:"users"`
+	ID         string   `json:"id"`
+	Name       string   `json:"name"`
+	UserIDs    []string `json:"users"`
+	Categories []string `json:"categories"`
 }
 
 // DBClique - Representation of a Clique stored in the database
@@ -62,9 +63,10 @@ func (c *DBClique) GetUserIDs() []string {
 // NewCacheClique - Returns a new CacheClique with UUID
 func NewCacheClique() *CacheClique {
 	return &CacheClique{
-		ID:         uuid.NewV4().String(),
-		Name:       "",
-		Categories: []string{},
+		ID:             uuid.NewV4().String(),
+		Name:           "",
+		Categories:     []string{},
+		UserCategories: []string{},
 	}
 }
 
