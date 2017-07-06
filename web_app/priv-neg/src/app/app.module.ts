@@ -24,6 +24,7 @@ import { FriendService } from './friends/friend.service';
 import {PhotoResolver} from './photos/photo.resolver';
 import {CategoriesComponent} from './categories/categories.component';
 import {SessionService} from './session.service';
+import {SurveyComponent} from "./photos/survey.component";
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import {SessionService} from './session.service';
     CategoriesComponent,
     PhotosComponent,
     PhotoDetailComponent,
-    FriendsComponent
+    FriendsComponent,
+    SurveyComponent,
   ],
   imports: [
     BrowserModule,
@@ -47,6 +49,7 @@ import {SessionService} from './session.service';
       { path: 'photos', component: PhotosComponent, canActivate: [SessionService] },
       { path: 'categories', component: CategoriesComponent, canActivate: [SessionService] },
       { path: 'photos/:id', component: PhotoDetailComponent, canActivate: [SessionService] },
+      { path: 'survey/:id', component: SurveyComponent, canActivate: [SessionService] },
       { path: 'friends', component: FriendsComponent, canActivate: [SessionService] }
     ], { useHash: true })
   ],

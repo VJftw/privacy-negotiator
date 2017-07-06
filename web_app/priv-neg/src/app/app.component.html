@@ -1,6 +1,6 @@
 <nav class="grey darken-3" role="navigation">
-  <div class="nav-wrapper container">
-    <a id="logo-container" class="brand-logo">Privacy Manager</a>
+  <div class="nav-wrapper">
+    <a id="logo-container" class="brand-logo" style="padding-left: 0.5em;">Privacy Manager</a>
     <ul class="right hide-on-med-and-down">
       <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/categories" routerLinkActive="active">Categories <i class="material-icons left">folder</i></a></li>
       <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
@@ -31,6 +31,7 @@
         <a><span class="name" [ngClass]="{ 'black-text': !sessionService.getUser().coverPicture }">Hi, {{sessionService.getUser().firstName}}!</span></a>
         <a><span class="email"></span></a>
       </div></li>
+      <li><a routerLink="/categories" routerLinkActive="active">Categories <i class="material-icons left">folder</i></a></li>
       <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
       <li><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
     </ul>

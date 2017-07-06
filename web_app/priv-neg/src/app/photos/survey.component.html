@@ -1,0 +1,83 @@
+<div class="row">
+  <form class="col s12">
+    <div class="row">
+      <div class="input-field col s12 m10 l8 offset-m1 offset-l2">
+        <input disabled value="{{survey.photoID}}" id="disabled" type="text">
+        <label class="active" for="disabled">Photo ID</label>
+      </div>
+    </div>
+    <div class="row">
+      <!-- About the conflict -->
+      <div class="col s12 m10 l8 offset-m1 offset-l2">
+        <h3>About the conflict</h3>
+        <p>How would you resolve this conflict?</p>
+        <p *ngFor="let option of survey.howWouldYouResolveThisConflictChoices">
+          <input name="howWouldYouResolve" type="radio" [(ngModel)]="survey.howWouldYouResolveThisConflict" id="howWouldYouResolve-{{option.id}}" value="{{option.description}}">
+          <label for="howWouldYouResolve-{{option.id}}">{{option.description}}</label>
+        </p>
+        <div class="input-field col s12" *ngIf="survey.howWouldYouResolveThisConflict == 'Other'">
+          <textarea id="howWouldYouResolve-no_reason" class="materialize-textarea"></textarea>
+          <label for="howWouldYouResolve-no_reason">Other?</label>
+        </div>
+      </div>
+
+      <div class="col s12 m10 l8 offset-m1 offset-l2">
+        <p>Do you think your tie-strength towards the conflicted user is correctly depicted?</p>
+        <p *ngFor="let option of survey.tieStrengthDepictedChoices">
+          <input name="tieStrengthDepicted" type="radio" [(ngModel)]="survey.tieStrengthDepicted" id="tieStrengthDepicted-{{option.id}}" value="{{option.description}}">
+          <label for="tieStrengthDepicted-{{option.id}}">{{option.description}}</label>
+        </p>
+          <div class="input-field col s12" *ngIf="survey.tieStrengthDepicted == 'No'">
+            <textarea id="tieStrengthDepicted-no_reason" class="materialize-textarea"></textarea>
+            <label for="tieStrengthDepicted-no_reason">If No, why?</label>
+          </div>
+      </div>
+
+      <div class="col s12 m10 l8 offset-m1 offset-l2">
+        <p>Do you understand the motives of with whom you are in conflict with?</p>
+        <p *ngFor="let option of survey.doYouUnderstandTheMotivesOfOppositionChoices">
+          <input name="doYouUnderstandTheMotivesOfOpposition" type="radio" [(ngModel)]="survey.doYouUnderstandTheMotivesOfOpposition" id="doYouUnderstandTheMotivesOfOpposition-{{option.id}}" value="{{option.description}}">
+          <label for="doYouUnderstandTheMotivesOfOpposition-{{option.id}}">{{option.description}}</label>
+        </p>
+      </div>
+
+      <!-- About the photo -->
+      <div class="col s12 m10 l8 offset-m1 offset-l2">
+        <h3>About the photo</h3>
+
+        <p>Were you asked permission before this photo was uploaded?</p>
+        <p>
+          <input name="permission_requested" type="radio" id="no_but" />
+          <label for="no_but">No, but it doesn't bother me</label>
+        </p>
+        <p>
+          <input name="permission_requested" type="radio" id="no_and" />
+          <label for="no_and">No, and it does bother me</label>
+        </p>
+        <p>
+          <input name="permission_requested" type="radio" id="yes" />
+          <label for="yes">Yes</label>
+        </p>
+      </div>
+
+
+      <!-- General -->
+      <div class="col s12 m10 l8 offset-m1 offset-l2">
+        <h3>General</h3>
+
+        <div class="input-field col s12">
+          <textarea name="usually_resolve" [(ngModel)]="survey.howDoYouUsuallyResolveConflicts" id="usually_resolve" class="materialize-textarea"></textarea>
+          <label for="usually_resolve">How do you usually resolve complaints with photos uploaded to Facebook?</label>
+        </div>
+      </div>
+
+      <div class="col s12 m10 l8 offset-m1 offset-l2">
+      </div>
+
+      <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+        <i class="material-icons right">send</i>
+      </button>
+
+    </div>
+  </form>
+</div>
