@@ -21,6 +21,25 @@
         </div>
       </a>
       </li>
+      <li>
+          <div><a>
+            <div class="col s12 center-align" style="line-height: 20px;">
+              <fb-share href="https://github.com/zyra/ng2-facebook-sdk/" size="small" colorScheme="dark"></fb-share><br />
+            </div>
+            <div class="col s12 center-align" style="line-height: 20px;">
+              <fb-like
+                href="https://www.facebook.com/socialprivacymanager/"
+                colorScheme="dark"
+                layout="button_count"
+                size="small"
+              ></fb-like>
+            </div>
+            <div class="col s12 center-align" style="line-height: 20px;">
+              <fb-send href="https://github.com/zyra/ng2-facebook-sdk/" size="small" colorScheme="dark"></fb-send><br />
+            </div>
+          </a>
+          </div>
+      </li>
     </ul>
     <ul *ngIf="sessionService.isAuthenticated()" id="nav-mobile" class="side-nav">
       <li><div class="user-view">
@@ -34,8 +53,16 @@
       <li><a routerLink="/categories" routerLinkActive="active">Categories <i class="material-icons left">folder</i></a></li>
       <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
       <li><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
+      <li><div class="divider"></div></li>
+      <li><a class="valign-wrapper center-align"><fb-share href="https://github.com/zyra/ng2-facebook-sdk/" size="large"></fb-share></a></li>
+      <li><a class="valign-wrapper center-align"><fb-like
+        href="https://www.facebook.com/socialprivacymanager/"
+        colorScheme="light"
+        layout="button_count"
+        size="small"
+      ></fb-like></a></li>
     </ul>
-    <a *ngIf="sessionService.isAuthenticated()" materialize="sideNav"  class="button-collapse" data-activates="nav-mobile">
+    <a *ngIf="sessionService.isAuthenticated()" materialize="sideNav" [materializeParams]="[{edge:'left', closeOnClick: true}]" (click)="parseFB()" class="button-collapse" data-activates="nav-mobile">
       <i class="material-icons">menu</i>
     </a>
   </div>

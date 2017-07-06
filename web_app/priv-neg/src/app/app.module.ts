@@ -24,7 +24,7 @@ import { FriendService } from './friends/friend.service';
 import {PhotoResolver} from './photos/photo.resolver';
 import {CategoriesComponent} from './categories/categories.component';
 import {SessionService} from './session.service';
-import {SurveyComponent} from "./photos/survey.component";
+import {SurveyComponent} from './photos/survey.component';
 
 @NgModule({
   declarations: [

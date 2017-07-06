@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {Photo} from '../domain/photo.model';
-import {PhotoService} from "./photo.service";
+import {PhotoService} from './photo.service';
 
 @Component({
   selector: 'app-survey',

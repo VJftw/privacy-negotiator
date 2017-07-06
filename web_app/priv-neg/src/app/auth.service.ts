@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/toPromise';
 import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-facebook';
 import { environment } from '../environments/environment';
-import { Router, CanActivate } from '@angular/router';
+import { Router } from '@angular/router';
 import { APIService } from './api.service';
 import {CategoryService} from './categories/category.service';
 import {FriendService} from './friends/friend.service';

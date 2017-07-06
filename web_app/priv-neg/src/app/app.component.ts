@@ -1,8 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import { environment } from '../environments/environment';
-import {AuthService} from './auth.service';
 import {APIService} from './api.service';
 import {SessionService} from './session.service';
+import {FacebookService, InitParams, UIParams, UIResponse} from 'ngx-facebook';
+declare var window: any;
 
 @Component({
   selector: 'app-root',
@@ -22,12 +23,22 @@ export class AppComponent implements OnInit  {
   info = 0;
 
   constructor(
+    public fb: FacebookService,
     public sessionService: SessionService,
     private apiService: APIService
-  ) {}
+  ) {
+    const initParams: InitParams = {
+      appId: environment.fbAppId,
+      xfbml: true,
+      version: 'v2.9'
+    };
+
+    fb.init(initParams);
+  }
 
   ngOnInit() {
     this.updateLatency();
+    window.FB.XFBML.parse();
   }
 
   public cycleInfo() {
@@ -62,6 +73,11 @@ export class AppComponent implements OnInit  {
   private sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
   }
+
+  public parseFB() {
+    window.FB.XFBML.parse();
+  }
+
 }
 
 class ApiHealth {
