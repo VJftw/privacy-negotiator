@@ -11,8 +11,9 @@
       <div *ngIf="clique.id !== 'NA'" class="row no-pad-bot" style="margin-bottom: 0;">
         <div class="col s11">
             <div class="input-field col s12">
-              <input id="clique_name" type="text" [disabled]="!clique.editing" [(ngModel)]="clique.name">
-              <label class="active" for="clique_name">Clique name ({{clique.id}})</label>
+              <input style="margin-bottom: 0" id="clique_name" type="text" [disabled]="!clique.editing" [(ngModel)]="clique.name">
+              <label class="active" for="clique_name">Clique name</label>
+              <span style="font-size: 8pt" class="grey-text">{{clique.id}}</span>
             </div>
             <div class="col s12 m6">
               <p>Allowed contexts</p>
