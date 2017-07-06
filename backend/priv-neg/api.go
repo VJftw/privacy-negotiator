@@ -101,6 +101,6 @@ func (p *PrivNegAPI) Stop() {
 // Start - Starts the API
 func (p *PrivNegAPI) Start() {
 	if err := p.server.ListenAndServe(); err != nil {
-		log.Printf("Error %s", err)
+		log.Printf("error: %v", err)
 	}
 }

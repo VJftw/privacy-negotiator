@@ -63,7 +63,7 @@ func (c *PersistConsumer) Consume() {
 		}
 	}()
 
-	c.logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	c.logger.Printf("Worker: %s waiting for messages. To exit press CTRL+C", c.queue.Name)
 	<-forever
 }
 
@@ -72,7 +72,7 @@ func (c *PersistConsumer) process(d amqp.Delivery) {
 
 	dbUserClique := domain.DBUserClique{}
 	json.Unmarshal(d.Body, &dbUserClique)
-	c.logger.Printf("DEBUG: UserClique: %v", dbUserClique)
+	c.logger.Printf("debug: UserClique: %v", dbUserClique)
 
 	c.cliqueDB.SaveUserClique(&dbUserClique)
 

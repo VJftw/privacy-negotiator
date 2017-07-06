@@ -3,7 +3,7 @@
     "name": "rabbitmq_${environment}",
     "image": "rabbitmq:management",
     "essential": true,
-    "memoryReservation": 256,
+    "memoryReservation": 512,
     "hostname": "rabbitmq-${environment}.weave.local",
     "portMappings": [
       {

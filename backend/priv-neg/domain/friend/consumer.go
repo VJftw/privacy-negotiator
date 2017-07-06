@@ -79,7 +79,7 @@ func (c *Consumer) Consume() {
 		}
 	}()
 
-	c.logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	c.logger.Printf("Worker: %s waiting for messages. To exit press CTRL+C", c.queue.Name)
 	<-forever
 }
 
@@ -107,12 +107,12 @@ func (c *Consumer) process(d amqp.Delivery) {
 	for _, userClique := range dbUser.DBUserCliques {
 		clique, err := c.cliqueDB.FindCliqueByID(userClique.CliqueID)
 		if err != nil {
-			c.logger.Printf("ERROR: %v", err)
+			c.logger.Printf("error: %v", err)
 		}
 		existingFriendsInCliques = append(existingFriendsInCliques, clique.GetUserIDs()...)
 	}
 
-	c.logger.Printf("DEBUG: Got %d friends already in cliques", len(existingFriendsInCliques))
+	c.logger.Printf("debug: Got %d friends already in cliques", len(existingFriendsInCliques))
 
 	allFriendIDs := c.getFacebookFriendsForUser(dbUser, "", nil)
 
@@ -138,13 +138,13 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	for _, friendID := range reducedFriendIDs {
 		if isIn(friendID, alreadyUserReducedUsers) {
-			c.logger.Printf("DEBUG: Skipping %s", friendID)
+			c.logger.Printf("debug: Skipping %s", friendID)
 			break // skip user
 		}
 		friendFriends := c.friendRedis.GetFriendIDsForAUserID(friendID)
 
 		mutualFriends := arrayUnion(allFriendIDs, friendFriends)
-		c.logger.Printf("DEBUG: Got mutual friends: %v", mutualFriends)
+		c.logger.Printf("debug: Got mutual friends: %v", mutualFriends)
 
 		if len(mutualFriends) >= 1 {
 			if isIn(mutualFriends[0], reducedFriendIDs) {
@@ -195,7 +195,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 				// Create a new clique.
 				// Go through all of the mutual cliques, add all the users and categories.
 				// Remove old cliques
-				c.logger.Printf("WARNING: This should == 1: %v (if it's greater, then the cliques need merging)", mutualCliqueIDs)
+				c.logger.Printf("warning: This should == 1: %v (if it's greater, then the cliques need merging)", mutualCliqueIDs)
 
 				newClique := domain.NewCacheClique()
 				dbClique := domain.DBCliqueFromCacheClique(newClique)

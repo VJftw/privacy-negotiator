@@ -56,3 +56,46 @@ resource "aws_cloudwatch_log_group" "worker-auth-queue" {
     Environment = "${var.environment}"
   }
 }
+
+resource "aws_cloudwatch_log_metric_filter" "worker-auth-queue_error" {
+
+  name = "${var.environment}-worker-auth-queue.error"
+  pattern = "error"
+  log_group_name = "${aws_cloudwatch_log_group.worker-auth-queue.name}"
+
+  metric_transformation {
+    name = "${var.environment}-worker-auth-queue.error"
+    namespace = "${var.environment}-worker-auth-queue"
+    value = "1"
+  }
+
+}
+
+resource "aws_cloudwatch_log_metric_filter" "worker-auth-queue_error_reset" {
+
+  name = "${var.environment}-worker-auth-queue.error"
+  pattern = ""
+  log_group_name = "${aws_cloudwatch_log_group.worker-auth-queue.name}"
+
+  metric_transformation {
+    name = "${var.environment}-worker-auth-queue.error"
+    namespace = "${var.environment}-worker-auth-queue"
+    value = "0"
+  }
+
+}
+
+resource "aws_cloudwatch_metric_alarm" "worker-auth-queue_error" {
+
+  alarm_name = "${var.environment}.worker-auth-queue.error"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  threshold = "1"
+  period = "60"
+  statistic = "Sum"
+  evaluation_periods = "1"
+  metric_name = "${var.environment}.worker-auth-queue.error"
+  namespace = "${var.environment}-worker-auth-queue.error"
+  alarm_description = "monitors log for worker-auth-queue errors"
+  //  alarm_actions = ["arn:aws:sns:eu-west-1:812414252941:error_notification"]
+
+}

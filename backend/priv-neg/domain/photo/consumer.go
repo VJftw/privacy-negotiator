@@ -76,7 +76,7 @@ func (c *Consumer) Consume() {
 		}
 	}()
 
-	c.logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	c.logger.Printf("Worker: %s waiting for messages. To exit press CTRL+C", c.queue.Name)
 	<-forever
 }
 
@@ -106,8 +106,8 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 		dbPhoto := domain.DBPhotoFromCachePhoto(cachePhoto)
 
-		c.logger.Printf("DEBUG: CachePhoto: %s", cachePhoto.Uploader)
-		c.logger.Printf("DEBUG: DBPhoto: %s", dbPhoto.Uploader)
+		c.logger.Printf("debug: CachePhoto: %s", cachePhoto.Uploader)
+		c.logger.Printf("debug: DBPhoto: %s", dbPhoto.Uploader)
 
 		dbUsers := []domain.DBUser{}
 		for _, user := range dbPhoto.TaggedUsers {
@@ -145,7 +145,7 @@ func updatePhotoFromGraphAPI(p *domain.CachePhoto, u *domain.DBUser) {
 	resBody := res.Body
 	bodyBytes, _ := ioutil.ReadAll(resBody)
 	bodyString := string(bodyBytes)
-	log.Printf("DEBUG: %s", bodyString)
+	log.Printf("debug: %s", bodyString)
 	err := json.Unmarshal(bodyBytes, &photoResponse)
 	defer res.Body.Close()
 	if err != nil {
@@ -153,7 +153,7 @@ func updatePhotoFromGraphAPI(p *domain.CachePhoto, u *domain.DBUser) {
 	}
 	p.Uploader = photoResponse.From.ID
 
-	log.Printf("DEBUG: %v", photoResponse)
+	log.Printf("debug: %v", photoResponse)
 
 	for _, taggedUser := range photoResponse.Tags.Data {
 		p.TaggedUsers = append(p.TaggedUsers, taggedUser.ID)

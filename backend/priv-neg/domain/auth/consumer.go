@@ -75,7 +75,7 @@ func (c *Consumer) Consume() {
 		}
 	}()
 
-	c.logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	c.logger.Printf("Worker: %s waiting for messages. To exit press CTRL+C", c.queue.Name)
 	<-forever
 }
 

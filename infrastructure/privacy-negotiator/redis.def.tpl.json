@@ -3,7 +3,7 @@
     "name": "redis_${environment}",
     "image": "redis",
     "essential": true,
-    "memoryReservation": 512,
+    "memoryReservation": 1024,
     "hostname": "redis-${environment}.weave.local",
     "portMappings": [
       {

@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 data "aws_route53_zone" "organisation" {
-  name = "vjpatel.me."
+  name = "privacymanager.social."
 }
 
 data "aws_vpc" "app_cluster" {

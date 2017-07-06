@@ -79,7 +79,7 @@ func (c *ConflictConsumer) Consume() {
 		}
 	}()
 
-	c.logger.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	c.logger.Printf("Worker: %s waiting for messages. To exit press CTRL+C", c.queue.Name)
 	<-forever
 }
 
@@ -92,7 +92,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	taggedUserAllowedUsers := map[string][]string{} // taggedUserID: cliqueUserID
 	taggedUserBlockedUsers := map[string][]string{} // taggedUserID: cliqueUserID
 
-	c.logger.Printf("DEBUG: TaggedUsers: %d, Categories: %d", len(dbPhoto.TaggedUsers), len(dbPhoto.Categories))
+	c.logger.Printf("debug: TaggedUsers: %d, Categories: %d", len(dbPhoto.TaggedUsers), len(dbPhoto.Categories))
 	taggedUserIDs := []string{}
 	for _, taggedUser := range dbPhoto.TaggedUsers {
 		taggedUserIDs = append(taggedUserIDs, taggedUser.ID)
@@ -103,10 +103,10 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 		userInitialBlocked := []string{}
 		taggedUserCliques, _ := c.friendDB.GetUserCliquesByUser(taggedUser)
 		for _, taggedUserClique := range taggedUserCliques {
-			c.logger.Printf("DEBUG: UserCliqueCategories: %v", taggedUserClique.Categories)
+			c.logger.Printf("debug: UserCliqueCategories: %v", taggedUserClique.Categories)
 			hasCategory := false
 			for _, cliqueCat := range taggedUserClique.Categories {
-				c.logger.Printf("DEBUG: Allowing UserClique: %s", taggedUserClique.CliqueID)
+				c.logger.Printf("debug: Allowing UserClique: %s", taggedUserClique.CliqueID)
 				if isIn(cliqueCat, dbPhoto.Categories) {
 					hasCategory = true
 					break
@@ -134,8 +134,8 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 		}
 	}
 
-	c.logger.Printf("DEBUG: Allowed Users %v", taggedUserAllowedUsers)
-	c.logger.Printf("DEBUG: Blocked Users %v", taggedUserBlockedUsers)
+	c.logger.Printf("debug: Allowed Users %v", taggedUserAllowedUsers)
+	c.logger.Printf("debug: Blocked Users %v", taggedUserBlockedUsers)
 
 	// Find Conflicts
 	cachePhoto, _ := c.photoRedis.FindByID(dbPhoto.ID)
@@ -188,7 +188,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 			cacheConflict := domain.CacheConflictFromDBConflict(dbConflict)
 			err := c.photoDB.SaveConflict(&dbConflict)
 			if err != nil {
-				c.logger.Printf("ERROR: %v", err)
+				c.logger.Printf("error: %v", err)
 			}
 			// Add party users with all sentiment to the user, their tie-strength is the weight of their vote.
 			// Positive outcome means they should be allowed. Negative means they should be blocked.
@@ -198,7 +198,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 				cacheUser := domain.CacheUserFromDatabaseUser(&partyUser)
 				cacheFriendship, err := c.friendRedis.FindByIDAndUser(cacheConflict.Target, cacheUser)
 				if err != nil {
-					c.logger.Printf("DEBUG: %s:%s do not have a friendship", partyUser.ID, cacheConflict.Target)
+					c.logger.Printf("debug: %s:%s do not have a friendship", partyUser.ID, cacheConflict.Target)
 					break
 				}
 				if shouldAllow(taggedUserAllowedUsers, taggedUserBlockedUsers, partyUser.ID, cacheConflict.Target) {
@@ -261,7 +261,7 @@ func shouldAllow(
 		}
 	}
 
-	log.Printf("WARNING: Could not find preference for %s with %s", partyUserID, targetUserID)
+	log.Printf("warning: Could not find preference for %s with %s", partyUserID, targetUserID)
 	return true // default true as abstained users do not care
 }
 

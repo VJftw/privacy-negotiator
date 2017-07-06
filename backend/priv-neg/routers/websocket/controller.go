@@ -79,7 +79,7 @@ func redisSubscribe(ws *websocket.Conn, psc redis.PubSubConn) {
 		case redis.Subscription:
 			fmt.Printf("%s: %s %d\n", v.Channel, v.Kind, v.Count)
 		case error:
-			fmt.Printf("ERROR: %v", v)
+			fmt.Printf("error: %v", v)
 		}
 	}
 }

@@ -98,7 +98,7 @@ func (m *RedisManager) GetUserCategoriesForPhoto(p *domain.CachePhoto, uID strin
 	))
 
 	if err != nil {
-		m.cacheLogger.Printf("WARNING: No categories found for %s:%s", p.ID, uID)
+		m.cacheLogger.Printf("warning: No categories found for %s:%s", p.ID, uID)
 		return []string{}
 	}
 
@@ -138,7 +138,7 @@ func (m *RedisManager) SaveUserCategoriesForPhoto(p *domain.CachePhoto, u *domai
 		fmt.Sprintf("p%s:u%s", p.ID, u.ID),
 	)
 	if err != nil {
-		m.cacheLogger.Printf("ERROR %v", err)
+		m.cacheLogger.Printf("error %v", err)
 	}
 
 	for _, cat := range p.UserCategories[u.ID] {
@@ -148,7 +148,7 @@ func (m *RedisManager) SaveUserCategoriesForPhoto(p *domain.CachePhoto, u *domai
 			cat,
 		)
 		if err != nil {
-			m.cacheLogger.Printf("ERROR %v", err)
+			m.cacheLogger.Printf("error %v", err)
 		}
 	}
 

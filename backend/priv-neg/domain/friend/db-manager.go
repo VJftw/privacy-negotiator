@@ -97,7 +97,7 @@ func (m *DBManager) FindCliqueByID(id string) (*domain.DBClique, error) {
 	}
 
 	m.dbLogger.Printf("Got clique %s", id)
-	m.dbLogger.Printf("DEBUG: Clique Users: %v", dbClique.GetUserIDs())
+	m.dbLogger.Printf("debug: Clique Users: %v", dbClique.GetUserIDs())
 	return &dbClique, nil
 }
 

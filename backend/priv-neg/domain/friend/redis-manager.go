@@ -83,7 +83,7 @@ func (m *RedisManager) GetFriendIDsForAUserID(fUserID string) []string {
 	))
 
 	if err != nil {
-		m.cacheLogger.Printf("DEBUG: %v", err)
+		m.cacheLogger.Printf("debug: %v", err)
 		return friends
 	}
 

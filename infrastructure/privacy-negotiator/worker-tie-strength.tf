@@ -56,3 +56,46 @@ resource "aws_cloudwatch_log_group" "worker-tie-strength" {
     Environment = "${var.environment}"
   }
 }
+
+resource "aws_cloudwatch_log_metric_filter" "worker-tie-strength_error" {
+
+  name = "${var.environment}-worker-tie-strength.error"
+  pattern = "error"
+  log_group_name = "${aws_cloudwatch_log_group.worker-tie-strength.name}"
+
+  metric_transformation {
+    name = "${var.environment}-worker-tie-strength.error"
+    namespace = "${var.environment}-worker-tie-strength"
+    value = "1"
+  }
+
+}
+
+resource "aws_cloudwatch_log_metric_filter" "worker-tie-strength_error_reset" {
+
+  name = "${var.environment}-worker-tie-strength.error"
+  pattern = ""
+  log_group_name = "${aws_cloudwatch_log_group.worker-tie-strength.name}"
+
+  metric_transformation {
+    name = "${var.environment}-worker-tie-strength.error"
+    namespace = "${var.environment}-worker-tie-strength"
+    value = "0"
+  }
+
+}
+
+resource "aws_cloudwatch_metric_alarm" "worker-tie-strength_error" {
+
+  alarm_name = "${var.environment}.worker-tie-strength.error"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  threshold = "1"
+  period = "60"
+  statistic = "Sum"
+  evaluation_periods = "1"
+  metric_name = "${var.environment}.worker-tie-strength.error"
+  namespace = "${var.environment}-worker-tie-strength.error"
+  alarm_description = "monitors log for worker-tie-strength errors"
+  //  alarm_actions = ["arn:aws:sns:eu-west-1:812414252941:error_notification"]
+
+}

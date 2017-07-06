@@ -56,3 +56,46 @@ resource "aws_cloudwatch_log_group" "worker-persist-photo" {
     Environment = "${var.environment}"
   }
 }
+
+resource "aws_cloudwatch_log_metric_filter" "worker-persist-photo_error" {
+
+  name = "${var.environment}-worker-persist-photo.error"
+  pattern = "error"
+  log_group_name = "${aws_cloudwatch_log_group.worker-persist-photo.name}"
+
+  metric_transformation {
+    name = "${var.environment}-worker-persist-photo.error"
+    namespace = "${var.environment}-worker-persist-photo"
+    value = "1"
+  }
+
+}
+
+resource "aws_cloudwatch_log_metric_filter" "worker-persist-photo_error_reset" {
+
+  name = "${var.environment}-worker-persist-photo.error"
+  pattern = ""
+  log_group_name = "${aws_cloudwatch_log_group.worker-persist-photo.name}"
+
+  metric_transformation {
+    name = "${var.environment}-worker-persist-photo.error"
+    namespace = "${var.environment}-worker-persist-photo"
+    value = "0"
+  }
+
+}
+
+resource "aws_cloudwatch_metric_alarm" "worker-persist-photo_error" {
+
+  alarm_name = "${var.environment}.worker-persist-photo.error"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  threshold = "1"
+  period = "60"
+  statistic = "Sum"
+  evaluation_periods = "1"
+  metric_name = "${var.environment}.worker-persist-photo.error"
+  namespace = "${var.environment}-worker-persist-photo.error"
+  alarm_description = "monitors log for worker-persist-photo errors"
+  //  alarm_actions = ["arn:aws:sns:eu-west-1:812414252941:error_notification"]
+
+}
