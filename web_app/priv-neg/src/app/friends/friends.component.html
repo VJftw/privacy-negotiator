@@ -15,11 +15,11 @@
               <label class="active" for="clique_name">Clique name ({{clique.id}})</label>
             </div>
             <div class="col s12 m6">
-              <p>Allowed categories</p>
+              <p>Allowed contexts</p>
               <ul>
-                <li class="valign-wrapper" style="display:inline-block; margin-right:1em;" *ngFor="let category of clique.categories">
-                  <input id="{{clique.id}}-{{category.name}}-cat" type="checkbox" class="filled-in" [(ngModel)]="category.isActive" [disabled]="!clique.editing"/>
-                  <label for="{{clique.id}}-{{category.name}}-cat">{{category.name}}</label>
+                <li class="valign-wrapper" style="display:inline-block; margin-right:1em;" *ngFor="let context of clique.contexts">
+                  <input id="{{clique.id}}-{{context.name}}-cat" type="checkbox" class="filled-in" [(ngModel)]="context.isActive" [disabled]="!clique.editing"/>
+                  <label for="{{clique.id}}-{{context.name}}-cat">{{context.name}}</label>
                 </li>
               </ul>
           </div>

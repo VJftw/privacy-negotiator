@@ -1,12 +1,12 @@
-export class Category {
+export class Context {
   name: string;
   personal: boolean;
 
-  public static fromAPICategory(apiCat: APICategory): Category {
-    return new Category(apiCat.name, apiCat.personal);
+  public static fromAPIContext(apiCat: APIContext): Context {
+    return new Context(apiCat.name, apiCat.personal);
   }
 
-  public static isIn(needle: Category, haystack: Category[]): boolean {
+  public static isIn(needle: Context, haystack: Context[]): boolean {
     for (const hay of haystack) {
       if (needle.name === hay.name) {
         return true;
@@ -21,12 +21,12 @@ export class Category {
   }
 }
 
-export class APICategory {
+export class APIContext {
   name: string;
   personal: boolean;
 }
 
-export class CategorySelection {
+export class ContextSelection {
   name: string;
   isActive: boolean;
 

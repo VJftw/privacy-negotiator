@@ -6,11 +6,25 @@
         <label class="active" for="disabled">Photo ID</label>
       </div>
     </div>
-    <div class="row">
+    <div class="row" *ngIf="photo.contexts.length > 0">
       <!-- About the conflict -->
       <div class="col s12 m10 l8 offset-m1 offset-l2">
         <h3>About the conflict</h3>
-        <p>How would you resolve this conflict?</p>
+
+        <p>Do you agree with the recommendation(s)?</p>
+        <p *ngFor="let option of survey.agreeRecommendationChoices">
+          <input name="agreeRecommendation" type="radio" [(ngModel)]="survey.agreeRecommendation" id="agreeRecommendation-{{option.id}}" value="{{option.description}}">
+          <label for="agreeRecommendation-{{option.id}}">{{option.description}}</label>
+        </p>
+        <div class="input-field col s12" *ngIf="survey.agreeRecommendation == 'No'">
+          <textarea id="agreeRecommendation-no_reason" class="materialize-textarea" [(ngModel)]="survey.agreeRecommendationWhy" ></textarea>
+          <label for="agreeRecommendation-no_reason">If No, why?</label>
+        </div>
+      </div>
+
+      <div class="col s12 m10 l8 offset-m1 offset-l2">
+
+      <p>How would you resolve this conflict?</p>
         <p *ngFor="let option of survey.howWouldYouResolveThisConflictChoices">
           <input name="howWouldYouResolve" type="radio" [(ngModel)]="survey.howWouldYouResolveThisConflict" id="howWouldYouResolve-{{option.id}}" value="{{option.description}}">
           <label for="howWouldYouResolve-{{option.id}}">{{option.description}}</label>
@@ -28,7 +42,7 @@
           <label for="tieStrengthDepicted-{{option.id}}">{{option.description}}</label>
         </p>
           <div class="input-field col s12" *ngIf="survey.tieStrengthDepicted == 'No'">
-            <textarea id="tieStrengthDepicted-no_reason" class="materialize-textarea"></textarea>
+            <textarea id="tieStrengthDepicted-no_reason" class="materialize-textarea" [(ngModel)]="survey.tieStrengthDepictedWhy"></textarea>
             <label for="tieStrengthDepicted-no_reason">If No, why?</label>
           </div>
       </div>
@@ -40,12 +54,16 @@
           <label for="doYouUnderstandTheMotivesOfOpposition-{{option.id}}">{{option.description}}</label>
         </p>
       </div>
+    </div>
 
-      <!-- About the photo -->
+
+    <!-- About the photo -->
+    <div class="row">
+
       <div class="col s12 m10 l8 offset-m1 offset-l2">
         <h3>About the photo</h3>
 
-        <p>Were you asked permission before this photo was uploaded?</p>
+        <p>Were you asked for your permission before this photo was uploaded?</p>
         <p>
           <input name="permission_requested" type="radio" id="no_but" />
           <label for="no_but">No, but it doesn't bother me</label>
@@ -59,9 +77,11 @@
           <label for="yes">Yes</label>
         </p>
       </div>
+    </div>
 
 
       <!-- General -->
+    <div class="row">
       <div class="col s12 m10 l8 offset-m1 offset-l2">
         <h3>General</h3>
 
@@ -72,12 +92,20 @@
       </div>
 
       <div class="col s12 m10 l8 offset-m1 offset-l2">
+        <p>Do you think that your Facebook profile reflects yourself and your relationships accurately?</p>
+        <p *ngFor="let option of survey.facebookProfileReflectionChoices">
+          <input name="facebookProfileReflection" type="radio" [(ngModel)]="survey.facebookProfileReflection" id="facebookProfileReflection-{{option.id}}" value="{{option.description}}">
+          <label for="facebookProfileReflection-{{option.id}}">{{option.description}}</label>
+        </p>
       </div>
+    </div>
 
-      <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+    <div class="row">
+
+      <button class="btn waves-effect waves-light right" type="submit" name="action">Submit
         <i class="material-icons right">send</i>
       </button>
-
     </div>
+
   </form>
 </div>

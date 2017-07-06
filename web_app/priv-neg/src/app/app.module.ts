@@ -19,10 +19,10 @@ import { APIService } from './api.service';
 import { WebSocketService } from './websocket.service';
 import { AuthService } from './auth.service';
 import { PhotoService } from './photos/photo.service';
-import { CategoryService } from './categories/category.service';
+import { ContextService } from './contexts/context.service';
 import { FriendService } from './friends/friend.service';
 import {PhotoResolver} from './photos/photo.resolver';
-import {CategoriesComponent} from './categories/categories.component';
+import {ContextsComponent} from './contexts/contexts.component';
 import {SessionService} from './session.service';
 import {SurveyComponent} from './photos/survey.component';
 
@@ -30,7 +30,7 @@ import {SurveyComponent} from './photos/survey.component';
   declarations: [
     AppComponent,
     IndexComponent,
-    CategoriesComponent,
+    ContextsComponent,
     PhotosComponent,
     PhotoDetailComponent,
     FriendsComponent,
@@ -47,7 +47,7 @@ import {SurveyComponent} from './photos/survey.component';
       { path: '', redirectTo: '/start', pathMatch: 'full' },
       { path: 'start', component: IndexComponent },
       { path: 'photos', component: PhotosComponent, canActivate: [SessionService] },
-      { path: 'categories', component: CategoriesComponent, canActivate: [SessionService] },
+      { path: 'contexts', component: ContextsComponent, canActivate: [SessionService] },
       { path: 'photos/:id', component: PhotoDetailComponent, canActivate: [SessionService] },
       { path: 'survey/:id', component: SurveyComponent, canActivate: [SessionService] },
       { path: 'friends', component: FriendsComponent, canActivate: [SessionService] }
@@ -60,7 +60,7 @@ import {SurveyComponent} from './photos/survey.component';
     SessionService,
     FacebookService,
     PhotoService,
-    CategoryService,
+    ContextService,
     FriendService,
     PhotoResolver,
   ],

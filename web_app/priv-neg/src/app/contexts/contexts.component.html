@@ -1,10 +1,10 @@
 <div class="row">
   <ul class="collection with-header animated fadeIn">
     <li class="collection-header green white-text">
-      <span class="title">Global Categories</span>
+      <span class="title">Global Contexts</span>
     </li>
-    <li class="collection-item" *ngFor="let category of getGlobalCategories()">
-      <span class="title">{{category.name}}</span>
+    <li class="collection-item" *ngFor="let context of getGlobalContexts()">
+      <span class="title">{{context.name}}</span>
     </li>
   </ul>
 </div>
@@ -12,17 +12,17 @@
 <div class="row">
   <ul class="collection with-header animated fadeIn">
     <li class="collection-header blue white-text">
-      <span class="title">Personal Categories</span>
+      <span class="title">Personal Contexts</span>
     </li>
-    <li class="collection-item" *ngFor="let category of getPersonalCategories()">
-      <span class="title">{{category.name}}</span>
+    <li class="collection-item" *ngFor="let context of getPersonalContexts()">
+      <span class="title">{{context.name}}</span>
     </li>
     <li>
       <div class="row valign-wrapper" style="margin: 0;">
         <div class="col s11">
           <div class="input-field col s12">
-            <input id="category_name" type="text" [disabled]="!editing" [(ngModel)]="newCategory.name">
-            <label class="active" for="category_name">Category name</label>
+            <input id="context_name" type="text" [disabled]="!editing" [(ngModel)]="newContext.name">
+            <label class="active" for="context_name">Context name</label>
           </div>
         </div>
         <div class="col s1">

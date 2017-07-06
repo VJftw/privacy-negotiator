@@ -1,5 +1,5 @@
 
-import {CategorySelection} from './category.model';
+import {ContextSelection} from './context.model';
 import {User} from './user.model';
 
 export class Clique {
@@ -7,7 +7,7 @@ export class Clique {
   name: string;
   friends: Map<string, User>;
   editing = false;
-  categories: CategorySelection[] = [];
+  contexts: ContextSelection[] = [];
 
   constructor(id: string, name = 'Unnamed') {
     this.id = id;
@@ -42,7 +42,7 @@ export class APIClique {
     }
 
     a.categories = [];
-    for (const cat of c.categories) {
+    for (const cat of c.contexts) {
       if (cat.isActive) {
         a.categories.push(cat.name);
       }

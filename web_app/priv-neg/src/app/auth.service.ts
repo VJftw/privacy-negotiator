@@ -4,7 +4,7 @@ import { FacebookService, InitParams, LoginResponse, LoginOptions } from 'ngx-fa
 import { environment } from '../environments/environment';
 import { Router } from '@angular/router';
 import { APIService } from './api.service';
-import {CategoryService} from './categories/category.service';
+import {ContextService} from './contexts/context.service';
 import {FriendService} from './friends/friend.service';
 import {PhotoService} from './photos/photo.service';
 import {SessionService, SessionUser} from './session.service';
@@ -16,7 +16,7 @@ export class AuthService {
     public fb: FacebookService,
     private apiService: APIService,
     private sessionService: SessionService,
-    private categoryService: CategoryService,
+    private contextService: ContextService,
     private photoService: PhotoService,
     private friendService: FriendService,
     private router: Router,
@@ -69,7 +69,7 @@ export class AuthService {
           this.sessionService.setUser(fbUser);
           this.authenticateWithApi(response)
             .then(() => {
-              this.categoryService.updateCategoriesFromAPI().then(() => {
+              this.contextService.updateContextsFromAPI().then(() => {
                 this.apiService.webSocketService.addChannel(this.photoService);
                 this.apiService.webSocketService.addChannel(this.friendService);
                 this.router.navigate(['/photos']);

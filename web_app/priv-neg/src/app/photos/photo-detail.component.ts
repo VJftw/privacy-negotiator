@@ -3,8 +3,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {PhotoService} from './photo.service';
 import {Photo} from '../domain/photo.model';
-import {Category, CategorySelection} from '../domain/category.model';
-import {CategoryService} from '../categories/category.service';
+import {Context, ContextSelection} from '../domain/context.model';
+import {ContextService} from '../contexts/context.service';
 import {User} from '../domain/user.model';
 
 
@@ -17,12 +17,12 @@ export class PhotoDetailComponent implements OnInit {
   public photo: Photo;
   public editing = false;
   public showConflictHelp = false;
-  private categorySelection: Map<string, CategorySelection> = new Map();
+  private contextSelection: Map<string, ContextSelection> = new Map();
 
   constructor(
     private route: ActivatedRoute,
     private photoService: PhotoService,
-    private categoryService: CategoryService,
+    private contextService: ContextService,
     private router: Router
   ) {}
 
@@ -38,16 +38,16 @@ export class PhotoDetailComponent implements OnInit {
     this.updateChoices();
   }
 
-  public getCategories(): CategorySelection[] {
-    return Array.from(this.categorySelection.values());
+  public getContexts(): ContextSelection[] {
+    return Array.from(this.contextSelection.values());
   }
 
   public updateChoices() {
-    for (const cat of this.categoryService.getCategories()) {
-      if (Category.isIn(cat, this.photo.categories)) {
-        this.categorySelection.set(cat.name, new CategorySelection(cat.name, true));
+    for (const cat of this.contextService.getContexts()) {
+      if (Context.isIn(cat, this.photo.contexts)) {
+        this.contextSelection.set(cat.name, new ContextSelection(cat.name, true));
       } else {
-        this.categorySelection.set(cat.name, new CategorySelection(cat.name, false));
+        this.contextSelection.set(cat.name, new ContextSelection(cat.name, false));
       }
     }
   }
@@ -55,10 +55,10 @@ export class PhotoDetailComponent implements OnInit {
   toggleEdit() {
     this.editing = !this.editing;
     if (!this.editing) {
-      this.photo.categories = [];
-      for (const categorySelection of this.getCategories()) {
-        if (categorySelection.isActive) {
-          this.photo.categories.push(this.categoryService.getCategory(categorySelection.name));
+      this.photo.contexts = [];
+      for (const contextSelection of this.getContexts()) {
+        if (contextSelection.isActive) {
+          this.photo.contexts.push(this.contextService.getContext(contextSelection.name));
         }
       }
       console.log(this.photo);

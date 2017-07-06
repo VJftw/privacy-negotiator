@@ -26,9 +26,9 @@
   </div>
   <div class="col s12">
     <ul>
-      <li class="valign-wrapper" style="display:inline-block; margin-right:1em;" *ngFor="let category of this.getCategories()">
-        <input id="{{category.name}}-cat" type="checkbox" class="filled-in" [(ngModel)]="category.isActive" [disabled]="!this.editing"/>
-        <label for="{{category.name}}-cat">{{category.name}}</label>
+      <li class="valign-wrapper" style="display:inline-block; margin-right:1em;" *ngFor="let context of this.getContexts()">
+        <input id="{{context.name}}-cat" type="checkbox" class="filled-in" [(ngModel)]="context.isActive" [disabled]="!this.editing"/>
+        <label for="{{context.name}}-cat">{{context.name}}</label>
       </li>
     </ul>
   </div>
@@ -47,7 +47,7 @@
   </div>
   <div class="col s12 l4">
     <ul class="collection with-header">
-      <li class="collection-header purple white-text"><a (click)="toggleConflictHelp()"><span class="badge white-text">?</span></a>Conflicting Users</li>
+      <li class="collection-header purple white-text"><a (click)="toggleConflictHelp()"><span class="badge white-text" style="cursor: pointer">?</span></a>Conflicting Users</li>
       <li *ngIf="showConflictHelp" class="collection-item" style="font-size: 8pt;">
         This shows the conflicting user's votes where a negative value is a block vote and a positive value is an allow vote. The weight of a user's vote is their generated relationship strength.
       </li>

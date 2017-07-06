@@ -41,6 +41,13 @@ export class SurveyComponent implements OnInit {
 export class Survey {
   photoID: string;
 
+  agreeRecommendation = '';
+  agreeRecommendationWhy = '';
+  agreeRecommendationChoices = [
+    new Option('yes', 'Yes'),
+    new Option('no', 'No'),
+  ];
+
   howWouldYouResolveThisConflict = '';
   howWouldYouResolveThisConflictChoices = [
     new Option('untag', 'I would un-tag people'),
@@ -70,6 +77,12 @@ export class Survey {
 
 
   howDoYouUsuallyResolveConflicts = '';
+
+  facebookProfileReflection = '';
+  facebookProfileReflectionChoices = [
+    new Option('yes', 'Yes'),
+    new Option('no', 'No'),
+  ];
 
   wereYouAskedPermission = [
     new Option('no_doesnt_bother', 'No, but it doesn\'t bother me'),

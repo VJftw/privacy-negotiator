@@ -20,7 +20,7 @@
 </div>
 <div class="row center">
   <p>(Logs in with Facebook)</p>
-  <p><a (click)="this.toggleLearnMore()">More information</a></p>
+  <p><a (click)="this.toggleLearnMore()" style="cursor: pointer;">More information</a></p>
 </div>
 
 <div *ngIf="learnMore" class="row animated fadeIn">
@@ -40,7 +40,8 @@
         <li>Coloured photos are considered <em>negotiable</em>. With these, you can:
           <ul class="browser-default">
             <li>View the users that are tagged.</li>
-            <li>Modify the categories/context of the photo. This is shared between all users.</li>
+            <li>Modify the contexts of the photo. This is shared between all users.</li>
+            <li>Add personal contexts to organise your photos your own way.</li>
             <li>View who is allowed to see the photo.</li>
             <li>View who is blocked from seeing the photo.</li>
             <li>View which co-owners are in conflict and whom they are in conflict over.</li>
@@ -52,7 +53,7 @@
       <ul class="browser-default">
         <li>Cliques are determined by the Clique Percolation Method (CPM), and are stored in bipartites (<a href="https://arxiv.org/pdf/0805.1449.pdf" target="_blank">A sequential algorithm for fast clique percolation</a>).</li>
         <li>Tie-strengths are determined by similarities in Facebook profiles. See requested permissions below.</li>
-        <li>You can manage your preferences for whichh contexts/categories a clique is allowed to view.</li>
+        <li>You can manage your preferences for which contexts a clique is allowed to view.</li>
       </ul>
     </li>
   </ul>
@@ -69,7 +70,7 @@
       </ul>
     </li>
     <li>As this tool is only aware of mutually authorised friends, it is only able to apply a photo's privacy concerning those users it is aware of.</li>
-    <li>Determine categories/context for a photo automatically. This would be a whole other project as there currently isn't any AI that can interept photos well. They can describe objects but cannot decide on suitable contexts.</li>
+    <li>Determine contexts for a photo automatically. This would be a whole other project as there currently isn't any AI that can interept photos well. They can describe objects but cannot decide on suitable contexts.</li>
   </ul>
   <p>I created this in a month with no test coverage so there may be some bugs. They should be resolved in further patches.</p>
   <img style="width:auto; max-height: 10em;" src="https://media.giphy.com/media/QQZgTehcKrD2w/giphy.gif"/>

@@ -2,14 +2,23 @@
   <div class="nav-wrapper">
     <a id="logo-container" class="brand-logo" style="padding-left: 0.5em;">Privacy Manager</a>
     <ul class="right hide-on-med-and-down">
-      <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/categories" routerLinkActive="active">Categories <i class="material-icons left">folder</i></a></li>
+      <li *ngIf="sessionService.isAuthenticated()" ><a class="waves-effect waves-light btn blue" style="font-size: 9pt; padding:0 1rem;"><i class="material-icons left">feedback</i>Feedback</a></li>
       <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
       <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
-        <li *ngIf="sessionService.isAuthenticated()" ><a class="valign-wrapper">
+      <li *ngIf="sessionService.isAuthenticated()" >
+        <a class="valign-wrapper"
+           materialize="dropdown"
+           data-activates="user-dropdown"
+           [materializeParams]="[{'hover': true, 'belowOrigin': true}]"
+        >
           <div style="padding-right: 0.5em;">Hi, {{sessionService.getUser().firstName}}!</div>
           <img src="{{sessionService.getUser().picture}}" alt="" class="circle right" style="width:35px; height:35px;">
+          <i class="material-icons right">arrow_drop_down</i>
         </a>
-        </li>
+        <ul *ngIf="sessionService.isAuthenticated()" id="user-dropdown" class="dropdown-content grey darken-3">
+          <li *ngIf="sessionService.isAuthenticated()"><a routerLink="/contexts" routerLinkActive="active" class="white-text">Contexts <i class="material-icons left">folder</i></a></li>
+        </ul>
+      </li>
       <li class="info" (click)="cycleInfo()"><a>
         <div class="col s12 center-align">
           API: <span class="new badge" [ngClass]="{'green': apiStatus==='OK', 'red': apiStatus==='OFFLINE', 'orange': apiStatus==='BUSY'}" data-badge-caption="">{{apiStatus}}</span>
@@ -24,7 +33,7 @@
       <li>
           <div><a>
             <div class="col s12 center-align" style="line-height: 20px;">
-              <fb-share href="https://privacymanager.social" size="small" colorScheme="dark"></fb-share><br />
+              <fb-share href="https://privacymanager.social" size="small" colorScheme="dark"></fb-share>
             </div>
             <div class="col s12 center-align" style="line-height: 20px;">
               <fb-like
@@ -50,7 +59,7 @@
         <a><span class="name" [ngClass]="{ 'black-text': !sessionService.getUser().coverPicture }">Hi, {{sessionService.getUser().firstName}}!</span></a>
         <a><span class="email"></span></a>
       </div></li>
-      <li><a routerLink="/categories" routerLinkActive="active">Categories <i class="material-icons left">folder</i></a></li>
+      <li><a routerLink="/contexts" routerLinkActive="active">Contexts <i class="material-icons left">folder</i></a></li>
       <li><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
       <li><a routerLink="/friends" routerLinkActive="active">Friends <i class="material-icons left">people</i></a></li>
       <li><div class="divider"></div></li>
@@ -67,6 +76,7 @@
     </a>
   </div>
 </nav>
+
 
 <div class="section no-pad-bot">
   <div class="container">

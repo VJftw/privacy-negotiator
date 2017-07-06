@@ -4,8 +4,8 @@ import {APIFriend} from '../domain/friend.model';
 import {APIService} from '../api.service';
 import {APIClique, Clique} from '../domain/clique.model';
 import {Channel} from '../websocket.service';
-import {CategoryService} from '../categories/category.service';
-import {CategorySelection} from '../domain/category.model';
+import {ContextService} from '../contexts/context.service';
+import {ContextSelection} from '../domain/context.model';
 import {FbGraphUser} from '../auth.service';
 import {User} from '../domain/user.model';
 
@@ -25,7 +25,7 @@ export class FriendService implements Channel {
   constructor(
     private fb: FacebookService,
     private apiService: APIService,
-    private categoryService: CategoryService,
+    private contextService: ContextService,
   ) {
     this.friends = new Map();
     this.cliques = new Map();
@@ -95,15 +95,15 @@ export class FriendService implements Channel {
         } else {
           clique.name = apiClique.name;
         }
-        clique.categories = [];
-        for (const cat of this.categoryService.getCategories()) {
-          let category;
+        clique.contexts = [];
+        for (const cat of this.contextService.getContexts()) {
+          let context;
           if (apiClique.categories.includes(cat.name)) {
-            category = new CategorySelection(cat.name, true);
+            context = new ContextSelection(cat.name, true);
           } else {
-            category = new CategorySelection(cat.name, false);
+            context = new ContextSelection(cat.name, false);
           }
-          clique.categories.push(category);
+          clique.contexts.push(context);
         }
         this.cliques.set(clique.id, clique);
       }
@@ -178,8 +178,8 @@ export class FriendService implements Channel {
               this.cliques.set(cliqueID, clique);
             } else if (cliqueID.length > 0) {
               const clique = new Clique(cliqueID);
-              for (const cat of this.categoryService.getCategories()) {
-                clique.categories.push(new CategorySelection(cat.name, false));
+              for (const cat of this.contextService.getContexts()) {
+                clique.contexts.push(new ContextSelection(cat.name, false));
               }
               clique.friends = new Map();
               clique.friends.set(apiFriend.id, this.friends.get(apiFriend.id).user);

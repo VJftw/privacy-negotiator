@@ -1,5 +1,5 @@
 import {User} from './user.model';
-import {Category} from './category.model';
+import {Context} from './context.model';
 
 export class FbGraphPhoto {
   id: string;
@@ -31,7 +31,7 @@ export class Photo {
   negotiable = false;
   pending = false;
   taggedUsers: User[] = [];
-  categories: Category[] = [];
+  contexts: Context[] = [];
   conflicts: Conflict[] = [];
   allowedUsers: User[] = [];
   blockedUsers: User[] = [];
@@ -68,7 +68,7 @@ export class APIPhoto {
   taggedUsers: string[] = [];
   pending = false;
   categories: string[] = [];
-  userCategories; // userID: categories
+  userCategories; // userID: contexts
   conflicts: APIConflict[];
   allowedUsers: string[];
   blockedUsers: string[];
