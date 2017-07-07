@@ -25,6 +25,7 @@ import {PhotoResolver} from './photos/photo.resolver';
 import {ContextsComponent} from './contexts/contexts.component';
 import {SessionService} from './session.service';
 import {SurveyComponent} from './photos/survey.component';
+import {PhotoSurveyComponent} from './photos/photo-survey.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import {SurveyComponent} from './photos/survey.component';
     PhotoDetailComponent,
     FriendsComponent,
     SurveyComponent,
+    PhotoSurveyComponent,
   ],
   imports: [
     BrowserModule,
