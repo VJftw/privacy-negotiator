@@ -84,7 +84,7 @@
       <div class="col s12">
         <div class="card-panel">
           <div class="row">
-            <h5>Do you think that your Facebook profile represents yourself and your relationships accurately?</h5>
+            <h5>Do you think that the generated similarites reflect your friendships accurately?</h5>
             <p *ngFor="let option of survey.q4Choices">
               <input
                 name="q4"
@@ -114,6 +114,36 @@
       <div class="col s12">
         <div class="card-panel">
           <div class="row">
+            <h5>Do you think that your Facebook profile represents yourself and your relationships accurately?</h5>
+            <p *ngFor="let option of survey.q5Choices">
+              <input
+                name="q5"
+                type="radio"
+                [(ngModel)]="survey.q5Answer"
+                id="q5-{{option.id}}"
+                value="{{option.description}}"
+                required
+              >
+              <label for="q5-{{option.id}}" class="grey-text text-darken-3">{{option.description}}</label>
+            </p>
+            <div class="input-field col s12" *ngIf="survey.q5Answer == 'No'">
+              <textarea
+                id="q5Why"
+                name="q5Why"
+                class="materialize-textarea"
+                [(ngModel)]="survey.q5Why"></textarea>
+              <label for="q5Why">If No, why?</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card-panel">
+          <div class="row">
             <h5>How important do you think these are for quantifying a relationship with someone? (how close you are to someone)</h5>
             <div class="col s12">
               <p class="center-align"><strong>1</strong> is unimportant<br/><strong>5</strong> is very important</p>
@@ -122,7 +152,7 @@
               <ul class="collection">
                 <li
                   class="collection-item"
-                  *ngFor="let option of survey.q5Parts"
+                  *ngFor="let option of survey.q6Parts"
                 >
                   <div class="row">
                     <div class="col s12 m4">
@@ -132,16 +162,16 @@
                       <div class="row" style="margin-bottom:0;">
                         <div class="col s2 l2" *ngFor="let i of [1,2,3,4,5]">
                           <input
-                          name="q5-{{option.id}}"
+                          name="q6-{{option.id}}"
                           type="radio"
-                          id="q5-{{option.id}}-{{i}}"
+                          id="q6-{{option.id}}-{{i}}"
                           [(ngModel)]="option.value"
                           [value]="i"
                           [checked]="option.value==i"
                           required
                           >
                           <label
-                          for="q5-{{option.id}}-{{i}}"
+                          for="q6-{{option.id}}-{{i}}"
                           class="grey-text text-darken-3"
                           >{{i}}</label>
                       </div>
@@ -156,7 +186,7 @@
       </div>
     </div>
 
-    <!-- Q6 -->
+    <!-- Q7 -->
     <div class="row">
       <div class="col s12">
         <div class="card-panel">
@@ -164,20 +194,20 @@
             <h5>How could this tool be improved?</h5>
             <div class="input-field col s12">
               <textarea
-              id="q6Answer"
-              name="q6Answer"
+              id="q7Answer"
+              name="q7Answer"
               class="materialize-textarea"
-              [(ngModel)]="survey.q6Answer"
+              [(ngModel)]="survey.q7Answer"
               required
               ></textarea>
-              <label for="q6Answer">Response</label>
+              <label for="q7Answer">Response</label>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Q7 -->
+    <!-- Q8 -->
     <div class="row">
       <div class="col s12">
         <div class="card-panel">
@@ -185,12 +215,12 @@
             <h5>Any further comments?</h5>
             <div class="input-field col s12">
               <textarea
-                id="q7Answer"
-                name="q7Answer"
+                id="q8Answer"
+                name="q8Answer"
                 class="materialize-textarea"
-                [(ngModel)]="survey.q7Answer"
+                [(ngModel)]="survey.q8Answer"
                 required></textarea>
-              <label for="q7Answer">Response</label>
+              <label for="q8Answer">Response</label>
             </div>
           </div>
         </div>

@@ -89,8 +89,15 @@ export class GeneralSurvey {
   ];
   q4Why = '';
 
+  q5Answer = '';
+  q5Choices = [
+    new Option('yes', 'Yes'),
+    new Option('no', 'No')
+  ];
+  q5Why = '';
+
   // How much weight would you place on these for quantifying your relationship strength with someone (how close you are to someone)
-  q5Parts = [
+  q6Parts = [
     new NumberOption('politics', 'Politics'),
     new NumberOption('religion', 'Religion'),
     new NumberOption('work', 'Work'),
@@ -109,10 +116,10 @@ export class GeneralSurvey {
   ];
 
   // How could this tool be improved?
-  q6Answer = ''
+  q7Answer = ''
 
   // Any further comments?
-  q7Answer = '';
+  q8Answer = '';
 }
 
 export class Option {
