@@ -62,10 +62,14 @@ type CacheUserProfile struct {
 	FavouriteTeams      []string `json:"favouriteTeams"`
 	InspirationalPeople []string `json:"inspirationalPeople"`
 	Languages           []string `json:"languages"`
+	Sports              []string `json:"sports"`
+	Work                []string `json:"work"`
 	Family              []string `json:"languages"`
 	Music               []string `json:"music"`
 	Movies              []string `json:"movies"`
 	Likes               []string `json:"likes"`
 	Groups              []string `json:"groups"`
 	Events              []string `json:"events"`
+	Political           string   `json:"political"`
+	Religion            string   `json:"religion"`
 }

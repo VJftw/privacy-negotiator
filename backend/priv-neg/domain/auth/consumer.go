@@ -155,6 +155,10 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 			"favorite_teams,"+
 			"inspirational_people,"+
 			"languages,"+
+			"sports,"+
+			"political,"+
+			"religion,"+
+			"work,"+
 			"family.limit(500){id},"+
 			"music.limit(500){id},"+
 			"movies.limit(500){id},"+
@@ -171,10 +175,12 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 		log.Printf("Error: %s", err)
 	}
 	cacheProfile = &domain.CacheUserProfile{
-		Gender:   responseUserProfile.Gender,
-		AgeRange: strconv.Itoa(responseUserProfile.AgeRange.Min),
-		Hometown: responseUserProfile.Hometown.ID,
-		Location: responseUserProfile.Location.ID,
+		Gender:    responseUserProfile.Gender,
+		AgeRange:  strconv.Itoa(responseUserProfile.AgeRange.Min),
+		Hometown:  responseUserProfile.Hometown.ID,
+		Location:  responseUserProfile.Location.ID,
+		Political: responseUserProfile.Political,
+		Religion:  responseUserProfile.Religion,
 	}
 
 	for _, responseEducation := range responseUserProfile.Education {
@@ -191,6 +197,14 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 
 	for _, responseMedia := range responseUserProfile.Languages {
 		cacheProfile.Languages = append(cacheProfile.Languages, responseMedia.ID)
+	}
+
+	for _, responseMedia := range responseUserProfile.Sports {
+		cacheProfile.Sports = append(cacheProfile.Sports, responseMedia.ID)
+	}
+
+	for _, responseMedia := range responseUserProfile.Work {
+		cacheProfile.Work = append(cacheProfile.Work, responseMedia.ID)
 	}
 
 	for _, responseMedia := range responseUserProfile.Family.Data {
@@ -230,12 +244,16 @@ type responseUserProfile struct {
 	FavoriteTeams       []genericResponse   `json:"favorite_teams"`
 	InspirationalPeople []genericResponse   `json:"inspirational_people"`
 	Languages           []genericResponse   `json:"languages"`
+	Sports              []genericResponse   `json:"sports"`
+	Work                []genericResponse   `json:"work"`
 	Family              responseMedia       `json:"family"`
 	Music               responseMedia       `json:"music"`
 	Movies              responseMedia       `json:"movies"`
 	Likes               responseMedia       `json:"likes"`
 	Groups              responseMedia       `json:"groups"`
 	Events              responseMedia       `json:"events"`
+	Political           string              `json:"political"`
+	Religion            string              `json:"religion"`
 }
 
 type responseAgeRange struct {

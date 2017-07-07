@@ -112,6 +112,16 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 		points++
 	}
 
+	// Political
+	if aCacheProfile.Political == bCacheProfile.Political {
+		points++
+	}
+
+	// Religion
+	if aCacheProfile.Religion == bCacheProfile.Religion {
+		points++
+	}
+
 	// Educations
 	for _, v := range aCacheProfile.Education {
 		if utils.IsIn(v, bCacheProfile.Education) {
@@ -135,6 +145,20 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	// Languages
 	for _, v := range aCacheProfile.Languages {
 		if utils.IsIn(v, bCacheProfile.Languages) {
+			points++
+		}
+	}
+
+	// Sports
+	for _, v := range aCacheProfile.Sports {
+		if utils.IsIn(v, bCacheProfile.Sports) {
+			points++
+		}
+	}
+
+	// Work
+	for _, v := range aCacheProfile.Work {
+		if utils.IsIn(v, bCacheProfile.Work) {
 			points++
 		}
 	}
@@ -174,7 +198,10 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 		}
 	}
 
-	// TODO: Family
+	// Family
+	if utils.IsIn(queueFriendship.To, aCacheProfile.Family) {
+		points += 500
+	}
 
 	aCacheUser, _ := c.userRedis.FindByID(queueFriendship.From)
 	aCacheFriendship, _ := c.friendRedis.FindByIDAndUser(queueFriendship.To, aCacheUser)
