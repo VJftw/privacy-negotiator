@@ -82,7 +82,8 @@ export class PhotoDetailComponent implements OnInit {
     this.showConflictHelp = !this.showConflictHelp;
   }
 
+  photoFeedback(photoID: string) {
+    this.router.navigate(['survey', photoID]);
+  }
 
 }
-
-

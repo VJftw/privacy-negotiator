@@ -1,8 +1,15 @@
 
 <div class="row" *ngIf="this.photo">
 
-  <div class="col s12 l6 center">
-    <img class="responsive-img" style="max-width:100%; max-height: 500px;" src="{{photo.url}}" />
+  <div class="col s12 l6">
+    <div class="card">
+      <div class="card-image center">
+        <img style="max-width:100%; max-height: 500px;" src="{{photo.url}}" />
+      </div>
+      <div class="card-content">
+        <a class="waves-effect waves-light btn blue" style="font-size: 9pt; padding:0 1rem;" (click)="photoFeedback(photo.id)"><i class="material-icons left">feedback</i>Photo Feedback</a>
+      </div>
+    </div>
   </div>
 
   <div class="col s12 l6">
@@ -15,24 +22,34 @@
       </li>
     </ul>
   </div>
+</div>
 
-  <div class="col s12">
-    <a class="btn-floating btn-small waves-effect waves-light left" (click)="this.toggleEdit()" [ngClass]="{'orange': !editing, 'red': editing}" >
-      <i class="material-icons left">
-        <span *ngIf="!editing">mode_edit</span>
-        <span *ngIf="editing">save</span>
-      </i>
-    </a>
+<div class="row">
+  <div class="card">
+    <div class="card-content">
+      <div class="row" style="margin-bottom: 0;">
+        <div class="col s2 m1">
+          <a class="btn-floating btn-small waves-effect waves-light left" (click)="this.toggleEdit()" [ngClass]="{'orange': !editing, 'red': editing}" >
+            <i class="material-icons left">
+              <span *ngIf="!editing">mode_edit</span>
+              <span *ngIf="editing">save</span>
+            </i>
+          </a>
+        </div>
+        <div class="col s10 m11 valign-wrapper">
+          <span class="card-title" style="line-height: inherit; margin-bottom: 0;">Contexts</span>
+        </div>
+        <div class="col s12">
+          <ul>
+            <li class="valign-wrapper" style="display:inline-block; margin-right:1em;" *ngFor="let context of this.getContexts()">
+              <input id="{{context.name}}-cat" type="checkbox" class="filled-in" [(ngModel)]="context.isActive" [disabled]="!this.editing"/>
+              <label for="{{context.name}}-cat">{{context.name}}</label>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="col s12">
-    <ul>
-      <li class="valign-wrapper" style="display:inline-block; margin-right:1em;" *ngFor="let context of this.getContexts()">
-        <input id="{{context.name}}-cat" type="checkbox" class="filled-in" [(ngModel)]="context.isActive" [disabled]="!this.editing"/>
-        <label for="{{context.name}}-cat">{{context.name}}</label>
-      </li>
-    </ul>
-  </div>
-
 </div>
 
 <div *ngIf="photo.allowedUsers.length > 0 || photo.blockedUsers.length > 0" class="row">
@@ -66,11 +83,11 @@
             <span style="font-size: 8pt;">
               <strong>Recommendation</strong>:
               <span
-                [ngClass]="{
+              [ngClass]="{
                 'green-text': conflict.result == 'allow',
                 'red-text': conflict.result == 'block',
                 'orange-text': conflict.result == 'indeterminate'
-                }"
+              }"
               >{{conflict.result}}</span>
             </span>
           </div>

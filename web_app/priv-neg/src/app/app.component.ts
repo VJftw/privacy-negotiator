@@ -3,6 +3,8 @@ import { environment } from '../environments/environment';
 import {APIService} from './api.service';
 import {SessionService} from './session.service';
 import {FacebookService, InitParams, UIParams, UIResponse} from 'ngx-facebook';
+import {Router} from '@angular/router';
+
 declare var window: any;
 
 @Component({
@@ -25,7 +27,8 @@ export class AppComponent implements OnInit  {
   constructor(
     public fb: FacebookService,
     public sessionService: SessionService,
-    private apiService: APIService
+    private apiService: APIService,
+    private router: Router,
   ) {
     const initParams: InitParams = {
       appId: environment.fbAppId,
@@ -76,6 +79,10 @@ export class AppComponent implements OnInit  {
 
   public parseFB() {
     window.FB.XFBML.parse();
+  }
+
+  public generalFeedback() {
+    this.router.navigate(['survey']);
   }
 
 }

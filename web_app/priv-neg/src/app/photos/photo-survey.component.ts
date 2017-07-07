@@ -1,50 +1,84 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
-import {NavigationEnd, Router} from '@angular/router';
-
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {Photo} from '../domain/photo.model';
 import {PhotoService} from './photo.service';
 
 @Component({
-  selector: 'app-survey',
-  templateUrl: './survey.component.html',
-  styles: [`
-[type="radio"]:checked + label:after, [type="radio"].with-gap:checked + label:before, [type="radio"].with-gap:checked + label:after {
-  background-color: #2196f3 !important;
-}
-
-[type="radio"]:checked + label:after, [type="radio"].with-gap:checked + label:before, [type="radio"].with-gap:checked + label:after {
-  border: 2px solid #2196f3 !important;
-}
-
-[type="checkbox"]:checked + label:before {
-  border-right: 2px solid #2196f3;
-  border-bottom: 2px solid #2196f3;
-}
-
-textarea.materialize-textarea:focus:not([readonly]) {
-  border-bottom: 1px solid #2196f3;
-  box-shadow: 0 1px 0 0 #2196f3;
-}
-
-textarea.materialize-textarea:focus:not([readonly]) + label {
-  color: #2196f3;
-}
-  `]
+  selector: 'app-photo-survey',
+  templateUrl: './photo-survey.component.html',
 })
-export class SurveyComponent {
+export class PhotoSurveyComponent implements OnInit {
 
-  public survey = new GeneralSurvey();
-
+  public photo: Photo;
+  public survey: Survey;
 
   constructor(
+    private route: ActivatedRoute,
+    private photoService: PhotoService,
     private router: Router
   ) {}
 
+  ngOnInit() {
+    const id = this.route.snapshot.params['id'];
+    if (id) {
+
+      this.photo = this.photoService.getPhotoById(id);
+
+      this.survey = new Survey();
+      this.survey.photoID = this.photo.id;
+
+      console.log(this.photo);
+    }
+  }
 
   submit() {
 
   }
+}
+
+export class Survey {
+  photoID: string;
+
+  agreeRecommendation = '';
+  agreeRecommendationWhy = '';
+  agreeRecommendationChoices = [
+    new Option('yes', 'Yes'),
+    new Option('no', 'No'),
+  ];
+
+  wereYouAskedPermission = [
+    new Option('no_doesnt_bother', 'No, but it doesn\'t bother me'),
+    new Option('no_and_bother', 'No, and it does bother me'),
+    new Option('yes', 'Yes'),
+  ];
+
+  tieStrengthDepicted = '';
+  tieStrengthDepictedChoices = [
+    new Option('yes', 'Yes'),
+    new Option('no', 'No'),
+  ];
+  tieStrengthDepictedWhy: string;
+
+  doYouUnderstandTheMotivesOfOpposition: string;
+  doYouUnderstandTheMotivesOfOppositionChoices = [
+    new Option('hard-no', 'No, it won\'t change my preference'),
+    new Option('soft-no', 'No, but they might change my preference'),
+    new Option('yes-no-concede', 'Yes, but I would not concede'),
+    new Option('yes-concede-compensation', 'Yes, and I would concede for compensation'),
+    new Option('yes-concede', 'Yes, and I would concede'),
+  ];
+
+  howWouldYouResolveThisConflict = '';
+  howWouldYouResolveThisConflictChoices = [
+    new Option('untag', 'I would un-tag people'),
+    new Option('remove', 'I would remove the photo entirely'),
+    new Option('blur', 'I would blur people from the photo'),
+    new Option('crop', 'I would crop people from the photo'),
+    new Option('nothing', 'I would do nothing'),
+    new Option('other', 'Other')
+  ];
+
 }
 
 export class GeneralSurvey {
@@ -72,14 +106,14 @@ export class GeneralSurvey {
 
   // How do you usually resolve conflicts with photos that you upload or are tagged in?
   q3Answer = '';
-  q3Checkboxes = [
-    new CheckboxOption('untag', 'I would untag myself/others'),
-    new CheckboxOption('crop', 'I would crop the photo'),
-    new CheckboxOption('remove', 'I would remove the photo entirely'),
-    new CheckboxOption('blur', 'I would blur the photo'),
-    new CheckboxOption('nothing', 'I would do nothing'),
-    new CheckboxOption('other', 'Other?'),
-  ];
+  q3Choices = [
+    new Option('untag', 'I would untag myself/others'),
+    new Option('crop', 'I would crop the photo'),
+    new Option('remove', 'I would remove the photo entirely'),
+    new Option('blur', 'I would blur the photo'),
+    new Option('nothing', 'I would do nothing'),
+    new Option('other', 'Other?')
+  ]
   q3Other = '';
 
   // Do you think that your Facebook profile represents yourself and your relationships well?
@@ -116,20 +150,13 @@ export class GeneralSurvey {
   q7Answer = '';
 }
 
+export class PhotoSurvey {
+
+}
+
 export class Option {
   id: string;
   description: string;
-
-  constructor(id: string, description: string) {
-    this.id = id;
-    this.description = description;
-  }
-}
-
-export class CheckboxOption {
-  id: string;
-  description: string;
-  selected = false;
 
   constructor(id: string, description: string) {
     this.id = id;
