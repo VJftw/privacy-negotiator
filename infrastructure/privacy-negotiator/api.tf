@@ -84,10 +84,11 @@ resource "aws_alb" "api" {
 }
 
 resource "aws_alb_target_group" "api" {
-  name     = "api-${var.environment}-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = "${data.aws_vpc.app_cluster.id}"
+  name                 = "api-${var.environment}-tg"
+  port                 = 80
+  protocol             = "HTTP"
+  vpc_id               = "${data.aws_vpc.app_cluster.id}"
+  deregistration_delay = "30"
 
   health_check {
     path                = "/v1/health"
@@ -207,46 +208,41 @@ data "aws_acm_certificate" "api" {
 
 # Cloudwatch Alarms
 resource "aws_cloudwatch_log_metric_filter" "api_error" {
-
-  name = "${var.environment}-api.error"
-  pattern = "error"
+  name           = "${var.environment}-api.error"
+  pattern        = "error"
   log_group_name = "${aws_cloudwatch_log_group.api.name}"
 
   metric_transformation {
-    name = "${var.environment}-api.error"
+    name      = "${var.environment}-api.error"
     namespace = "${var.environment}-api"
-    value = "1"
+    value     = "1"
   }
-
 }
 
 resource "aws_cloudwatch_log_metric_filter" "api_error_reset" {
-
-  name = "${var.environment}-api.error"
-  pattern = ""
+  name           = "${var.environment}-api.error"
+  pattern        = ""
   log_group_name = "${aws_cloudwatch_log_group.api.name}"
 
   metric_transformation {
-    name = "${var.environment}-api.error"
+    name      = "${var.environment}-api.error"
     namespace = "${var.environment}-api"
-    value = "0"
+    value     = "0"
   }
-
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_error" {
-
-  alarm_name = "${var.environment}.api.error"
+  alarm_name          = "${var.environment}.api.error"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  threshold = "1"
-  period = "60"
-  statistic = "Sum"
-  evaluation_periods = "1"
-  metric_name = "${var.environment}.api.error"
-  namespace = "${var.environment}-api.error"
-  alarm_description = "monitors log for api errors"
-//  alarm_actions = ["arn:aws:sns:eu-west-1:812414252941:error_notification"]
+  threshold           = "1"
+  period              = "60"
+  statistic           = "Sum"
+  evaluation_periods  = "1"
+  metric_name         = "${var.environment}.api.error"
+  namespace           = "${var.environment}-api.error"
+  alarm_description   = "monitors log for api errors"
 
+  //  alarm_actions = ["arn:aws:sns:eu-west-1:812414252941:error_notification"]
 }
 
 # Autoscaling
@@ -284,58 +280,58 @@ resource "aws_iam_role_policy_attachment" "test-attach" {
 }
 
 resource "aws_appautoscaling_target" "api" {
-  service_namespace = "ecs"
-  resource_id = "service/${var.cluster_name}/${aws_ecs_service.api.name}"
+  service_namespace  = "ecs"
+  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.api.name}"
   scalable_dimension = "ecs:service:DesiredCount"
-  role_arn = "${aws_iam_role.api_autoscaling.arn}"
-  min_capacity = 2
-  max_capacity = 10
+  role_arn           = "${aws_iam_role.api_autoscaling.arn}"
+  min_capacity       = 2
+  max_capacity       = 10
 }
 
 resource "aws_appautoscaling_policy" "api_up" {
-  name = "scale-up"
-  service_namespace = "ecs"
-  resource_id = "service/${var.cluster_name}/${aws_ecs_service.api.name}"
-  scalable_dimension = "ecs:service:DesiredCount"
-  adjustment_type = "ChangeInCapacity"
-  cooldown = 60
+  name                    = "scale-up"
+  service_namespace       = "ecs"
+  resource_id             = "service/${var.cluster_name}/${aws_ecs_service.api.name}"
+  scalable_dimension      = "ecs:service:DesiredCount"
+  adjustment_type         = "ChangeInCapacity"
+  cooldown                = 60
   metric_aggregation_type = "Maximum"
 
   step_adjustment {
     metric_interval_lower_bound = 0
-    scaling_adjustment = 1
+    scaling_adjustment          = 1
   }
 
   depends_on = ["aws_appautoscaling_target.api"]
 }
 
 resource "aws_appautoscaling_policy" "api_down" {
-  name = "scale-down"
-  service_namespace = "ecs"
-  resource_id = "service/${var.cluster_name}/${aws_ecs_service.api.name}"
+  name               = "scale-down"
+  service_namespace  = "ecs"
+  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.api.name}"
   scalable_dimension = "ecs:service:DesiredCount"
 
-  adjustment_type = "ChangeInCapacity"
-  cooldown = 60
+  adjustment_type         = "ChangeInCapacity"
+  cooldown                = 60
   metric_aggregation_type = "Maximum"
 
   step_adjustment {
     metric_interval_lower_bound = 0
-    scaling_adjustment = -1
+    scaling_adjustment          = -1
   }
 
   depends_on = ["aws_appautoscaling_target.api"]
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_cpu_high" {
-  alarm_name = "${var.environment}.api-cpuutilization-high"
+  alarm_name          = "${var.environment}.api-cpuutilization-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods = "2"
-  metric_name = "CPUUtilization"
-  namespace = "AWS/ECS"
-  period = "60"
-  statistic = "Maximum"
-  threshold = "85"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = "60"
+  statistic           = "Maximum"
+  threshold           = "85"
 
   dimensions {
     ClusterName = "${var.cluster_name}"
@@ -346,14 +342,14 @@ resource "aws_cloudwatch_metric_alarm" "api_cpu_high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_cpu_low" {
-  alarm_name = "${var.environment}.api-cpuutilization-low"
+  alarm_name          = "${var.environment}.api-cpuutilization-low"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods = "2"
-  metric_name = "CPUUtilization"
-  namespace = "AWS/ECS"
-  period = "60"
-  statistic = "Maximum"
-  threshold = "30"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = "60"
+  statistic           = "Maximum"
+  threshold           = "30"
 
   dimensions {
     ClusterName = "${var.cluster_name}"
