@@ -65,9 +65,8 @@ export class GeneralSurvey {
   q2Choices = [
     new Option('public', 'Everyone'),
     new Option('friends-only', 'Friends Only'),
-    new Option('friends-of-friends', 'Friends of friends'),
     new Option('only-me', 'Only me'),
-    new Option('dont-know', 'Don\'t know')
+    new Option('dont-know', 'I Don\'t know')
   ]
 
   // How do you usually resolve conflicts with photos that you upload or are tagged in?
@@ -140,7 +139,7 @@ export class CheckboxOption {
 export class NumberOption {
   id: string;
   description: string;
-  value: number;
+  value;
 
   constructor(id: string, description: string) {
     this.id = id;
