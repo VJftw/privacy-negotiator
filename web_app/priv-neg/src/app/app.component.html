@@ -1,6 +1,6 @@
 <nav class="grey darken-3" role="navigation">
   <div class="nav-wrapper">
-    <a id="logo-container" class="brand-logo" style="padding-left: 0.5em;">Privacy Manager</a>
+    <a id="logo-container" class="brand-logo" style="padding-left: 0.5em;" routerLink="/photos">Privacy Manager</a>
     <ul class="right hide-on-med-and-down">
       <li ><a class="waves-effect waves-light btn blue" style="font-size: 9pt; padding:0 1rem;" (click)="generalFeedback()"><i class="material-icons left">feedback</i>Feedback</a></li>
       <li *ngIf="sessionService.isAuthenticated()" ><a routerLink="/photos" routerLinkActive="active">Photos <i class="material-icons left">photo_library</i></a></li>
