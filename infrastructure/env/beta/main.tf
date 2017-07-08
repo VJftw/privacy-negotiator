@@ -1,16 +1,17 @@
 terraform {
   backend "s3" {
-    encrypt = true
-    bucket  = "privneg-terraform"
-    key     = "beta/terraform.tfstate"
-    region  = "eu-west-1"
+    encrypt        = true
+    bucket         = "privneg-terraform"
+    key            = "beta/terraform.tfstate"
+    region         = "eu-west-1"
+    dynamodb_table = "terraform_locks"
   }
 }
 
 module "main" {
   source = "../../privacy-negotiator"
 
-  aws_region = "eu-west-1"
+  aws_region             = "eu-west-1"
   aws_availability_zones = "eu-west-1a,eu-west-1b,eu-west-1c"
 
   cluster_name = "privacy-negotiator"
@@ -18,16 +19,16 @@ module "main" {
   environment = "beta"
   domain      = "beta.privacymanager.social"
 
-  version = "${var.version}"
+  version    = "${var.version}"
   weave_cidr = "10.32.101.0/24"
 
-  jwt_secret = "${var.jwt_secret}"
+  jwt_secret    = "${var.jwt_secret}"
   rabbitmq_user = "${var.rabbitmq_user}"
   rabbitmq_pass = "${var.rabbitmq_pass}"
 
-  postgres_user = "${var.postgres_user}"
+  postgres_user     = "${var.postgres_user}"
   postgres_password = "${var.postgres_password}"
 
-  facebook_app_id = "${var.facebook_app_id}"
+  facebook_app_id     = "${var.facebook_app_id}"
   facebook_app_secret = "${var.facebook_app_secret}"
 }

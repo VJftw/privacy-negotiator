@@ -14,7 +14,7 @@ resource "aws_db_instance" "db" {
 }
 
 resource "aws_db_subnet_group" "db" {
-  name = "privneg"
+  name = "${var.environment}-privneg"
 
   subnet_ids = [
     "${data.aws_subnet.app_cluster.0.id}",
