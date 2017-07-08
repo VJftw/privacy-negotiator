@@ -6,11 +6,15 @@ import { Channel } from '../websocket.service';
 import {FriendService} from '../friends/friend.service';
 import {PhotoResolver} from './photo.resolver';
 
+class PromisePhoto {
+  promise: Promise<any>;
+  photo: Photo;
+}
 
 @Injectable()
 export class PhotoService implements Channel {
 
-  protected photos: Map<string, Photo>;
+  protected photos: Map<string, PromisePhoto>;
   protected offset: string;
 
   constructor(
@@ -27,16 +31,30 @@ export class PhotoService implements Channel {
 
   public onWebSocketMessage(data) {
     const apiPhoto = data as APIPhoto;
-    const photo = this.getPhotoById(apiPhoto.id);
-    this.saveToPhotoRepository(apiPhoto, photo);
+    this.getPhotoById(apiPhoto.id).then(photo => {
+      const p = this.photoResolver.photoUpdateFromAPIPhoto(photo, apiPhoto);
+      p.negotiable = true;
+      console.log(p);
+      const pP = this.photos.get(p.id);
+      pP.photo = p;
+      this.photos.set(p.id, pP);
+    });
   }
 
   public getPhotos(): Photo[] {
-    return Array.from(this.photos.values());
+    const photos = [];
+    for (const photoPromise of Array.from(this.photos.values())) {
+      if (photoPromise.photo) {
+        photos.push(photoPromise.photo);
+      }
+    }
+    return photos;
   }
 
   public updatePhoto(photo: Photo) {
-    this.photos.set(photo.id, photo);
+    const p = this.photos.get(photo.id);
+    p.photo = photo;
+    this.photos.set(photo.id, p);
     // send PUT request to API
     this.apiService.put(
       '/v1/photos/' + photo.id,
@@ -46,8 +64,28 @@ export class PhotoService implements Channel {
     });
   }
 
-  public getPhotoById(photoId: string): Photo {
-    return this.photos.get(photoId);
+  public getPhotoById(id: string): Promise<Photo> {
+    return new Promise((resolve, reject) => {
+      if (!this.photos.has(id) || !this.photos.get(id).photo.negotiable) {
+        const pP = new PromisePhoto();
+        pP.promise = this.fb.api('/' + id + '?fields=id,created_time,from,target,images,album').then(response => {
+          const graphPhoto = response as FbGraphPhoto;
+          const photo = this.photoResolver.photoFromFBPhoto(graphPhoto);
+          const promisePhoto = this.photos.get(photo.id);
+          promisePhoto.photo = photo;
+          this.photos.set(photo.id, promisePhoto);
+          resolve(this.photos.get(photo.id).photo);
+        }).catch(() => reject());
+        this.photos.set(id, pP);
+      } else {
+        const pP = this.photos.get(id);
+        if (pP.photo) {
+          resolve(this.photos.get(id).photo);
+        } else {
+          pP.promise.then(() => resolve(this.photos.get(id).photo))
+        }
+      }
+    });
   }
 
   public getPhotosFromFBGraph(): Promise<void> {
@@ -88,14 +126,20 @@ export class PhotoService implements Channel {
 
       for (const fbPhoto of fbPhotos) {
         if (fbPhoto.album) {
-          // const photo = Photo.fromFBPhoto(fbPhoto);
           const photo = this.photoResolver.photoFromFBPhoto(fbPhoto);
 
           if (goodUserIds.includes(fbPhoto.from.id)) {
             photo.negotiable = true;
             negotiablePhotos.push(photo);
           }
-          this.photos.set(photo.id, photo);
+          let p;
+          if (this.photos.has(photo.id)) {
+            p = this.photos.get(photo.id);
+          } else {
+            p = new PromisePhoto();
+          }
+          p.photo = photo;
+          this.photos.set(photo.id, p);
         }
       }
       this.updatePhotosDetail(negotiablePhotos);
@@ -132,8 +176,9 @@ export class PhotoService implements Channel {
 
   private saveToPhotoRepository(foundPhoto: APIPhoto, photo: Photo) {
     const p = this.photoResolver.photoUpdateFromAPIPhoto(photo, foundPhoto);
-    this.photos.set(photo.id, p);
-    console.log(p);
+    const nP = this.photos.get(photo.id);
+    nP.photo = p;
+    this.photos.set(photo.id, nP);
   }
 
   public savePhoto(photo: Photo) {

@@ -28,14 +28,13 @@ export class PhotoDetailComponent implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.params['id'];
-    this.photo = this.photoService.getPhotoById(id);
-
-    if (!this.photo) {
-      this.router.navigate(['start']);
-    }
-
-    console.log(this.photo);
-    this.updateChoices();
+    this.photoService.getPhotoById(id)
+      .then(photo => {
+        this.photo = photo;
+        this.updateChoices();
+      })
+      .catch(this.router.navigate['start'])
+    ;
   }
 
   public getContexts(): ContextSelection[] {

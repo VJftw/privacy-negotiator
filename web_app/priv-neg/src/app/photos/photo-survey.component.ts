@@ -49,11 +49,12 @@ export class PhotoSurveyComponent implements OnInit {
     const id = this.route.snapshot.params['id'];
     if (id) {
 
-      this.photo = this.photoService.getPhotoById(id);
+      this.photoService.getPhotoById(id).then(photo => {
+        this.photo = photo;
+        this.survey = new PhotoSurvey(this.photo);
+        console.log(this.photo);
+      });
 
-      this.survey = new PhotoSurvey(this.photo);
-
-      console.log(this.photo);
     }
   }
 
