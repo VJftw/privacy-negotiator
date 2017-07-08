@@ -1,7 +1,7 @@
 <br><br>
 <h1 class="header center white-text">Privacy Manager</h1>
 <div class="row center">
-  <h5 class="header col s12 light">A way to manage collective privacy on Facebook.</h5>
+  <p class="flow-text col s12 light grey-text text-lighten-3">A way to manage collective privacy on Facebook.</p>
 </div>
 <div class="row center">
   <div *ngIf="loading" class="preloader-wrapper big active">
@@ -18,85 +18,155 @@
 
   <button *ngIf="!loading" class="btn-large waves-effect waves-light blue" (click)="loginWithFacebook()">Start!</button>
 </div>
-<div class="row center">
+<div class="row center grey-text text-lighten-3">
   <p>(Logs in with Facebook)</p>
+  <p class="col s12 light grey-text text-lighten-3">This MSc project uses community detection and relationship-strength algorithms to (hopefully) aid collective privacy management when conflicts arise by suggesting a resolution.
+    The usage and feedback of this tool will help evaluate their application.</p>
   <p><a (click)="this.toggleLearnMore()" style="cursor: pointer;">More information</a></p>
 </div>
 
 <div *ngIf="learnMore" class="row animated fadeIn">
-  <h3 class="header grey-text">Why?</h3>
-  <p>When we upload photos to Facebook and tag our friends and family, only we, the uploader, can modify who can see those photos.
-    This gives zero power to the people depicted in those photos to autonomously manage their privacy and in many cases their privacy is breached.
-    No social network currently offers a way to collectively manage privacy between co-owners of media.
-  </p>
-  <h3 class="header grey-text">What this tool does</h3>
-  <p>
-    This web application utilises the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> to:
-  </p>
-  <ul class="browser-default">
-    <li>Present photos that you are tagged in:
-      <ul class="browser-default">
-        <li>Greyscaled photos are publicly viewable and searchable by anyone. The uploaders of those need to authorize this tool for us to mediate on them.</li>
-        <li>Coloured photos are considered <em>negotiable</em>. With these, you can:
+  <div class="col s12 m10 offset-m1">
+    <div class="card-panel">
+      <h3 class="header">Why?</h3>
+      <p style="font-weight:300;">When we upload photos to Facebook and tag our friends and family, only we, the uploader, can modify who can see those photos.
+        This gives zero power to the people depicted in those photos to autonomously manage their privacy and in many cases their privacy is breached.
+        No social network currently offers a way to collectively manage privacy between co-owners of media.
+      </p>
+    </div>
+  </div>
+
+  <div class="col s12 m10 offset-m1">
+    <div class="card-panel">
+      <h3 class="header">What this tool does</h3>
+      <p style="font-weight:300;">
+        This web application utilises the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> to:
+      </p>
+      <ul class="browser-default" style="font-weight:300;">
+        <li>Present photos that you are tagged in:
           <ul class="browser-default">
-            <li>View the users that are tagged.</li>
-            <li>Modify the contexts of the photo. This is shared between all users.</li>
-            <li>Add personal contexts to organise your photos your own way.</li>
-            <li>View who is allowed to see the photo.</li>
-            <li>View who is blocked from seeing the photo.</li>
-            <li>View which co-owners are in conflict and whom they are in conflict over.</li>
+            <li>Greyscaled photos are publicly viewable and searchable by anyone. The uploaders of those need to authorize this tool for us to mediate on them.</li>
+            <li>Coloured photos are considered <em>negotiable</em>. With these, you can:
+              <ul class="browser-default">
+                <li>View the users that are tagged.</li>
+                <li>Modify the contexts of the photo. This is shared between all users.</li>
+                <li>Add personal contexts to organise your photos your own way.</li>
+                <li>View who is allowed to see the photo.</li>
+                <li>View who is blocked from seeing the photo.</li>
+                <li>View which co-owners are in conflict and whom they are in conflict over.</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>Add your own personal contexts for what you are sensitive to.</li>
+        <li>Present your friends (that have authorised this tool) with generated tie-strengths and generated cliques.
+          <ul class="browser-default">
+            <li>Cliques are determined by the Clique Percolation Method (CPM), and are stored in bipartites (<a href="https://arxiv.org/pdf/0805.1449.pdf" target="_blank">A sequential algorithm for fast clique percolation</a>).</li>
+            <li>Tie-strengths are determined by similarities in Facebook profiles. See requested permissions below.</li>
+            <li>You can manage your preferences for which contexts a clique is allowed to view.</li>
           </ul>
         </li>
       </ul>
-    </li>
-    <li>Present your friends (that have authorised this tool) with generated tie-strengths and generated cliques.
-      <ul class="browser-default">
-        <li>Cliques are determined by the Clique Percolation Method (CPM), and are stored in bipartites (<a href="https://arxiv.org/pdf/0805.1449.pdf" target="_blank">A sequential algorithm for fast clique percolation</a>).</li>
-        <li>Tie-strengths are determined by similarities in Facebook profiles. See requested permissions below.</li>
-        <li>You can manage your preferences for which contexts a clique is allowed to view.</li>
+    </div>
+  </div>
+
+
+  <div class="col s12 m10 offset-m1">
+    <div class="card-panel">
+      <h4 class="header">What this tool can't do</h4>
+      <p style="font-weight:300;">This tool is limited by any limitations that the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> exhibits.</p>
+      <ul class="browser-default" style="font-weight:300;">
+        <li>Present existing privacy settings for a photo. The Graph API does not allow privacy to be read from a photo. <sup><a href="#fn1" id="ref1">1</a></sup></li>
+        <li>Show all friends. The Graph API only allows the tool to see friends that have mutually authorised it. <sup><a href="#fn2" id="ref2">2</a></sup></li>
+        <li>The tie-strength algorithm does not take into account:
+          <ul class="browser-default">
+            <li>Friendship duration.</li>
+            <li>Communication through Facebook Messenger.</li>
+            <li>Granular details about education, work, location, likes (graduation year, concentration, date started etc.).</li>
+          </ul>
+        </li>
+        <li>As this tool is only aware of mutually authorised friends, it is only able to apply a photo's privacy concerning those users it is aware of.</li>
+        <li>Determine contexts for a photo automatically. This would be a whole other project as there currently isn't any AI that can interept photos well. They can describe objects but cannot decide on suitable contexts.</li>
       </ul>
-    </li>
-  </ul>
-  <h4 class="header grey-text">What this tool can't do</h4>
-  <p>This tool is limited by any limitations that the <a href="https://developers.facebook.com/docs/graph-api" target="_blank">Facebook Graph API</a> exhibits.</p>
-  <ul class="browser-default">
-    <li>Present existing privacy settings for a photo. The Graph API does not allow privacy to be read from a photo. <sup><a href="#fn1" id="ref1">1</a></sup></li>
-    <li>Show all friends. The Graph API only allows the tool to see friends that have mutually authorised it. <sup><a href="#fn2" id="ref2">2</a></sup></li>
-    <li>The tie-strength algorithm does not take into account:
-      <ul class="browser-default">
-        <li>Friendship duration.</li>
-        <li>Communication through Facebook Messenger.</li>
-        <li>Granular details about education, work, location, likes (graduation year, concentration, date started etc.).</li>
+      <p style="font-weight:300;">I created this in a month with no test coverage so there may be some bugs. They should be resolved in further patches.</p>
+      <img style="width:auto; max-height: 10em;" src="https://media.giphy.com/media/QQZgTehcKrD2w/giphy.gif"/>
+      <p style="font-weight:300;">
+        <sup id="fn1">1. <a href="https://developers.facebook.com/docs/graph-api/reference/photo" target="_blank">https://developers.facebook.com/docs/graph-api/reference/photo</a></sup><br/>
+        <sup id="fn2">2. <a href="https://developers.facebook.com/bugs/1502515636638396/" target="_blank">https://developers.facebook.com/bugs/1502515636638396/</a></sup>
+      </p>
+    </div>
+  </div>
+
+  <div class="col s12 m10 offset-m1">
+    <div class="card-panel">
+      <h4 class="header">Requested Facebook permissions</h4>
+      <p style="font-weight:300;">
+        This tool only <strong>reads</strong> information from the Graph API.
+      </p>
+      <ul class="browser-default" style="font-weight:300;">
+        <li><em>user_friends</em> - See your friends that also use the application to generate cliques and manage privacy policies</li>
+        <li><em>user_photos</em> - See your photos to present them and store privacy policies</li>
+        <li><em>user_posts</em> - See any photos published to your timeline</li>
+        <li><em>user_education_history</em> - See your education history for tie-strength generation</li>
+        <li><em>user_hometown</em> - See your hometown for tie-strength generation</li>
+        <li><em>user_likes</em> - See your likes for tie-strength generation</li>
+        <li><em>user_location</em> - See your location for tie-strength generation</li>
+        <li><em>user_relationship_details</em> - See your relationship details for tie-strength generation</li>
+        <li><em>user_relationships</em> - See your relationships for tie-strength generation</li>
+        <li><em>user_religion_politics</em> - See your religion and politics for tie-strength generation</li>
+        <li><em>user_work_history</em> - See your work history for tie-strength generation</li>
+        <li><em>user_events</em> - See your events for tie-strength generation</li>
+        <li><em>user_managed_groups</em> - See your groups for tie-strength generation</li>
       </ul>
-    </li>
-    <li>As this tool is only aware of mutually authorised friends, it is only able to apply a photo's privacy concerning those users it is aware of.</li>
-    <li>Determine contexts for a photo automatically. This would be a whole other project as there currently isn't any AI that can interept photos well. They can describe objects but cannot decide on suitable contexts.</li>
-  </ul>
-  <p>I created this in a month with no test coverage so there may be some bugs. They should be resolved in further patches.</p>
-  <img style="width:auto; max-height: 10em;" src="https://media.giphy.com/media/QQZgTehcKrD2w/giphy.gif"/>
-  <p>
-    <sup id="fn1">1. <a href="https://developers.facebook.com/docs/graph-api/reference/photo" target="_blank">https://developers.facebook.com/docs/graph-api/reference/photo</a></sup><br/>
-    <sup id="fn2">2. <a href="https://developers.facebook.com/bugs/1502515636638396/" target="_blank">https://developers.facebook.com/bugs/1502515636638396/</a></sup>
-  </p>
-  <h4 class="header grey-text">Requested Facebook permissions</h4>
-  <p>
-    This tool only <strong>reads</strong> information from the Graph API. It will only ever <strong>write</strong> when applying a privacy policy to a photo.
-  </p>
-  <ul class="browser-default">
-    <li><em>user_friends</em> - See your friends that also use the application to generate cliques and manage privacy policies</li>
-    <li><em>user_photos</em> - See your photos to present them and store privacy policies</li>
-    <li><em>user_posts</em> - See any photos published to your timeline</li>
-    <li><em>user_education_history</em> - See your education history for tie-strength generation</li>
-    <li><em>user_hometown</em> - See your hometown for tie-strength generation</li>
-    <li><em>user_likes</em> - See your likes for tie-strength generation</li>
-    <li><em>user_location</em> - See your location for tie-strength generation</li>
-    <li><em>user_relationship_details</em> - See your relationship details for tie-strength generation</li>
-    <li><em>user_relationships</em> - See your relationships for tie-strength generation</li>
-    <li><em>user_religion_politics</em> - See your religion and politics for tie-strength generation</li>
-    <li><em>user_work_history</em> - See your work history for tie-strength generation</li>
-    <li><em>user_events</em> - See your events for tie-strength generation</li>
-    <li><em>user_managed_groups</em> - See your groups for tie-strength generation</li>
-  </ul>
+    </div>
+  </div>
+
+  <div class="col s12 m10 offset-m1">
+    <div class="card-panel">
+      <h4 class="header">Technical Details</h4>
+      <p style="font-weight: 300">
+        This tool's architecture is split into the following components utilising queues and caches for an asynchronous experience.
+      </p>
+      <h5 class="header">Frontend Web Application</h5>
+      <p style="font-weight:300;">
+        Created with the Angular 4 framework and Materialize.css
+      </p>
+      <h5 class="header">Backend</h5>
+      <p style="font-weight: 300;">
+        Created with Golang
+      </p>
+      <h6 class="header">API</h6>
+      <p style="font-weight: 300;">
+        The RESTful API handles all public requests.
+      </p>
+      <h6 class="header">Workers</h6>
+      <p style="font-weight: 300;">
+        The workers perform asynchronous tasks.
+      </p>
+      <h6 class="header">Amazon Web Services</h6>
+      <p style="font-weight: 300;">
+        This whole application is hosted on Amazon Web Services' cloud infrastructure. It is managed using Terraform and consists of an ECS with WeaveNet Docker cluster on spotfleet using m4.larges/<br />
+        The Queue service is RabbitMQ.<br />
+        The Cache and publish/subscribe service is Redis.<br />
+        The relational database for persistent storage is Postgres.
+      </p>
+      <h6 class="header">Privacy and Security</h6>
+      <p style="font-weight: 300;">
+        The data stored in the cache and database can be used to personally identify you (Facebook ID with server access token can be used to access the permissions granted (your likes, education etc.).<br/>
+        The workers, queues, cache and database are <strong>not</strong> publicly accessible, and never handle information from the public.<br/>
+        The API is behind a firewalled Application Load Balancer and only publishes messages to the queues and cache. <br/>
+        The API authenticates using JSON Web Tokens and checks the existence of friendships before returning any friend/user data.
+      </p>
+    </div>
+  </div>
+
+  <div class="col s12 m10 offset-m1">
+    <div class="card-panel center-align">
+      <p style="font-weight:300;">
+        Created by <a href="https://vjpatel.me" target="_blank">VJ Patel</a> as part of an MSc dissertation project for <a href="https://www.kcl.ac.uk" target="_blank">Kings College London</a>
+      </p>
+    </div>
+  </div>
 
 </div>
 <br><br>
