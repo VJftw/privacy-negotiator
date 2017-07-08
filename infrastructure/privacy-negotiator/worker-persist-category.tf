@@ -37,7 +37,7 @@ resource "aws_ecs_service" "worker-persist-category" {
   name            = "worker-persist-category_${var.environment}"
   cluster         = "${var.cluster_name}"
   task_definition = "${aws_ecs_task_definition.worker-persist-category.arn}"
-  desired_count   = 2
+  desired_count   = 1
 
   placement_strategy {
     type  = "spread"
