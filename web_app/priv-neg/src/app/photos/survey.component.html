@@ -1,5 +1,5 @@
 <div class="row">
-  <form class="col s12">
+  <form class="col s12" #surveyForm="ngForm" (ngSubmit)="submit()">
     <!-- Q1 -->
     <div class="row">
       <div class="col s12">
@@ -19,7 +19,11 @@
                 value="{{option.description}}"
                 required
               >
-              <label for="q1-{{option.id}}" class="grey-text text-darken-3">{{option.description}}</label>
+              <label
+                for="q1-{{option.id}}" class="grey-text text-darken-3"
+                data-error="wrong"
+                data-success="right"
+              >{{option.description}}</label>
             </p>
           </div>
         </div>
@@ -71,7 +75,8 @@
                 name="q3Other"
                 class="materialize-textarea"
                 [(ngModel)]="survey.q3Other"
-                required/>
+                required
+              />
               <label for="q3Other">Other?</label>
             </div>
           </div>
@@ -101,7 +106,8 @@
                 id="q4Why"
                 name="q4Why"
                 class="materialize-textarea"
-                [(ngModel)]="survey.q4Why"></textarea>
+                [(ngModel)]="survey.q4Why"
+              ></textarea>
               <label for="q4Why">If No, why?</label>
             </div>
           </div>
@@ -131,7 +137,8 @@
                 id="q5Why"
                 name="q5Why"
                 class="materialize-textarea"
-                [(ngModel)]="survey.q5Why"></textarea>
+                [(ngModel)]="survey.q5Why"
+              ></textarea>
               <label for="q5Why">If No, why?</label>
             </div>
           </div>
@@ -198,7 +205,6 @@
               name="q7Answer"
               class="materialize-textarea"
               [(ngModel)]="survey.q7Answer"
-              required
               ></textarea>
               <label for="q7Answer">Response</label>
             </div>
@@ -219,7 +225,7 @@
                 name="q8Answer"
                 class="materialize-textarea"
                 [(ngModel)]="survey.q8Answer"
-                required></textarea>
+              ></textarea>
               <label for="q8Answer">Response</label>
             </div>
           </div>
@@ -228,8 +234,13 @@
     </div>
 
     <div class="row">
-      <button class="btn waves-effect waves-light right green center col s12" type="submit" name="action">Submit
+      <button *ngIf="!submitted"
+        class="btn waves-effect waves-light right green center col s12"
+        type="submit"
+        [disabled]="!surveyForm.form.valid || !extendedValidation() || submitted"
+      >Submit
       </button>
+      <div class="card-panel waves-effect waves-light green center col s12 white-text" *ngIf="submitted" style="padding-bottom: 0.2rem; padding-top: 0.2rem">Thanks!</div>
     </div>
 
   </form>

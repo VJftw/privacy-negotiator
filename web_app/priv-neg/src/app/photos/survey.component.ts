@@ -4,6 +4,7 @@ import {NavigationEnd, Router} from '@angular/router';
 import 'rxjs/add/operator/switchMap';
 import {Photo} from '../domain/photo.model';
 import {PhotoService} from './photo.service';
+import {APIService} from '../api.service';
 
 @Component({
   selector: 'app-survey',
@@ -35,15 +36,48 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 export class SurveyComponent {
 
   public survey = new GeneralSurvey();
-
+  public submitted = false;
 
   constructor(
-    private router: Router
+    private router: Router,
+    private apiService: APIService,
   ) {}
 
+  private extendedValidation(): boolean {
+    this.survey.q3Answer = [];
+    for (const q3Checkbox of this.survey.q3Checkboxes) {
+      if (q3Checkbox.selected) {
+        this.survey.q3Answer.push(q3Checkbox.description)
+      }
+    }
+
+    if (this.survey.q3Answer.length <= 0) {
+      return false;
+    }
+
+    if (this.survey.q3Checkboxes[5].selected && this.survey.q3Other.trim().length <= 5) {
+      return false;
+    }
+
+    if (this.survey.q4Answer === 'No' && this.survey.q4Why.trim().length <= 5) {
+      return false;
+    }
+
+    if (this.survey.q5Answer === 'No' && this.survey.q5Why.trim().length <= 5) {
+      return false;
+    }
+
+    return true;
+
+  }
 
   submit() {
+    this.submitted = true;
+    const apiSurvey = new APISurvey();
+    apiSurvey.type = 'general';
+    apiSurvey.data = this.survey;
 
+    this.apiService.post('/v1/surveys', apiSurvey).then(res => console.log(res));
   }
 }
 
@@ -58,7 +92,7 @@ export class GeneralSurvey {
     new Option('yes-no-idea', 'Yes, I had no idea.'),
     new Option('yes-some-idea', 'Yes, I had some awareness but didn\'t realise the extent.'),
     new Option('no', 'No, I was already aware.')
-  ]
+  ];
 
   // What is your current sharing preference on Facebook
   q2Answer = '';
@@ -67,10 +101,10 @@ export class GeneralSurvey {
     new Option('friends-only', 'Friends Only'),
     new Option('only-me', 'Only me'),
     new Option('dont-know', 'I Don\'t know')
-  ]
+  ];
 
   // How do you usually resolve conflicts with photos that you upload or are tagged in?
-  q3Answer = '';
+  q3Answer = [];
   q3Checkboxes = [
     new CheckboxOption('untag', 'I would untag myself/others'),
     new CheckboxOption('crop', 'I would crop the photo'),
@@ -116,10 +150,11 @@ export class GeneralSurvey {
   ];
 
   // How could this tool be improved?
-  q7Answer = ''
+  q7Answer = '';
 
   // Any further comments?
   q8Answer = '';
+
 }
 
 export class Option {
@@ -152,4 +187,10 @@ export class NumberOption {
     this.id = id;
     this.description = description;
   }
+}
+
+export class APISurvey {
+  type: string;
+  photoID: string;
+  data;
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/friend"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/survey"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/routers"
@@ -49,6 +50,7 @@ func NewPrivNegAPI() App {
 	friendTieStrengthPublisher := friend.NewTieStrengthPublisher(queueLogger, rabbitMQ)
 	photoConflictPublisher := photo.NewConflictPublisher(queueLogger, rabbitMQ)
 	photoPersistPublisher := photo.NewPersistPublisher(queueLogger, rabbitMQ)
+	surveyPublisher := survey.NewPublisher(queueLogger, rabbitMQ)
 
 	renderer := render.New()
 
@@ -58,6 +60,7 @@ func NewPrivNegAPI() App {
 	categoryController := category.NewController(controllerLogger, renderer, userRedisManager, categoryRedisManager, categoryPublisher)
 	friendController := friend.NewController(controllerLogger, renderer, userRedisManager, friendRedisManager, categoryRedisManager, friendCliquePersistPublisher)
 	websocketController := websocket.NewController(wsLogger, renderer, redisCache)
+	surveyController := survey.NewController(controllerLogger, renderer, userRedisManager, surveyPublisher)
 	healthController := routers.NewHealthController(controllerLogger, renderer, []persisters.Publisher{
 		authPublisher,
 		syncPublisher,
@@ -67,6 +70,7 @@ func NewPrivNegAPI() App {
 		photoPersistPublisher,
 		friendTieStrengthPublisher,
 		photoConflictPublisher,
+		surveyPublisher,
 	})
 
 	privNegAPI.Router = routers.NewMuxRouter([]routers.Routable{
@@ -77,6 +81,7 @@ func NewPrivNegAPI() App {
 		friendController,
 		websocketController,
 		healthController,
+		surveyController,
 	}, true)
 
 	port := os.Getenv("PORT")

@@ -1,22 +1,82 @@
 <div class="row">
-  <form class="col s12">
-    <div class="row" *ngIf="photo.id">
-      <div class="input-field col s12 m10 l8 offset-m1 offset-l2">
-        <input disabled value="{{survey.photoID}}" id="disabled" type="text">
-        <label class="active" for="disabled">Photo ID</label>
+  <form class="col s12" #photoSurvey="ngForm" (ngSubmit)="submit()">
+
+    <!-- Photo Id -->
+    <div class="row">
+      <div class="col s12">
+        <div class="card-panel">
+          <div class="row">
+            <h5>Were you asked for your permission before this photo was uploaded?</h5>
+            <p *ngFor="let option of survey.q1Choices">
+              <input
+                name="q1"
+                type="radio"
+                [(ngModel)]="survey.q1Answer"
+                id="q1-{{option.id}}"
+                value="{{option.description}}"
+                required
+              >
+              <label for="q1-{{option.id}}" class="grey-text text-darken-3">{{option.description}}</label>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
+
     <div class="row" *ngIf="photo.contexts.length > 0">
       <!-- About the conflict -->
 
+      <div class="row">
+        <div class="col s12">
+          <div class="card-panel">
+            <div class="row">
+              <h5>Do you agree with the recommendation?</h5>
+              <p *ngFor="let option of survey.q2Choices">
+                <input
+                  name="q2"
+                  type="radio"
+                  [(ngModel)]="survey.q2Answer"
+                  id="q2-{{option.id}}"
+                  value="{{option.description}}"
+                  required
+                >
+                <label for="q2-{{option.id}}" class="grey-text text-darken-3">{{option.description}}</label>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div class="row">
+        <div class="col s12">
+          <div class="card-panel">
+            <div class="row">
+              <h5>Do you understand the motives of the opposing parties in the conflict?</h5>
+              <p *ngFor="let option of survey.q3Choices">
+                <input
+                  name="q3"
+                  type="radio"
+                  [(ngModel)]="survey.q3Answer"
+                  id="q3-{{option.id}}"
+                  value="{{option.description}}"
+                  required
+                >
+                <label for="q3-{{option.id}}" class="grey-text text-darken-3">{{option.description}}</label>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="row">
-
-      <button class="btn waves-effect waves-light right" type="submit" name="action">Submit
-        <i class="material-icons right">send</i>
+      <button *ngIf="!submitted"
+              class="btn waves-effect waves-light right green center col s12"
+              type="submit"
+              [disabled]="!photoSurvey.form.valid || submitted"
+      >Submit
       </button>
+      <div class="card-panel waves-effect waves-light green center col s12 white-text" *ngIf="submitted" style="padding-bottom: 0.2rem; padding-top: 0.2rem">Thanks!</div>
     </div>
 
   </form>

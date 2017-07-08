@@ -9,6 +9,7 @@ import (
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/category"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/friend"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/photo"
+	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/survey"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/domain/user"
 	"github.com/VJftw/privacy-negotiator/backend/priv-neg/persisters"
 	"github.com/streadway/amqp"
@@ -39,6 +40,7 @@ func NewPrivNegWorker(queue string) App {
 		&domain.DBClique{},
 		&domain.DBUserClique{},
 		&domain.DBConflict{},
+		&domain.DBSurvey{},
 	)
 	redisCache := persisters.NewRedisDB(cacheLogger)
 
@@ -52,6 +54,7 @@ func NewPrivNegWorker(queue string) App {
 	cliqueDBManager := friend.NewDBManager(dbLogger, gormDB)
 	photoDBManager := photo.NewDBManager(dbLogger, gormDB)
 	friendDBManager := friend.NewDBManager(dbLogger, gormDB)
+	surveyDBManager := survey.NewDBManager(dbLogger, gormDB)
 
 	rabbitMQ, conn := persisters.NewQueue(queueLogger)
 
@@ -84,6 +87,9 @@ func NewPrivNegWorker(queue string) App {
 		break
 	case "tie-strength":
 		q = friend.NewTieStrengthConsumer(queueLogger, rabbitMQ, userRedisManager, friendRedisManager)
+		break
+	case "persist-survey":
+		q = survey.NewConsumer(queueLogger, rabbitMQ, surveyDBManager)
 		break
 	default:
 		panic("Invalid queue selected")

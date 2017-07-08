@@ -50,8 +50,8 @@ import {PhotoSurveyComponent} from './photos/photo-survey.component';
       { path: 'start', component: IndexComponent },
       { path: 'photos', component: PhotosComponent, canActivate: [SessionService] },
       { path: 'contexts', component: ContextsComponent, canActivate: [SessionService] },
-      { path: 'survey/:id', component: SurveyComponent, canActivate: [SessionService] },
-      { path: 'survey', component: SurveyComponent },
+      { path: 'survey/:id', component: PhotoSurveyComponent, canActivate: [SessionService] },
+      { path: 'survey', component: SurveyComponent, canActivate: [SessionService] },
       { path: 'photos/:id', component: PhotoDetailComponent, canActivate: [SessionService] },
       { path: 'friends', component: FriendsComponent, canActivate: [SessionService] }
     ], { useHash: true })
