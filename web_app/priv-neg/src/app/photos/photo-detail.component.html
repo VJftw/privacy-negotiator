@@ -1,4 +1,19 @@
-
+<div class="row" style="margin-bottom: 0;">
+  <div class="col s12">
+    <ul materialize="collapsible" class="collapsible popout" data-collapsible="accordion">
+      <li>
+        <div class="collapsible-header"><i class="material-icons right">help</i>Help</div>
+        <div class="collapsible-body white">
+          <p style="font-weight:300;">
+            This page shows whom is tagged in a photo and allows you to manage the contexts a photo has. Any tagged user can manage the global <a routerLink="/contexts">contexts</a>. <br />
+            Upon saving contexts, the tool will determine whom is allowed or blocked from viewing the photo from the tagged user's policies they have defined for their friends.
+            Any conflicts detected will be shown with a recommendation based off the generated relationship strength between users.
+          </p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
 <div class="row" *ngIf="this.photo">
 
   <div class="col s12 l6">
@@ -38,7 +53,7 @@
   </div>
 </div>
 
-<div class="row">
+<div class="row" *ngIf="this.photo">
   <div class="card">
     <div class="card-content">
       <div class="row" style="margin-bottom: 0;">
@@ -66,7 +81,7 @@
   </div>
 </div>
 
-<div *ngIf="photo.allowedUsers.length > 0 || photo.blockedUsers.length > 0" class="row">
+<div *ngIf="this.photo && (photo.allowedUsers.length > 0 || photo.blockedUsers.length > 0)" class="row">
   <div class="col s12 l4">
     <ul class="collection with-header">
       <li class="collection-header green white-text"><span class="badge white-text">{{photo.allowedUsers.length}}</span>Allowed Users</li>

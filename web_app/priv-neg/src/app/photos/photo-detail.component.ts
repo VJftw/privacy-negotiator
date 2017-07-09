@@ -31,6 +31,7 @@ export class PhotoDetailComponent implements OnInit {
     this.photoService.getPhotoById(id)
       .then(photo => {
         this.photo = photo;
+        console.log(this.photo);
         this.updateChoices();
       })
       .catch(this.router.navigate['start'])
