@@ -9,6 +9,7 @@ export class IndexComponent {
 
   public loading: boolean;
   public learnMore = false;
+  public logInError = '';
 
   constructor(
     private authService: AuthService,
@@ -18,7 +19,12 @@ export class IndexComponent {
 
   loginWithFacebook(): void {
     this.loading = true;
-    this.authService.authenticate();
+    this.authService.authenticate()
+      .catch((error: any) => {
+        this.logInError = error;
+        this.loading = false;
+      })
+    ;
   }
 
   public toggleLearnMore() {

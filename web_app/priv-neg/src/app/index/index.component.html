@@ -19,7 +19,9 @@
   <button *ngIf="!loading" class="btn-large waves-effect waves-light blue" (click)="loginWithFacebook()">Start!</button>
 </div>
 <div class="row center grey-text text-lighten-3">
-  <p>(Logs in with Facebook)</p>
+  <p *ngIf="!loading">(Logs in with Facebook)</p>
+  <p *ngIf="loading">Logging in...</p>
+  <p *ngIf="logInError && !loading" class="red-text"><strong>{{logInError}}</strong></p>
   <p class="col s12 light grey-text text-lighten-3">This MSc project uses community detection and relationship-strength algorithms to (hopefully) aid collective privacy management when conflicts arise by suggesting a resolution.
     The usage and feedback of this tool will help evaluate their application.</p>
   <p><a (click)="this.toggleLearnMore()" style="cursor: pointer;">More information</a></p>
