@@ -208,7 +208,7 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 	}
 
 	for _, responseMedia := range responseUserProfile.Family.Data {
-		cacheProfile.Family = append(cacheProfile.Languages, responseMedia.ID)
+		cacheProfile.Family = append(cacheProfile.Family, responseMedia.ID)
 	}
 
 	for _, responseMedia := range responseUserProfile.Music.Data {
