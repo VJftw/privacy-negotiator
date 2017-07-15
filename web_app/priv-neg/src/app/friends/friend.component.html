@@ -1,0 +1,38 @@
+<div class="row" style="margin-bottom: 0;">
+  <div class="col s12">
+    <ul materialize="collapsible" class="collapsible popout" data-collapsible="accordion">
+      <li>
+        <div class="collapsible-header"><i class="material-icons right">help</i>Help</div>
+        <div class="collapsible-body white">
+          <p style="font-weight:300;">
+            This page shows the calculation values of yours and a friend's similarity score.
+          </p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="row" *ngIf="this.friend">
+
+  <div class="col s12 l6">
+    <div class="card">
+      <div class="card-image center">
+        <img style="max-width:100%; max-height: 500px;" src="{{friend.picture}}" />
+      </div>
+      <div class="card-content">
+        {{friend.name}}
+      </div>
+    </div>
+  </div>
+
+  <div class="col s12 l6">
+    <ul class="collection with-header">
+      <li class="collection-header blue white-text"><span class="badge white-text">{{friend.tieStrength}}</span>Similarity Score</li>
+      <li style="min-height: 0;" class="collection-item" *ngFor="let tS of friend.tieStrengthDetail">
+        <span class="title">{{tS.humanKey}}</span>
+        <span data-badge-caption="" class="new badge" [ngClass]="{'green': tS.value > 0, 'blue': tS.value <= 0}">+{{tS.value}}</span>
+      </li>
+    </ul>
+  </div>
+</div>

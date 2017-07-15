@@ -27,6 +27,7 @@ import {SessionService} from './session.service';
 import {SurveyComponent} from './photos/survey.component';
 import {PhotoSurveyComponent} from './photos/photo-survey.component';
 import {PrivacyPolicyComponent} from './index/privacy-policy.component';
+import {FriendComponent} from './friends/friend.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import {PrivacyPolicyComponent} from './index/privacy-policy.component';
     PhotosComponent,
     PhotoDetailComponent,
     FriendsComponent,
+    FriendComponent,
     SurveyComponent,
     PhotoSurveyComponent,
     PrivacyPolicyComponent,
@@ -55,6 +57,7 @@ import {PrivacyPolicyComponent} from './index/privacy-policy.component';
       { path: 'survey/:id', component: PhotoSurveyComponent, canActivate: [SessionService] },
       { path: 'survey', component: SurveyComponent, canActivate: [SessionService] },
       { path: 'photos/:id', component: PhotoDetailComponent, canActivate: [SessionService] },
+      { path: 'friends/:id', component: FriendComponent, canActivate: [SessionService] },
       { path: 'friends', component: FriendsComponent, canActivate: [SessionService] },
       { path: 'privacy-policy', component: PrivacyPolicyComponent}
     ], { useHash: true })

@@ -2,8 +2,9 @@ package domain
 
 // CacheFriendship - A representation of a cached friend. Stored as `<userID>:friends`: friendUserID: {}
 type CacheFriendship struct {
-	ID          string `json:"id"` // the target user
-	TieStrength int    `json:"tieStrength"`
+	ID          string         `json:"id"` // the target user
+	TieStrength int            `json:"tieStrength"`
+	Detail      map[string]int `json:"tieStrengthDetail"`
 }
 
 // QueueFriendship - Information stored in a queue to be processed.
@@ -14,9 +15,10 @@ type QueueFriendship struct {
 
 // WebFriendship - A representation of a friendship communicated with a web client.
 type WebFriendship struct {
-	ID          string   `json:"id"`      // the target user
-	Cliques     []string `json:"cliques"` // cliques that the session user and target user have in common
-	TieStrength int      `json:"tieStrength"`
+	ID          string         `json:"id"`      // the target user
+	Cliques     []string       `json:"cliques"` // cliques that the session user and target user have in common
+	TieStrength int            `json:"tieStrength"`
+	Detail      map[string]int `json:"tieStrengthDetails"`
 }
 
 // CacheFriendshipFromWebFriendship - Converts a WebFriendship into a CacheFriendship
@@ -31,6 +33,7 @@ func WebFriendshipFromCacheFriendshipAndCliques(c *CacheFriendship, cliques []st
 	return &WebFriendship{
 		ID:          c.ID,
 		TieStrength: c.TieStrength,
+		Detail:      c.Detail,
 		Cliques:     cliques,
 	}
 }

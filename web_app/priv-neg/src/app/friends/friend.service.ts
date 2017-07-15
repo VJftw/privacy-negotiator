@@ -42,7 +42,7 @@ export class FriendService implements Channel {
     return new Promise((resolve, reject) => {
       if (!this.friends.has(id)) {
         const pU = new PromiseUser();
-        pU.promise = this.fb.api('/' + id + '?fields=id,first_name,last_name,picture{url}').then(response => {
+        pU.promise = this.fb.api('/' + id + '?fields=id,first_name,last_name,picture.type(large){url}').then(response => {
           const friend = response as FbGraphUser;
           const user = User.FromFBGraphUser(friend);
           const promiseUser = this.friends.get(user.id);
@@ -163,7 +163,8 @@ export class FriendService implements Channel {
     ).then(response => {
       for (const apiFriend of response.json() as APIFriend[]) {
         const friend = this.friends.get(apiFriend.id);
-        friend.user.tieStrength = apiFriend.tieStrength;
+        friend.user = User.UpdateFromAPIFriend(friend.user, apiFriend);
+        console.log(friend.user);
         this.friends.set(friend.user.id, friend);
         if (apiFriend.cliques.length <= 0) {
           const clique = this.cliques.get('NA');

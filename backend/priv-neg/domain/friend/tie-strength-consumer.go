@@ -91,79 +91,106 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	}
 
 	points := 0
+	detailPoints := map[string]int{}
 
 	// Gender
+	detailPoints["gender"] = 0
 	if aCacheProfile.Gender == bCacheProfile.Gender {
 		points++
+		detailPoints["gender"]++
 	}
 
 	// AgeRange
+	detailPoints["ageRange"] = 0
 	if aCacheProfile.AgeRange == bCacheProfile.AgeRange {
 		points++
+		detailPoints["ageRange"]++
 	}
 
 	// Hometown
+	detailPoints["hometown"] = 0
 	if aCacheProfile.Hometown == bCacheProfile.Hometown {
 		points++
+		detailPoints["hometown"]++
 	}
 
 	// Location
+	detailPoints["location"] = 0
 	if aCacheProfile.Location == bCacheProfile.Location {
 		points++
+		detailPoints["location"]++
 	}
 
 	// Political
+	detailPoints["political"] = 0
 	if aCacheProfile.Political == bCacheProfile.Political {
 		points++
+		detailPoints["political"]++
 	}
 
 	// Religion
+	detailPoints["religion"] = 0
 	if aCacheProfile.Religion == bCacheProfile.Religion {
 		points++
+		detailPoints["religion"]++
 	}
 
 	// Educations
+	detailPoints["education"] = 0
 	for _, v := range aCacheProfile.Education {
 		if utils.IsIn(v, bCacheProfile.Education) {
 			points++
+			detailPoints["education"]++
 		}
 	}
+
 	// Favorite Teams
+	detailPoints["favouriteTeams"] = 0
 	for _, v := range aCacheProfile.FavouriteTeams {
 		if utils.IsIn(v, bCacheProfile.FavouriteTeams) {
 			points++
+			detailPoints["favourite-teams"]++
 		}
 	}
 
 	// Inspirational People
+	detailPoints["inspirationalPeople"] = 0
 	for _, v := range aCacheProfile.InspirationalPeople {
 		if utils.IsIn(v, bCacheProfile.InspirationalPeople) {
 			points++
+			detailPoints["inspirationalPeople"]++
 		}
 	}
 
 	// Languages
+	detailPoints["languages"] = 0
 	for _, v := range aCacheProfile.Languages {
 		if utils.IsIn(v, bCacheProfile.Languages) {
 			points++
+			detailPoints["languages"]++
 		}
 	}
 
 	// Sports
+	detailPoints["sports"] = 0
 	for _, v := range aCacheProfile.Sports {
 		if utils.IsIn(v, bCacheProfile.Sports) {
 			points++
+			detailPoints["sports"]++
 		}
 	}
 
 	// Work
+	detailPoints["work"] = 0
 	for _, v := range aCacheProfile.Work {
 		if utils.IsIn(v, bCacheProfile.Work) {
 			points++
+			detailPoints["work"]++
 		}
 	}
 
 	// Music
+	detailPoints["music"] = 0
 	for _, v := range aCacheProfile.Music {
 		if utils.IsIn(v, bCacheProfile.Music) {
 			points++
@@ -171,41 +198,52 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	}
 
 	// Movies
+	detailPoints["movies"] = 0
 	for _, v := range aCacheProfile.Movies {
 		if utils.IsIn(v, bCacheProfile.Movies) {
 			points++
+			detailPoints["movies"]++
 		}
 	}
 
 	// Likes
+	detailPoints["likes"] = 0
 	for _, v := range aCacheProfile.Likes {
 		if utils.IsIn(v, bCacheProfile.Likes) {
 			points++
+			detailPoints["likes"]++
 		}
 	}
 
 	// Groups
+	detailPoints["groups"] = 0
 	for _, v := range aCacheProfile.Groups {
 		if utils.IsIn(v, bCacheProfile.Groups) {
 			points++
+			detailPoints["groups"]++
 		}
 	}
 
 	// Events
+	detailPoints["events"] = 0
 	for _, v := range aCacheProfile.Events {
 		if utils.IsIn(v, bCacheProfile.Events) {
 			points++
+			detailPoints["events"]++
 		}
 	}
 
 	// Family
+	detailPoints["family"] = 0
 	if utils.IsIn(queueFriendship.To, aCacheProfile.Family) {
 		points += 500
+		detailPoints["family"] += 500
 	}
 
 	aCacheUser, _ := c.userRedis.FindByID(queueFriendship.From)
 	aCacheFriendship, _ := c.friendRedis.FindByIDAndUser(queueFriendship.To, aCacheUser)
 	aCacheFriendship.TieStrength = points
+	aCacheFriendship.Detail = detailPoints
 
 	bCacheUser, _ := c.userRedis.FindByID(queueFriendship.To)
 	bCacheFriendship, err := c.friendRedis.FindByIDAndUser(queueFriendship.From, bCacheUser)
