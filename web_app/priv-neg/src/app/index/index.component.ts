@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
   templateUrl: './index.component.html',
   // Social login styles from https://terrymooreii.github.io/materialize-social/
   styles: [
-    `      
+    `
       .btn.social > :first-child,
       .btn-large.social > :first-child,
       .col.social > :first-child {

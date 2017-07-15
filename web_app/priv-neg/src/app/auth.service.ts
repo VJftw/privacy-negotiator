@@ -50,13 +50,13 @@ export class AuthService {
       'user_managed_groups'
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise((res, rej) => {
       this.fb.login(options)
         .then((response: LoginResponse) => {
           console.log('Authenticated with Facebook. Getting /me');
           this.fb.api('/me?fields=id,first_name,last_name,picture{url},cover')
-            .then(res => {
-              const user = res as FbGraphUser;
+            .then(fbResponse => {
+              const user = fbResponse as FbGraphUser;
               console.log(user);
               const fbUser = new SessionUser(
                 response.authResponse.userID,
@@ -79,13 +79,13 @@ export class AuthService {
                     this.router.navigate(['/photos']);
                   });
                 })
-                .catch((err) => reject('Failed authenticating with API. Try again.'))
+                .catch((err) => rej('Failed authenticating with API. Try again.'))
               ;
             })
-            .catch((err) => reject('Failed retrieving Facebook profile. Try again.'))
+            .catch((err) => rej('Failed retrieving Facebook profile. Try again.'))
           ;
           })
-        .catch((err) => reject('Failed Facebook authentication. Try again.'))
+        .catch((err) => rej('Failed Facebook authentication. Try again.'))
       ;
     });
   }

@@ -30,7 +30,7 @@
     <ul class="collection with-header">
       <li class="collection-header blue white-text"><span class="badge white-text">{{friend.tieStrength}}</span>Similarity Score</li>
       <li style="min-height: 0;" class="collection-item" *ngFor="let tS of friend.tieStrengthDetail">
-        <span class="title">{{tS.humanKey}}</span>
+        <span class="title" style="font-size: 10pt;">{{tS.humanKey}}</span>
         <span data-badge-caption="" class="new badge" [ngClass]="{'green': tS.value > 0, 'blue': tS.value <= 0}">+{{tS.value}}</span>
       </li>
     </ul>
