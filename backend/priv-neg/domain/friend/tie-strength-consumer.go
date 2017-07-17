@@ -149,7 +149,7 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	for _, v := range aCacheProfile.FavouriteTeams {
 		if utils.IsIn(v, bCacheProfile.FavouriteTeams) {
 			points++
-			detailPoints["favourite-teams"]++
+			detailPoints["favouriteTeams"]++
 		}
 	}
 
