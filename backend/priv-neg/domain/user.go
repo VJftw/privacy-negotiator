@@ -68,7 +68,6 @@ type CacheUserProfile struct {
 	Music               []string `json:"music"`
 	Movies              []string `json:"movies"`
 	Likes               []string `json:"likes"`
-	Groups              []string `json:"groups"`
 	Events              []string `json:"events"`
 	Political           string   `json:"political"`
 	Religion            string   `json:"religion"`

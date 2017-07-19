@@ -216,13 +216,13 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	}
 
 	// Groups
-	detailPoints["groups"] = 0
-	for _, v := range aCacheProfile.Groups {
-		if utils.IsIn(v, bCacheProfile.Groups) {
-			points++
-			detailPoints["groups"]++
-		}
-	}
+	//detailPoints["groups"] = 0
+	//for _, v := range aCacheProfile.Groups {
+	//	if utils.IsIn(v, bCacheProfile.Groups) {
+	//		points++
+	//		detailPoints["groups"]++
+	//	}
+	//}
 
 	// Events
 	detailPoints["events"] = 0

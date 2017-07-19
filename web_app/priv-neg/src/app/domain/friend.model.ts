@@ -36,10 +36,10 @@ export class TieStrengthDetail {
       humanKey: 'Events in common',
       bool: false,
     },
-    'groups': {
-      humanKey: 'Groups in common',
-      bool: false,
-    },
+    // 'groups': {
+    //   humanKey: 'Groups in common',
+    //   bool: false,
+    // },
     'favouriteTeams': {
       humanKey: 'Favourite teams in common',
       bool: false,

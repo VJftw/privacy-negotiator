@@ -42,12 +42,12 @@ export class AuthService {
       'user_hometown,' +
       'user_likes,' +
       'user_location,' +
-      'user_relationship_details,' +
+      // 'user_relationship_details,' +
       'user_relationships,' +
       'user_religion_politics,' +
       'user_work_history,' +
-      'user_events,' +
-      'user_managed_groups'
+      'user_events'
+      // 'user_managed_groups'
     };
 
     return new Promise((res, rej) => {

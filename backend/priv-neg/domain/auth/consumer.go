@@ -98,12 +98,11 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	// Get User Profile info for determining tieStrength
 	cacheProfile := c.getUserProfile(dbUser)
-	c.logger.Printf("Got Profile %s: Likes(%d) Movies(%d) Events(%d) Groups(%d) Music(%d) InsipirationalPeople(%d) Education(%d) Family(%d) Languages(%d)",
+	c.logger.Printf("Got Profile %s: Likes(%d) Movies(%d) Events(%d) Music(%d) InsipirationalPeople(%d) Education(%d) Family(%d) Languages(%d)",
 		dbUser.ID,
 		len(cacheProfile.Likes),
 		len(cacheProfile.Movies),
 		len(cacheProfile.Events),
-		len(cacheProfile.Groups),
 		len(cacheProfile.Music),
 		len(cacheProfile.InspirationalPeople),
 		len(cacheProfile.Education),
@@ -163,7 +162,6 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 			"music.limit(500){id},"+
 			"movies.limit(500){id},"+
 			"likes.limit(500){id},"+
-			"groups.limit(500){id},"+
 			"events.limit(500){id}",
 		user.LongLivedToken,
 	))
@@ -223,10 +221,6 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 		cacheProfile.Likes = append(cacheProfile.Likes, responseMedia.ID)
 	}
 
-	for _, responseMedia := range responseUserProfile.Groups.Data {
-		cacheProfile.Groups = append(cacheProfile.Groups, responseMedia.ID)
-	}
-
 	for _, responseMedia := range responseUserProfile.Events.Data {
 		cacheProfile.Events = append(cacheProfile.Events, responseMedia.ID)
 	}
@@ -250,7 +244,6 @@ type responseUserProfile struct {
 	Music               responseMedia       `json:"music"`
 	Movies              responseMedia       `json:"movies"`
 	Likes               responseMedia       `json:"likes"`
-	Groups              responseMedia       `json:"groups"`
 	Events              responseMedia       `json:"events"`
 	Political           string              `json:"political"`
 	Religion            string              `json:"religion"`
