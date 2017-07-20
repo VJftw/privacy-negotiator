@@ -63,7 +63,7 @@ func (c *ConflictConsumer) Consume() {
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
-		true,         // auto-ack
+		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -255,6 +255,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed photo %s conflicts in %s", dbPhoto.ID, elapsed)
+	d.Ack(false)
 }
 
 func shouldAllow(

@@ -47,7 +47,7 @@ func (c *Consumer) Consume() {
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
-		true,         // auto-ack
+		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -78,4 +78,5 @@ func (c *Consumer) process(d amqp.Delivery) {
 	c.surveyDB.Save(dbSurvey)
 
 	c.logger.Printf("Processed survey for %s in %s", dbSurvey.UserID, time.Since(start))
+	d.Ack(false)
 }

@@ -69,7 +69,7 @@ func (c *Consumer) Consume() {
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
-		true,         // auto-ack
+		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -103,4 +103,5 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed Category %s in %s", dbCategory.Name, elapsed)
+	d.Ack(false)
 }

@@ -59,7 +59,7 @@ func (c *Consumer) Consume() {
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
-		true,         // auto-ack
+		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -116,6 +116,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed AuthQueue for %s in %s", dbUser.ID, elapsed)
+	d.Ack(false)
 }
 
 func getLongLivedToken(u *domain.AuthUser) *facebookResponseLongLived {

@@ -63,7 +63,7 @@ func (c *Consumer) Consume() {
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
-		true,         // auto-ack
+		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -274,6 +274,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	elapsed := time.Since(start)
 	c.logger.Printf("Processed cliques for %s in %s", dbUser.ID, elapsed)
+	d.Ack(false)
 }
 
 func arrayUnion(a []string, b []string) []string {

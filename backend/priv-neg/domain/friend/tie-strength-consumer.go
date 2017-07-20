@@ -51,7 +51,7 @@ func (c *TieStrengthConsumer) Consume() {
 	msgs, err := c.channel.Consume(
 		c.queue.Name, // queue
 		"",           // consumer
-		true,         // auto-ack
+		false,        // auto-ack
 		false,        // exclusive
 		false,        // no-local
 		false,        // no-wait
@@ -82,11 +82,13 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	aCacheProfile, err := c.userRedis.GetProfileByID(queueFriendship.From)
 	if err != nil {
 		c.logger.Printf("User profile not present in Cache %s", queueFriendship.From)
+		d.Ack(false)
 		return
 	}
 	bCacheProfile, err := c.userRedis.GetProfileByID(queueFriendship.To)
 	if err != nil {
 		c.logger.Printf("User profile not present in Cache %s", queueFriendship.To)
+		d.Ack(false)
 		return
 	}
 
@@ -260,4 +262,5 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 	c.userRedis.Publish(aCacheUser.ID, "clique", aCacheFriendship)
 	c.userRedis.Publish(bCacheUser.ID, "clique", bCacheFriendship)
 	c.logger.Printf("Processed tie-strength %s:%s in %s", queueFriendship.From, queueFriendship.To, time.Since(start))
+	d.Ack(false)
 }
