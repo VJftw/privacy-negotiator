@@ -141,8 +141,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	cachePhoto, _ := c.photoRedis.FindByID(dbPhoto.ID)
 	cachePhoto.AllowedUserIDs = []string{}
 	cachePhoto.BlockedUserIDs = []string{}
-	conflictTargets := []string{}
-	conflicts := []domain.DBConflict{}
+	conflicts := map[string]domain.DBConflict{} //targetID: dbConflict.
 	// Update AllowedUsers for CachedPhoto as well as finding conflicts.
 	for taggedUserIDAllowed, allowedUserIDs := range taggedUserAllowedUsers {
 		for _, allowedUserID := range allowedUserIDs {
@@ -152,16 +151,31 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 					if allowedUserID == blockedUserID {
 						// conflict
 						c.logger.Printf("Found conflict between %s and %s with %s", taggedUserIDAllowed, taggedUserIDBlocked, allowedUserID)
-						conflictTargets = append(conflictTargets, allowedUserID)
-						allowedUser, _ := c.userDB.FindByID(allowedUserID)
-						dbConflict := domain.NewDBConflict()
-						dbConflict.Photo = dbPhoto
-						dbConflict.PhotoID = dbPhoto.ID
-						dbConflict.Target = *allowedUser
-						taggedUserAllowed, _ := c.userDB.FindByID(taggedUserIDAllowed)
-						taggedUserBlocked, _ := c.userDB.FindByID(taggedUserIDBlocked)
-						dbConflict.Parties = append(dbConflict.Parties, *taggedUserBlocked, *taggedUserAllowed)
-						conflicts = append(conflicts, dbConflict)
+						var dbConflict domain.DBConflict
+
+						if val, ok := conflicts[allowedUserID]; ok {
+							// target already conflicted
+							dbConflict = val
+							if !isInUsers(taggedUserIDAllowed, dbConflict.Parties) {
+								taggedUserAllowed, _ := c.userDB.FindByID(taggedUserIDAllowed)
+								dbConflict.Parties = append(dbConflict.Parties, *taggedUserAllowed)
+							}
+							if !isInUsers(taggedUserIDBlocked, dbConflict.Parties) {
+								taggedUserBlocked, _ := c.userDB.FindByID(taggedUserIDBlocked)
+								dbConflict.Parties = append(dbConflict.Parties, *taggedUserBlocked)
+							}
+						} else {
+							dbConflict = domain.NewDBConflict()
+							allowedUser, _ := c.userDB.FindByID(allowedUserID)
+							dbConflict.Target = *allowedUser
+							dbConflict.Photo = dbPhoto
+							dbConflict.PhotoID = dbPhoto.ID
+							taggedUserAllowed, _ := c.userDB.FindByID(taggedUserIDAllowed)
+							taggedUserBlocked, _ := c.userDB.FindByID(taggedUserIDBlocked)
+							dbConflict.Parties = append(dbConflict.Parties, *taggedUserBlocked, *taggedUserAllowed)
+						}
+
+						conflicts[dbConflict.Target.ID] = dbConflict
 						conflict = true
 					}
 				}
@@ -175,7 +189,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 	// Update BlockedUsers
 	for _, blockedUserIDs := range taggedUserBlockedUsers {
 		for _, blockedUserID := range blockedUserIDs {
-			if !utils.IsIn(blockedUserID, cachePhoto.BlockedUserIDs) && !utils.IsIn(blockedUserID, conflictTargets) {
+			if _, ok := conflicts[blockedUserID]; !ok && !utils.IsIn(blockedUserID, cachePhoto.BlockedUserIDs) {
 				cachePhoto.BlockedUserIDs = append(cachePhoto.BlockedUserIDs, blockedUserID)
 			}
 		}
@@ -271,5 +285,15 @@ func isIn(needle domain.DBCategory, haystack []domain.DBCategory) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func isInUsers(needle string, haystack []domain.DBUser) bool {
+	for _, u := range haystack {
+		if u.ID == needle {
+			return true
+		}
+	}
+
 	return false
 }
