@@ -128,7 +128,7 @@ export class FriendService implements Channel {
 
 
   public updateFriends(offset = null): Promise<any> {
-    let uri = '/me/friends?fields=id,first_name,last_name,picture{url}&limit=500';
+    let uri = '/me/friends?fields=id,first_name,last_name,picture.type(large){url}&limit=500';
 
     if (offset) {
       uri += '&after=' + offset;
