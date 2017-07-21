@@ -24,7 +24,7 @@ build: install
 build-dev:
 	docker build -t vjftw/privacy-negotiator:backend-dev -f dev.Dockerfile .
 
-test: build-dev
+test: build-dev install
 	$(eval NOVENDOR=$(shell docker run --rm \
 	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/backend/ \
 	--workdir /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg \
