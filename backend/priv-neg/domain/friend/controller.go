@@ -150,20 +150,3 @@ func (c Controller) getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 
 	c.render.JSON(w, http.StatusOK, returnFriendships)
 }
-
-func (c Controller) postFriendsHandler(w http.ResponseWriter, r *http.Request) {
-	userID := middlewares.FBUserIDFromContext(r.Context())
-	cacheUser, _ := c.userRedis.FindByID(userID)
-	webFriendship, err := FromRequest(r)
-	if err != nil {
-		c.render.JSON(w, http.StatusBadRequest, nil)
-		return
-	}
-
-	cacheFriendship := domain.CacheFriendshipFromWebFriendship(webFriendship)
-
-	c.friendRedis.Save(cacheUser, cacheFriendship)
-
-	c.render.JSON(w, http.StatusCreated, webFriendship)
-
-}
