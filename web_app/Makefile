@@ -5,8 +5,7 @@ install:
 	docker run --rm -v ${CURDIR}/priv-neg:/app -w /app node:8 yarn install
 
 serve:
-	cd priv-neg && \
-	${CURDIR}/priv-neg/node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check
+	docker run --rm -it -v ${CURDIR}/priv-neg:/app -p 4200:4200 -w /app node:8 /bin/sh -c '/app/node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check'
 
 build: install
 	# TODO: Better environment setup
