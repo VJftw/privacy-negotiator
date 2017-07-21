@@ -1,6 +1,10 @@
 package domain
 
-import "github.com/satori/go.uuid"
+import (
+	"errors"
+
+	"github.com/satori/go.uuid"
+)
 
 // CacheClique - Representation of a user's cached clique memberships. Stored as `<userID>:cliques`: cliqueID: {}
 type CacheClique struct {
@@ -36,6 +40,17 @@ func (c DBClique) TableName() string {
 	return "cliques"
 }
 
+// GetUserIDs - returns the user ides for a DBClique
+func (c *DBClique) GetUserIDs() []string {
+	userIDs := []string{}
+
+	for _, userClique := range c.DBUserCliques {
+		userIDs = append(userIDs, userClique.UserID)
+	}
+
+	return userIDs
+}
+
 // DBUserClique - Represents a user belonging to a Clique
 type DBUserClique struct {
 	CliqueID   string       `gorm:"primary_key"`
@@ -49,15 +64,15 @@ func (uC DBUserClique) TableName() string {
 	return "user_cliques"
 }
 
-// GetUserIDs - returns the user ides for a DBClique
-func (c *DBClique) GetUserIDs() []string {
-	userIDs := []string{}
-
+// GetUserCliqueForUserID - returns the dbUserClique for a given user id
+func (c *DBClique) GetUserCliqueForUserID(uID string) (*DBUserClique, error) {
 	for _, userClique := range c.DBUserCliques {
-		userIDs = append(userIDs, userClique.UserID)
+		if userClique.UserID == uID {
+			return &userClique, nil
+		}
 	}
 
-	return userIDs
+	return nil, errors.New("UserID not found")
 }
 
 // NewCacheClique - Returns a new CacheClique with UUID
@@ -75,6 +90,25 @@ func DBCliqueFromCacheClique(cacheClique *CacheClique) *DBClique {
 	return &DBClique{
 		ID: cacheClique.ID,
 	}
+}
+
+// CacheCliqueFromDBUserClique - Returns a cache clique and user id from a DBUserClique
+func CacheCliqueFromDBUserClique(dbUserClique *DBUserClique) (*CacheClique, string) {
+	categories := []string{}
+	userCategories := []string{}
+	for _, dbCat := range dbUserClique.Categories {
+		if dbCat.UserID == "none" {
+			categories = append(categories, dbCat.Name)
+		} else {
+			userCategories = append(userCategories, dbCat.Name)
+		}
+	}
+	return &CacheClique{
+		ID:             dbUserClique.CliqueID,
+		Name:           dbUserClique.Name,
+		Categories:     categories,
+		UserCategories: userCategories,
+	}, dbUserClique.UserID
 }
 
 // DBUserCliqueFromCacheCliqueAndUserID - Returns a DBUserClique from CacheClique and UserID

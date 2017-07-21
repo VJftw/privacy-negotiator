@@ -9,3 +9,22 @@ func IsIn(needle string, haystack []string) bool {
 	}
 	return false
 }
+
+// IsSubset - Checks if a is a subset of b
+func IsSubset(a []string, b []string) bool {
+	for _, vA := range a {
+		inB := false
+		for _, vB := range b {
+			if vA == vB {
+				inB = true
+				break
+			}
+		}
+
+		if !inB {
+			return false
+		}
+	}
+
+	return true
+}

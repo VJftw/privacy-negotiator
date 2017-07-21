@@ -104,12 +104,40 @@ func (c *Consumer) process(d amqp.Delivery) {
 	// 5. remove users in new clique from reduced users
 
 	existingFriendsInCliques := []string{}
+	dbCliques := []*domain.DBClique{}
 	for _, userClique := range dbUser.DBUserCliques {
 		clique, err := c.cliqueDB.FindCliqueByID(userClique.CliqueID)
 		if err != nil {
 			c.logger.Printf("error: %v", err)
 		}
+		dbCliques = append(dbCliques, clique)
 		existingFriendsInCliques = append(existingFriendsInCliques, clique.GetUserIDs()...)
+	}
+
+	// TODO: Check for cliques to delete (fix bug on prod) if a clique is a subset of another clique.
+	removedCliqueIDs := []string{}
+	for _, clique := range dbCliques {
+		for _, cliqueSearch := range dbCliques {
+			if utils.IsIn(cliqueSearch.ID, removedCliqueIDs) {
+				break
+			}
+			if clique.ID != cliqueSearch.ID && utils.IsSubset(clique.GetUserIDs(), cliqueSearch.GetUserIDs()) {
+				// merge clique into superset
+				for _, subsetUserClique := range clique.DBUserCliques {
+					// for each subsetClique to merge
+					superUserClique, _ := cliqueSearch.GetUserCliqueForUserID(subsetUserClique.UserID)
+					// TODO: Safe append
+					superUserClique.Categories = append(superUserClique.Categories, subsetUserClique.Categories...)
+					superUserClique.Name = fmt.Sprintf("%s %s", superUserClique.Name, subsetUserClique.Name)
+					c.cliqueDB.SaveUserClique(superUserClique)
+					c.friendRedis.RemoveCliqueByIDFromUserID(subsetUserClique.UserID, subsetUserClique.CliqueID)
+					cacheClique, uID := domain.CacheCliqueFromDBUserClique(superUserClique)
+					c.friendRedis.AddCliqueToUserID(uID, cacheClique)
+				}
+				c.cliqueDB.DeleteCliqueByID(clique.ID)
+			}
+
+		}
 	}
 
 	c.logger.Printf("debug: Got %d friends already in cliques", len(existingFriendsInCliques))

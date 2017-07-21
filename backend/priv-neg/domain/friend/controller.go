@@ -50,11 +50,6 @@ func (c Controller) Setup(router *mux.Router) {
 		negroni.Wrap(http.HandlerFunc(c.getFriendsHandler)),
 	)).Methods("GET")
 
-	router.Handle("/v1/friends", negroni.New(
-		middlewares.NewJWT(c.render),
-		negroni.Wrap(http.HandlerFunc(c.postFriendsHandler)),
-	)).Methods("POST")
-
 	router.Handle("/v1/cliques", negroni.New(
 		middlewares.NewJWT(c.render),
 		negroni.Wrap(http.HandlerFunc(c.getCliquesHandler)),

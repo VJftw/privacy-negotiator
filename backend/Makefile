@@ -36,3 +36,9 @@ test: build-dev
 	--workdir /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg \
 	vjftw/privacy-negotiator:backend-dev \
 	golint -set_exit_status ${NOVENDOR}
+
+	docker run --rm \
+	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/backend/ \
+	--workdir /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg \
+	vjftw/privacy-negotiator:backend-dev \
+	go test -v -cover ${NOVENDOR}
