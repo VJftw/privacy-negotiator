@@ -122,9 +122,14 @@ func (c *Consumer) process(d amqp.Delivery) {
 		if !isIn(friendID, existingFriendsInCliques) {
 			reducedFriendIDs = append(reducedFriendIDs, friendID)
 		}
+
+		// Save bidrectional friendship in cache
 		cacheUser := domain.CacheUserFromDatabaseUser(dbUser)
-		cacheFriendship := &domain.CacheFriendship{ID: friendID}
-		c.friendRedis.Save(cacheUser, cacheFriendship)
+		userFriendship := &domain.CacheFriendship{ID: friendID}
+		c.friendRedis.Save(cacheUser, userFriendship)
+		friendUser := &domain.CacheUser{ID: friendID}
+		friendFriendship := &domain.CacheFriendship{ID: cacheUser.ID}
+		c.friendRedis.Save(friendUser, friendFriendship)
 
 		// Add to tie-strength queue
 		queueFriendship := &domain.QueueFriendship{
