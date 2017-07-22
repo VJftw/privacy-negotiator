@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, OnInit} from '@angular/core';
 import { Photo } from '../domain/photo.model';
 import { PhotoService } from './photo.service';
 import {Router} from '@angular/router';
+import {MaterializeAction} from "angular2-materialize";
 
 
 @Component({
@@ -29,6 +30,7 @@ export class PhotosComponent implements OnInit {
 
   ngOnInit() {
     this.updateTaggedPhotos();
+
   }
 
   getTaggedPhotos(): Photo[] {
