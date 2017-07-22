@@ -29,15 +29,21 @@ func NewDBManager(
 func (m *DBManager) Save(u *domain.DBUser) error {
 
 	existingDBUser := domain.DBUser{}
-	err := m.gorm.Debug().Where("id = ?", u.ID).First(&existingDBUser).Error
+
+	tx := m.gorm.Begin()
+
+	err := tx.Where("id = ?", u.ID).First(&existingDBUser).Error
 	if err != nil { // Not found, create
-		err = m.gorm.Debug().Create(u).Error
+		err = tx.Create(u).Error
 		if err != nil {
+			tx.Rollback()
 			return err
 		}
 	} else {
-		m.gorm.Save(u)
+		tx.Save(u)
 	}
+
+	tx.Commit()
 
 	m.dbLogger.Printf("Saved user %s", u.ID)
 
@@ -66,6 +72,6 @@ func (m *DBManager) FindByID(id string) (*domain.DBUser, error) {
 		return nil, errors.New("Not found")
 	}
 
-	m.dbLogger.Printf("Got user %v", dbUser)
+	m.dbLogger.Printf("Got user %s", dbUser.ID)
 	return dbUser, nil
 }

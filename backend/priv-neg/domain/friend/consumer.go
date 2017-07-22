@@ -83,254 +83,185 @@ func (c *Consumer) Consume() {
 	<-forever
 }
 
-func (c *Consumer) process(d amqp.Delivery) {
+// 1. Find new friends. Save bidirectional relationships with them.
+// 2. Build local graph. Max 1 step (immediate friends as we're only interested in finding cliques the user can be part of)
+// 3. For each user, find mutual friends and form a clique (reduce as you go along so dupe cliques aren't formed)
+//
+// 4. Compare these cliques to existing ones the user is in.
+// 		if they exist, ignore them.
+// 		if the existing ones are a smaller subset of a new one. Migrate to new and delete old.
+//      else form a new clique.
+//
+
+// Process - Processes queue
+func (c *Consumer) Process(d amqp.Delivery) {
 	start := time.Now()
 
 	dbUser := &domain.DBUser{}
 	json.Unmarshal(d.Body, dbUser)
-
 	dbUser, err := c.userDB.FindByID(dbUser.ID)
 	if err != nil {
 		return
 	}
 
-	c.logger.Printf("Started processing cliques for %s", dbUser.ID)
+	c.logger.Printf("Processing cliques for %s", dbUser.ID)
 
-	// k=3
-	// 1. Get all existing cliques for User
-	// 2. Iterate through the users involved in those cliques and discard from new clique detection.
-	// 3. With reduced users, look for mutual friends and form new cliques.
-	// 4. If new clique contains users in existing clique, get that clique and add reduced user to it.
-	// 5. remove users in new clique from reduced users
-
-	existingFriendsInCliques := []string{}
-	dbCliques := []*domain.DBClique{}
-	for _, userClique := range dbUser.DBUserCliques {
-		clique, err := c.cliqueDB.FindCliqueByID(userClique.CliqueID)
-		if err != nil {
-			c.logger.Printf("error: %v", err)
-		}
-		dbCliques = append(dbCliques, clique)
-		existingFriendsInCliques = append(existingFriendsInCliques, clique.GetUserIDs()...)
-	}
-
-	// TODO: Check for cliques to delete (fix bug on prod) if a clique is a subset of another clique.
-	removedCliqueIDs := []string{}
-	for _, clique := range dbCliques {
-		for _, cliqueSearch := range dbCliques {
-			if utils.IsIn(cliqueSearch.ID, removedCliqueIDs) {
-				break
-			}
-			if clique.ID != cliqueSearch.ID && utils.IsSubset(clique.GetUserIDs(), cliqueSearch.GetUserIDs()) {
-				// merge clique into superset
-				for _, subsetUserClique := range clique.DBUserCliques {
-					// for each subsetClique to merge
-					superUserClique, _ := cliqueSearch.GetUserCliqueForUserID(subsetUserClique.UserID)
-					// TODO: Safe append
-					superUserClique.Categories = append(superUserClique.Categories, subsetUserClique.Categories...)
-					superUserClique.Name = fmt.Sprintf("%s %s", superUserClique.Name, subsetUserClique.Name)
-					c.cliqueDB.SaveUserClique(superUserClique)
-					c.friendRedis.RemoveCliqueByIDFromUserID(subsetUserClique.UserID, subsetUserClique.CliqueID)
-					cacheClique, uID := domain.CacheCliqueFromDBUserClique(superUserClique)
-					c.friendRedis.AddCliqueToUserID(uID, cacheClique)
-				}
-				c.cliqueDB.DeleteCliqueByID(clique.ID)
-			}
-
-		}
-	}
-
-	c.logger.Printf("debug: Got %d friends already in cliques", len(existingFriendsInCliques))
-
+	// 1.
+	// Find new friends and save bidirectional relationships in cache with them.
+	currentFriendIDs := c.friendRedis.GetFriendIDsForAUserID(dbUser.ID)
+	c.logger.Printf("Got $d friends for %s from Cache", len(currentFriendIDs), dbUser.ID)
 	allFriendIDs := c.getFacebookFriendsForUser(dbUser, "", nil)
+	c.logger.Printf("Got $d friends for %s from Graph API", len(allFriendIDs), dbUser.ID)
+	for _, fID := range allFriendIDs {
+		if !utils.IsIn(fID, currentFriendIDs) {
+			// Save new bidirectional friendship
+			uFriendship := &domain.CacheFriendship{ID: fID}
+			c.friendRedis.Save(dbUser.ID, uFriendship)
+			fFriendship := &domain.CacheFriendship{ID: dbUser.ID}
+			c.friendRedis.Save(fID, fFriendship)
 
-	reducedFriendIDs := []string{}
-
-	for _, friendID := range allFriendIDs {
-		if !isIn(friendID, existingFriendsInCliques) {
-			reducedFriendIDs = append(reducedFriendIDs, friendID)
+			// Add to current friends as they are now saved
+			currentFriendIDs = append(currentFriendIDs, fID)
 		}
-
-		// Save bidrectional friendship in cache
-		cacheUser := domain.CacheUserFromDatabaseUser(dbUser)
-		userFriendship := &domain.CacheFriendship{ID: friendID}
-		c.friendRedis.Save(cacheUser, userFriendship)
-		friendUser := &domain.CacheUser{ID: friendID}
-		friendFriendship := &domain.CacheFriendship{ID: cacheUser.ID}
-		c.friendRedis.Save(friendUser, friendFriendship)
-
-		// Add to tie-strength queue
-		queueFriendship := &domain.QueueFriendship{
-			From: dbUser.ID,
-			To:   friendID,
-		}
-		c.tieStrengthPublisher.Publish(queueFriendship)
 	}
 
-	alreadyUserReducedUsers := []string{}
+	// 2.
+	// Build local graph
+	c.logger.Printf("info: building local friend graph")
+	localFriendGraph := map[string][]string{} // <userID: []friendIDs + userID>
+	uFriendList := append(currentFriendIDs, dbUser.ID)
+	for _, fID := range currentFriendIDs {
+		localFriendGraph[fID] = append(c.friendRedis.GetFriendIDsForAUserID(fID), fID)
+	}
+	c.logger.Printf("debug: built local friend graph: %v", localFriendGraph)
 
-	for _, friendID := range reducedFriendIDs {
-		if isIn(friendID, alreadyUserReducedUsers) {
-			c.logger.Printf("debug: Skipping %s", friendID)
-			break // skip user
+	// 3.
+	// Get existing cliques for next step
+	userCliqueIDs := c.friendRedis.GetCliqueIDsForAUserID(dbUser.ID)
+	existingDBCliques := []*domain.DBClique{}
+	for _, userCliqueID := range userCliqueIDs {
+		dbClique, _ := c.cliqueDB.FindCliqueByID(userCliqueID)
+		existingDBCliques = append(existingDBCliques, dbClique)
+	}
+
+	// 4.
+	// Compare user's friends to each friend's friends using array union. If result is >= 3, we can form a clique.
+	// If a clique is found. Compare to existing ones:
+	//  	- If a smaller subset already exists, migrate to the new one.
+	//		- If an identical one already exists, ignore the new one.
+	// 		- else form a new clique normally.
+	inClique := []string{}
+	for fID, fFriendList := range localFriendGraph {
+		if utils.IsIn(fID, inClique) {
+			break
 		}
-		friendFriends := c.friendRedis.GetFriendIDsForAUserID(friendID)
-
-		mutualFriends := arrayUnion(allFriendIDs, friendFriends)
-		c.logger.Printf("debug: Got mutual friends: %v", mutualFriends)
-
-		if len(mutualFriends) >= 1 {
-			if isIn(mutualFriends[0], reducedFriendIDs) {
-				c.logger.Printf("Found a new clique size %d for %s", len(mutualFriends)+2, dbUser.ID)
-				// If completely new clique
-				clique := domain.NewCacheClique()
-				dbClique := domain.DBCliqueFromCacheClique(clique)
-				c.cliqueDB.Save(dbClique)
-
-				// Add clique to all members
-				cliqueMembers := append(append(mutualFriends, dbUser.ID), friendID)
-				for _, userID := range cliqueMembers {
-					c.friendRedis.AddCliqueToUserID(userID, clique)
-					dbUserClique := domain.DBUserCliqueFromCacheCliqueAndUserID(clique, userID)
-					c.cliqueDB.SaveUserClique(dbUserClique)
-					alreadyUserReducedUsers = append(alreadyUserReducedUsers, userID)
-					webClique := domain.WSClique{
-						ID:      dbUserClique.CliqueID,
-						Name:    "",
-						UserIDs: cliqueMembers,
-					}
-					c.userRedis.Publish(userID, "clique", webClique)
-				}
-
-			} else {
-				c.logger.Printf("Found an existing clique size %d for %s", len(mutualFriends)+1, dbUser.ID)
-				// Add to existing clique
-				// Get set of cliques for each user from cache and compare.
-				userCliques := map[int][]string{} // i: []cliqueID
-
-				mutualCliqueIDs := []string{}
-
-				for i, friendID := range mutualFriends {
-					cliqueIDs := c.friendRedis.GetCliqueIDsForAUserID(friendID)
-					if len(cliqueIDs) == 0 {
-						break
-					}
-					userCliques[i] = cliqueIDs
-					if i == 0 {
-						mutualCliqueIDs = cliqueIDs
-					} else if i < len(mutualFriends) {
-						mutualCliqueIDs = arrayUnion(mutualCliqueIDs, cliqueIDs)
-					}
-				}
-
-				// TODO: Merge cliques when necessary
-				// Merging cliques:
-				// Create a new clique.
-				// Go through all of the mutual cliques, add all the users and categories.
-				// Remove old cliques
-				c.logger.Printf("warning: This should == 1: %v (if it's greater, then the cliques need merging)", mutualCliqueIDs)
-
-				newClique := domain.NewCacheClique()
-				dbClique := domain.DBCliqueFromCacheClique(newClique)
-				c.cliqueDB.Save(dbClique)
-				userCliquesCategories := map[string][]domain.DBCategory{}
-				userCliquesNames := map[string]string{}
-
-				for _, mutualCliqueID := range mutualCliqueIDs {
-					mutualDBClique, err := c.cliqueDB.FindCliqueByID(mutualCliqueID)
-					if err != nil {
-						break
-					}
-					for _, userClique := range mutualDBClique.DBUserCliques {
-						if _, ok := userCliquesCategories[userClique.UserID]; !ok {
-							userCliquesCategories[userClique.UserID] = []domain.DBCategory{}
-						}
-						if _, ok := userCliquesNames[userClique.UserID]; !ok {
-							userCliquesNames[userClique.UserID] = ""
-						}
-
-						userCliquesCategories[userClique.UserID] = append(userCliquesCategories[userClique.UserID], userClique.Categories...)
-						userCliquesNames[userClique.UserID] += fmt.Sprintf(" %s", userClique.Name)
-						c.friendRedis.RemoveCliqueByIDFromUserID(userClique.UserID, userClique.CliqueID)
-					}
-					c.cliqueDB.DeleteCliqueByID(mutualCliqueID)
-				}
-
-				for userID, dbCategories := range userCliquesCategories {
-					dbUserClique := domain.DBUserClique{
-						CliqueID:   newClique.ID,
-						UserID:     userID,
-						Categories: dbCategories,
-						Name:       userCliquesNames[userID],
-					}
-					c.cliqueDB.SaveUserClique(&dbUserClique)
-					userCacheClique := domain.CacheClique{
-						ID:             newClique.ID,
-						Name:           userCliquesNames[userID],
-						Categories:     []string{},
-						UserCategories: []string{},
-					}
-					for _, cat := range dbCategories {
-						if cat.UserID == "none" {
-							userCacheClique.Categories = append(userCacheClique.Categories, cat.Name)
-						} else {
-							userCacheClique.UserCategories = append(userCacheClique.UserCategories, cat.Name)
-						}
-					}
-					c.friendRedis.AddCliqueToUserID(userID, &userCacheClique)
-					c.userRedis.Publish(userID, "clique", userCacheClique)
-				}
-
-				mutualCliqueID := newClique.ID
-				clique := &domain.CacheClique{
-					ID:             mutualCliqueID,
-					Name:           "",
-					Categories:     []string{},
-					UserCategories: []string{},
-				}
-
-				c.friendRedis.AddCliqueToUserID(friendID, clique)
-				dbUserClique := domain.DBUserCliqueFromCacheCliqueAndUserID(clique, friendID)
-				c.cliqueDB.SaveUserClique(dbUserClique)
-
-				// Update WS
-				c.userRedis.Publish(friendID, "clique", clique)
-				//dbClique, _ := c.cliqueDB.FindCliqueByID(newClique.ID)
-				//for _, userID := range dbClique.GetUserIDs() {
-				//	c.userRedis.Publish(userID, "clique", clique)
-				//}
+		c.logger.Printf("debug: comparing %s: %v to %s: %v", dbUser.ID, uFriendList, fID, fFriendList)
+		mutualFriends := utils.ArrayUnion(uFriendList, fFriendList)
+		if len(mutualFriends) >= 3 {
+			c.logger.Printf("debug: found potential clique: %v", mutualFriends)
+			if isValidClique(mutualFriends, dbUser.ID, localFriendGraph) {
+				c.logger.Printf("debug: found new clique: %v", mutualFriends)
+				existingDBCliques = c.processClique(mutualFriends, existingDBCliques)
+				// Now we can ignore friend keys that are in this clique
+				inClique = append(inClique, mutualFriends...)
 			}
-
 		}
-
 	}
 
-	elapsed := time.Since(start)
-	c.logger.Printf("Processed cliques for %s in %s", dbUser.ID, elapsed)
+	c.logger.Printf("Processed cliques for %s in %s", dbUser.ID, time.Since(start))
 	d.Ack(false)
 }
 
-func arrayUnion(a []string, b []string) []string {
-	c := []string{}
-
-	for _, aV := range a {
-		for _, bV := range b {
-			if aV == bV && !isIn(aV, c) {
-				c = append(c, aV)
+func isValidClique(newClique []string, userID string, localFriendGraph map[string][]string) bool {
+	for _, graphKey := range newClique {
+		if graphKey == userID {
+			break
+		}
+		for _, uID := range newClique {
+			if !utils.IsIn(uID, localFriendGraph[graphKey]) {
+				return false
 			}
 		}
 	}
 
-	return c
+	return true
 }
 
-func isIn(needle string, haystack []string) bool {
-	for _, v := range haystack {
-		if v == needle {
-			return true
+func (c *Consumer) processClique(newClique []string, existingCliques []*domain.DBClique) []*domain.DBClique {
+	migrateUserCliquesCategories := map[string][]domain.DBCategory{} // userID: categories
+	migrateUserCliquesNames := map[string]string{}                   // userID: names
+
+	returnCliques := []*domain.DBClique{}
+	c.logger.Printf("EXISTING CLIQUES: %v", existingCliques)
+	var dbClique *domain.DBClique
+	for _, existingClique := range existingCliques {
+		c.logger.Printf("EXISTING CLIQUE: %s: %v", existingClique.ID, existingClique.GetUserIDs())
+
+		if utils.IsSubset(existingClique.GetUserIDs(), newClique) && len(newClique) == len(existingClique.GetUserIDs()) {
+			// Cliques are identical. Do nothing.
+			c.logger.Printf("debug: new clique is identical to %s", existingClique.ID)
+			return existingCliques
+		} else if utils.IsSubset(newClique, existingClique.GetUserIDs()) {
+			// New clique is a subset
+			c.logger.Printf("debug: new clique is a subset to %s", existingClique.ID)
+			return existingCliques
+		} else if utils.IsSubset(existingClique.GetUserIDs(), newClique) && len(newClique) > len(existingClique.GetUserIDs()) {
+			// existing clique to migration for new clique and remove old clique.
+			for _, userClique := range existingClique.DBUserCliques {
+				c.logger.Printf("debug: copying user clique %s:%s for migration", userClique.UserID, userClique.CliqueID)
+				if _, ok := migrateUserCliquesCategories[userClique.UserID]; !ok {
+					migrateUserCliquesCategories[userClique.UserID] = []domain.DBCategory{}
+				}
+				if _, ok := migrateUserCliquesNames[userClique.UserID]; !ok {
+					migrateUserCliquesNames[userClique.UserID] = ""
+				}
+				migrateUserCliquesCategories[userClique.UserID] = append(migrateUserCliquesCategories[userClique.UserID], userClique.Categories...)
+				migrateUserCliquesNames[userClique.UserID] += fmt.Sprintf(" %s", userClique.Name)
+				c.friendRedis.RemoveCliqueByIDFromUserID(userClique.UserID, userClique.CliqueID)
+				c.cliqueDB.DeleteUserClique(userClique.CliqueID, userClique.UserID)
+			}
+			c.logger.Printf("info: deleting smaller subset clique: %s", existingClique.ID)
+			c.cliqueDB.DeleteCliqueByID(existingClique.ID)
+		} else {
+			returnCliques = append(returnCliques, existingClique)
 		}
 	}
-	return false
+
+	// form new clique
+	dbClique = domain.NewDBClique()
+
+	newCacheClique := &domain.CacheClique{
+		ID: dbClique.ID,
+	}
+	c.cliqueDB.Save(dbClique)
+	for _, uID := range newClique {
+		dbUserClique := domain.DBUserCliqueFromCacheCliqueAndUserID(newCacheClique, uID)
+		if _, ok := migrateUserCliquesCategories[uID]; ok {
+			// if migrating categories
+			dbUserClique.Categories = append(dbUserClique.Categories, migrateUserCliquesCategories[uID]...)
+		}
+		if _, ok := migrateUserCliquesNames[uID]; ok {
+			// if migrating names
+			dbUserClique.Name += migrateUserCliquesNames[uID]
+		}
+
+		cacheClique, _ := domain.CacheCliqueFromDBUserClique(dbUserClique)
+		c.friendRedis.AddCliqueToUserID(uID, cacheClique)
+		c.cliqueDB.SaveUserClique(dbUserClique)
+		dbClique.DBUserCliques = append(dbClique.DBUserCliques, *dbUserClique)
+		wsClique := domain.WSClique{
+			ID:      dbUserClique.CliqueID,
+			Name:    "",
+			UserIDs: newClique,
+		}
+		c.userRedis.Publish(uID, "clique", wsClique)
+	}
+
+	return append(returnCliques, dbClique)
+}
+
+func (c *Consumer) process(d amqp.Delivery) {
+	c.Process(d)
 }
 
 func (c *Consumer) getFacebookFriendsForUser(user *domain.DBUser, offset string, friendIds []string) []string {

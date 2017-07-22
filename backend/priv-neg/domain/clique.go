@@ -75,20 +75,17 @@ func (c *DBClique) GetUserCliqueForUserID(uID string) (*DBUserClique, error) {
 	return nil, errors.New("UserID not found")
 }
 
-// NewCacheClique - Returns a new CacheClique with UUID
-func NewCacheClique() *CacheClique {
-	return &CacheClique{
+// NewDBClique - Returns a new DBClique with UUID
+func NewDBClique() *DBClique {
+	return &DBClique{
 		ID:             uuid.NewV4().String(),
-		Name:           "",
-		Categories:     []string{},
-		UserCategories: []string{},
 	}
 }
 
-// DBCliqueFromCacheClique - Returns a DBClique from a CacheClique
-func DBCliqueFromCacheClique(cacheClique *CacheClique) *DBClique {
-	return &DBClique{
-		ID: cacheClique.ID,
+// CacheCliqueFromDBClique - Returns a CacheClique from a DBClique
+func CacheCliqueFromDBClique(dbClique *DBClique) *CacheClique {
+	return &CacheClique{
+		ID: dbClique.ID,
 	}
 }
 

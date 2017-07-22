@@ -33,5 +33,7 @@ func NewGORMDB(logger *log.Logger, models ...interface{}) *gorm.DB {
 
 	db.AutoMigrate(models...)
 
+	db.LogMode(true)
+
 	return db
 }

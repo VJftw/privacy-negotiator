@@ -35,10 +35,10 @@ test: build-dev install
 	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/backend/ \
 	--workdir /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg \
 	vjftw/privacy-negotiator:backend-dev \
-	golint -set_exit_status ${NOVENDOR}
+	go test -v -cover ${NOVENDOR}
 
 	docker run --rm \
-	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/backend/ \
-	--workdir /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg \
-	vjftw/privacy-negotiator:backend-dev \
-	go test -v -cover ${NOVENDOR}
+    	--volume ${CURDIR}:/go/src/github.com/VJftw/privacy-negotiator/backend/ \
+    	--workdir /go/src/github.com/VJftw/privacy-negotiator/backend/priv-neg \
+    	vjftw/privacy-negotiator:backend-dev \
+    	golint -set_exit_status ${NOVENDOR}

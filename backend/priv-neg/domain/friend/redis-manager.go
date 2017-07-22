@@ -26,8 +26,8 @@ func NewRedisManager(cacheLogger *log.Logger, redis *redis.Pool) *RedisManager {
 	}
 }
 
-// Save - Saves a given Friendship to the Cache.
-func (m *RedisManager) Save(u *domain.CacheUser, f *domain.CacheFriendship) error {
+// Save - Saves a given Friendship for a user ID to the Cache.
+func (m *RedisManager) Save(uID string, f *domain.CacheFriendship) error {
 	jsonFriendship, err := json.Marshal(f)
 	if err != nil {
 		return err
@@ -37,11 +37,11 @@ func (m *RedisManager) Save(u *domain.CacheUser, f *domain.CacheFriendship) erro
 	defer redisConn.Close()
 	redisConn.Do(
 		"HSET",
-		fmt.Sprintf("u%s:friends", u.ID),
+		fmt.Sprintf("u%s:friends", uID),
 		f.ID,
 		jsonFriendship,
 	)
-	m.cacheLogger.Printf("Saved friendship %s:%s", u.ID, f.ID)
+	m.cacheLogger.Printf("Saved friendship %s:%s", uID, f.ID)
 
 	return nil
 }

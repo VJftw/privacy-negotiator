@@ -87,7 +87,11 @@ func (c *Consumer) process(d amqp.Delivery) {
 
 	c.logger.Printf("Started processing for %s", authUser.ID)
 
-	respLongLived := getLongLivedToken(authUser)
+	respLongLived, err := getLongLivedToken(authUser)
+	if err != nil {
+		c.logger.Printf("error :%v", err)
+		d.Nack(false, true)
+	}
 
 	dbUser := domain.DBUserFromAuthUser(authUser)
 	dbUser.LongLivedToken = respLongLived.AccessToken
@@ -97,7 +101,7 @@ func (c *Consumer) process(d amqp.Delivery) {
 	c.userDB.Save(dbUser)
 
 	// Get User Profile info for determining tieStrength
-	cacheProfile := c.getUserProfile(dbUser)
+	cacheProfile, err := c.getUserProfile(dbUser)
 	c.logger.Printf("Got Profile %s: Likes(%d) Movies(%d) Events(%d) Music(%d) InsipirationalPeople(%d) Education(%d) Family(%d) Languages(%d)",
 		dbUser.ID,
 		len(cacheProfile.Likes),
@@ -119,19 +123,23 @@ func (c *Consumer) process(d amqp.Delivery) {
 	d.Ack(false)
 }
 
-func getLongLivedToken(u *domain.AuthUser) *facebookResponseLongLived {
+func getLongLivedToken(u *domain.AuthUser) (*facebookResponseLongLived, error) {
 	clientID := os.Getenv("FACEBOOK_APP_ID")
 	clientSecret := os.Getenv("FACEBOOK_APP_SECRET")
-	res, _ := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s",
+	res, err := http.Get(fmt.Sprintf("https://graph.facebook.com/v2.9/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s",
 		clientID,
 		clientSecret,
 		u.ShortLivedToken,
 	))
 
+	if err != nil {
+		return nil, err
+	}
+
 	respLongLived := &facebookResponseLongLived{}
 	_ = json.NewDecoder(res.Body).Decode(respLongLived)
 
-	return respLongLived
+	return respLongLived, nil
 
 }
 
@@ -141,11 +149,11 @@ type facebookResponseLongLived struct {
 	Expires     uint   `json:"expires_in"`
 }
 
-func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile {
+func (c *Consumer) getUserProfile(user *domain.DBUser) (*domain.CacheUserProfile, error) {
 
 	cacheProfile := &domain.CacheUserProfile{}
 
-	res, _ := http.Get(fmt.Sprintf(
+	res, err := http.Get(fmt.Sprintf(
 		"https://graph.facebook.com/v2.9/me?access_token=%s"+
 			"&fields=gender,"+
 			"age_range,"+
@@ -166,12 +174,17 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 			"events.limit(500){id}",
 		user.LongLivedToken,
 	))
+	if err != nil {
+		c.logger.Printf("error: %v", err)
+		return nil, err
+	}
 
 	responseUserProfile := responseUserProfile{}
-	err := json.NewDecoder(res.Body).Decode(&responseUserProfile)
+	err = json.NewDecoder(res.Body).Decode(&responseUserProfile)
 	defer res.Body.Close()
 	if err != nil {
-		log.Printf("Error: %s", err)
+		c.logger.Printf("Error: %s", err)
+		return nil, err
 	}
 	cacheProfile = &domain.CacheUserProfile{
 		Gender:    responseUserProfile.Gender,
@@ -226,7 +239,7 @@ func (c *Consumer) getUserProfile(user *domain.DBUser) *domain.CacheUserProfile 
 		cacheProfile.Events = append(cacheProfile.Events, responseMedia.ID)
 	}
 
-	return cacheProfile
+	return cacheProfile, nil
 }
 
 type responseUserProfile struct {

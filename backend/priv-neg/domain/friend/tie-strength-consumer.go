@@ -256,8 +256,8 @@ func (c *TieStrengthConsumer) process(d amqp.Delivery) {
 		}
 	}
 
-	c.friendRedis.Save(aCacheUser, aCacheFriendship)
-	c.friendRedis.Save(bCacheUser, bCacheFriendship)
+	c.friendRedis.Save(aCacheUser.ID, aCacheFriendship)
+	c.friendRedis.Save(bCacheUser.ID, bCacheFriendship)
 
 	c.userRedis.Publish(aCacheUser.ID, "clique", aCacheFriendship)
 	c.userRedis.Publish(bCacheUser.ID, "clique", bCacheFriendship)

@@ -28,10 +28,21 @@ func NewDBManager(
 
 // Save - Saves a given Clique to the Database.
 func (m *DBManager) Save(u *domain.DBClique) error {
-	err := m.gorm.Where(domain.DBClique{ID: u.ID}).Assign(u).FirstOrCreate(u).Error
-	if err != nil {
-		return err
+	tx := m.gorm.Begin()
+	existingDBClique := domain.DBClique{}
+
+	err := tx.Where(domain.DBClique{
+		ID: u.ID,
+	}).First(&existingDBClique).Error
+	if err != nil { // Not found, create
+		err = tx.Create(u).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
+
+	tx.Commit()
 	m.dbLogger.Printf("Saved clique %s", u.ID)
 
 	return nil
@@ -42,23 +53,49 @@ func (m *DBManager) SaveUserClique(uC *domain.DBUserClique) error {
 
 	existingDBUserClique := domain.DBUserClique{}
 
-	err := m.gorm.Debug().Where(domain.DBUserClique{
+	tx := m.gorm.Begin()
+
+	err := tx.Where(domain.DBUserClique{
 		CliqueID: uC.CliqueID,
 		UserID:   uC.UserID,
 	}).First(&existingDBUserClique).Error
 	if err != nil { // Not found, create
-		err = m.gorm.Debug().Create(uC).Error
+		err = tx.Create(uC).Error
 		if err != nil {
+			tx.Rollback()
 			return err
 		}
 	} else {
 		categories := uC.Categories
-		m.gorm.Debug().Model(uC).Association("Categories").Clear()
+		tx.Model(uC).Association("Categories").Clear()
 		uC.Categories = categories
-		m.gorm.Debug().Save(uC)
+		tx.Save(uC)
 	}
 
+	tx.Commit()
 	m.dbLogger.Printf("Saved clique %s for user %s", uC.CliqueID, uC.UserID)
+
+	return nil
+}
+
+// DeleteUserClique - Deletes a DBUserClique
+func (m *DBManager) DeleteUserClique(cliqueID string, userID string) error {
+
+	tx := m.gorm.Begin()
+
+	err := tx.Delete(domain.DBUserClique{
+		CliqueID: cliqueID,
+		UserID:   userID,
+	}).Error
+	if err != nil {
+		m.dbLogger.Printf("error: %v", err)
+		tx.Rollback()
+		return nil
+	}
+
+	tx.Commit()
+
+	m.dbLogger.Printf("Deleted clique %s for user %s", cliqueID, userID)
 
 	return nil
 }
@@ -70,7 +107,7 @@ func (m *DBManager) FindCliqueByID(id string) (*domain.DBClique, error) {
 
 	err := m.gorm.Where("id = ?", id).First(&dbClique).Error
 	if err != nil {
-		m.dbLogger.Printf("Error: %v", err)
+		m.dbLogger.Printf("Error for %s: %v", id, err)
 		return nil, err
 	}
 
@@ -131,19 +168,17 @@ func (m *DBManager) GetUserCliquesByUser(u domain.DBUser) ([]domain.DBUserClique
 // DeleteCliqueByID - Removes a clique and its associated UserCliques given a Clique ID.
 func (m *DBManager) DeleteCliqueByID(cliqueID string) error {
 
-	err := m.gorm.Debug().Model(&domain.DBClique{ID: cliqueID}).Association("DBUserCliques").Clear().Error
+	tx := m.gorm.Begin()
+
+	err := tx.Delete(&domain.DBClique{ID: cliqueID}).Error
 
 	if err != nil {
 		m.dbLogger.Printf("Error: %v", err)
+		tx.Rollback()
 		return err
 	}
 
-	err = m.gorm.Debug().Delete(&domain.DBClique{ID: cliqueID}).Error
-
-	if err != nil {
-		m.dbLogger.Printf("Error: %v", err)
-		return err
-	}
+	tx.Commit()
 
 	m.dbLogger.Printf("Deleted Clique %s", cliqueID)
 	return nil

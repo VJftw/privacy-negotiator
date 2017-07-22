@@ -28,3 +28,18 @@ func IsSubset(a []string, b []string) bool {
 
 	return true
 }
+
+// ArrayUnion - Returns the union of 2 given arrays
+func ArrayUnion(a []string, b []string) []string {
+	c := []string{}
+
+	for _, aV := range a {
+		for _, bV := range b {
+			if aV == bV && !IsIn(aV, c) {
+				c = append(c, aV)
+			}
+		}
+	}
+
+	return c
+}
