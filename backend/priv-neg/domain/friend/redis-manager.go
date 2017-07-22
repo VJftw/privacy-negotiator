@@ -179,14 +179,14 @@ func (m *RedisManager) RemoveCliqueByIDFromUserID(fUserID string, cliqueID strin
 }
 
 // GetCliqueByIDAndUser - Returns a clique given its ID and user
-func (m *RedisManager) GetCliqueByIDAndUser(cliqueID string, cacheUser *domain.CacheUser) (*domain.CacheClique, error) {
+func (m *RedisManager) GetCliqueByIDAndUserID(cliqueID string, uID string) (*domain.CacheClique, error) {
 	cacheClique := &domain.CacheClique{}
 
 	redisConn := m.redis.Get()
 	defer redisConn.Close()
 	jsonFriendship, err := redis.Bytes(redisConn.Do(
 		"HGET",
-		fmt.Sprintf("u%s:cliques", cacheUser.ID),
+		fmt.Sprintf("u%s:cliques", uID),
 		cliqueID,
 	))
 
@@ -196,11 +196,11 @@ func (m *RedisManager) GetCliqueByIDAndUser(cliqueID string, cacheUser *domain.C
 
 	if jsonFriendship != nil {
 		json.Unmarshal(jsonFriendship, cacheClique)
-		m.cacheLogger.Printf("Got clique %s:%s", cacheUser.ID, cacheClique.ID)
+		m.cacheLogger.Printf("Got clique %s:%s", uID, cacheClique.ID)
 
 		return cacheClique, nil
 	}
 
-	m.cacheLogger.Printf("Could not find clique %s:%s", cacheUser.ID, cliqueID)
+	m.cacheLogger.Printf("Could not find clique %s:%s", uID, cliqueID)
 	return nil, errors.New("Not found")
 }

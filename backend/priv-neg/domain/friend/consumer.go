@@ -159,7 +159,7 @@ func (c *Consumer) Process(d amqp.Delivery) {
 		mutualFriends := utils.ArrayUnion(uFriendList, fFriendList)
 		if len(mutualFriends) >= 3 {
 			c.logger.Printf("debug: found potential clique: %v", mutualFriends)
-			if isValidClique(mutualFriends, dbUser.ID, localFriendGraph) && isMaximalClique(mutualFriends, uFriendList, localFriendGraph) {
+			if c.isValidClique(mutualFriends, dbUser.ID, localFriendGraph) && c.isMaximalClique(mutualFriends, uFriendList, localFriendGraph) {
 				c.logger.Printf("debug: found new clique: %v", mutualFriends)
 				existingDBCliques = c.processClique(mutualFriends, existingDBCliques)
 				// Now we can ignore friend keys that are in this clique
@@ -172,7 +172,7 @@ func (c *Consumer) Process(d amqp.Delivery) {
 	d.Ack(false)
 }
 
-func isValidClique(newClique []string, userID string, localFriendGraph map[string][]string) bool {
+func (c *Consumer) isValidClique(newClique []string, userID string, localFriendGraph map[string][]string) bool {
 	for _, graphKey := range newClique {
 		if graphKey == userID {
 			break
@@ -184,32 +184,81 @@ func isValidClique(newClique []string, userID string, localFriendGraph map[strin
 		}
 	}
 
+	c.logger.Printf("valid clique: %v", newClique)
 	return true
 }
 
-func isMaximalClique(newClique []string, userFriends []string, localFriendGraph map[string][]string) bool {
+func (c *Consumer) isMaximalClique(newClique []string, userFriends []string, localFriendGraph map[string][]string) bool {
 	unionClique := userFriends
 
-	for _, cliqueID := range newClique {
-		unionClique = utils.ArrayUnion(unionClique, localFriendGraph[cliqueID])
+	for _, uID := range newClique {
+		unionClique = utils.ArrayUnion(unionClique, localFriendGraph[uID])
 	}
 
 	if len(unionClique) == len(newClique) {
+		c.logger.Printf("maximal clique: %v", newClique)
 		return true
 	}
+	c.logger.Printf("not maximal clique: %v", newClique)
 	return false
 }
 
-func (c *Consumer) processIdenticalOrSupersetClique(maximalClique *domain.DBClique, existingCliques []*domain.DBClique) []*domain.DBClique {
+func (c *Consumer) processIdenticalClique(maximalClique *domain.DBClique, existingCliques []*domain.DBClique) []*domain.DBClique {
 	migrateUserCliquesCategories := map[string][]domain.DBCategory{} // userID: categories
 	migrateUserCliquesNames := map[string]string{}                   // userID: names
 	returnCliques := []*domain.DBClique{}
 
 	for _, existingClique := range existingCliques {
-		if utils.IsSubset(existingClique.GetUserIDs(), maximalClique.GetUserIDs()) {
+		if utils.IsSubset(existingClique.GetUserIDs(), maximalClique.GetUserIDs()) && len(maximalClique.GetUserIDs()) > len(existingClique.GetUserIDs()) {
+			c.logger.Printf("debug: found old smaller existing clique %s", existingClique.ID)
 			// migrate a to b
+			for _, userClique := range existingClique.DBUserCliques {
+				c.logger.Printf("debug: copying user clique %s:%s for migration", userClique.UserID, userClique.CliqueID)
+				if _, ok := migrateUserCliquesCategories[userClique.UserID]; !ok {
+					migrateUserCliquesCategories[userClique.UserID] = []domain.DBCategory{}
+				}
+				if _, ok := migrateUserCliquesNames[userClique.UserID]; !ok {
+					migrateUserCliquesNames[userClique.UserID] = ""
+				}
+				migrateUserCliquesCategories[userClique.UserID] = append(migrateUserCliquesCategories[userClique.UserID], userClique.Categories...)
+				migrateUserCliquesNames[userClique.UserID] += fmt.Sprintf(" %s", userClique.Name)
+				c.friendRedis.RemoveCliqueByIDFromUserID(userClique.UserID, userClique.CliqueID)
+				c.cliqueDB.DeleteUserClique(userClique.CliqueID, userClique.UserID)
+			}
+			c.logger.Printf("info: deleting smaller subset clique: %s", existingClique.ID)
+			c.cliqueDB.DeleteCliqueByID(existingClique.ID)
+		} else {
+			returnCliques = append(returnCliques, existingClique)
 		}
 	}
+
+	for _, uID := range maximalClique.GetUserIDs() {
+
+		existingCacheClique, _ := c.friendRedis.GetCliqueByIDAndUserID(maximalClique.ID, uID)
+
+		dbUserClique := domain.DBUserCliqueFromCacheCliqueAndUserID(existingCacheClique, uID)
+		if _, ok := migrateUserCliquesCategories[uID]; ok {
+			// if migrating categories
+			dbUserClique.Categories = append(dbUserClique.Categories, migrateUserCliquesCategories[uID]...)
+		}
+		if _, ok := migrateUserCliquesNames[uID]; ok {
+			// if migrating names
+			dbUserClique.Name += migrateUserCliquesNames[uID]
+		}
+
+		cacheClique, _ := domain.CacheCliqueFromDBUserClique(dbUserClique)
+		c.friendRedis.AddCliqueToUserID(uID, cacheClique)
+		c.cliqueDB.SaveUserClique(dbUserClique)
+		maximalClique.DBUserCliques = append(maximalClique.DBUserCliques, *dbUserClique)
+		wsClique := domain.WSClique{
+			ID:      dbUserClique.CliqueID,
+			Name:    "",
+			UserIDs: maximalClique.GetUserIDs(),
+		}
+		c.userRedis.Publish(uID, "clique", wsClique)
+	}
+
+	return returnCliques
 }
 
 func (c *Consumer) processClique(newClique []string, existingCliques []*domain.DBClique) []*domain.DBClique {
@@ -224,13 +273,12 @@ func (c *Consumer) processClique(newClique []string, existingCliques []*domain.D
 		if utils.IsSubset(existingClique.GetUserIDs(), newClique) && len(newClique) == len(existingClique.GetUserIDs()) {
 			// Cliques are identical. Do nothing. compare other cliques to identical clique and merge if necessary
 			c.logger.Printf("debug: new clique is identical to %s", existingClique.ID)
-			break
+			return c.processIdenticalClique(existingClique, existingCliques)
 		} else if utils.IsSubset(newClique, existingClique.GetUserIDs()) {
 			// New clique is a subset
-			c.logger.Printf("debug: new clique is a subset to %s", existingClique.ID)
-			break
+			c.logger.Printf("debug: THIS SHOULD NEVER HAPPEN new clique is a subset to %s", existingClique.ID)
+			return existingCliques
 		} else if utils.IsSubset(existingClique.GetUserIDs(), newClique) && len(newClique) > len(existingClique.GetUserIDs()) {
-			dbClique = domain.NewDBClique()
 			// existing clique to migration for new clique and remove old clique.
 			for _, userClique := range existingClique.DBUserCliques {
 				c.logger.Printf("debug: copying user clique %s:%s for migration", userClique.UserID, userClique.CliqueID)
@@ -249,11 +297,11 @@ func (c *Consumer) processClique(newClique []string, existingCliques []*domain.D
 			c.cliqueDB.DeleteCliqueByID(existingClique.ID)
 		} else {
 			returnCliques = append(returnCliques, existingClique)
-			dbClique = domain.NewDBClique()
 		}
 	}
 
 	// form new clique
+	dbClique := domain.NewDBClique()
 	newCacheClique := &domain.CacheClique{
 		ID: dbClique.ID,
 	}

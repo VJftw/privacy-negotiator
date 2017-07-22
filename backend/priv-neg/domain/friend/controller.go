@@ -85,7 +85,7 @@ func (c Controller) putCliquesHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idClique := vars["id"]
 
-	clique, err := c.friendRedis.GetCliqueByIDAndUser(idClique, facebookUser)
+	clique, err := c.friendRedis.GetCliqueByIDAndUserID(idClique, facebookUser.ID)
 	if err != nil {
 		c.render.JSON(w, http.StatusNotFound, nil)
 		return
