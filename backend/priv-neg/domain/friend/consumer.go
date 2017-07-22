@@ -192,7 +192,9 @@ func (c *Consumer) isMaximalClique(newClique []string, userFriends []string, loc
 	unionClique := userFriends
 
 	for _, uID := range newClique {
-		unionClique = utils.ArrayUnion(unionClique, localFriendGraph[uID])
+		if val, ok := localFriendGraph[uID]; ok {
+			unionClique = utils.ArrayUnion(unionClique, val)
+		}
 	}
 
 	if len(unionClique) == len(newClique) {

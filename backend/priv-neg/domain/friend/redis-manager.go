@@ -178,7 +178,7 @@ func (m *RedisManager) RemoveCliqueByIDFromUserID(fUserID string, cliqueID strin
 	m.cacheLogger.Printf("Removed clique %s from %s", cliqueID, fUserID)
 }
 
-// GetCliqueByIDAndUser - Returns a clique given its ID and user
+// GetCliqueByIDAndUserID - Returns a clique given its ID and user
 func (m *RedisManager) GetCliqueByIDAndUserID(cliqueID string, uID string) (*domain.CacheClique, error) {
 	cacheClique := &domain.CacheClique{}
 

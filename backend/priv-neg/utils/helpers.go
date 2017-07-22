@@ -40,6 +40,5 @@ func ArrayUnion(a []string, b []string) []string {
 			}
 		}
 	}
-
 	return c
 }
