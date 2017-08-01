@@ -109,9 +109,9 @@ func (c *Consumer) Process(d amqp.Delivery) {
 	// 1.
 	// Find new friends and save bidirectional relationships in cache with them.
 	currentFriendIDs := c.friendRedis.GetFriendIDsForAUserID(dbUser.ID)
-	c.logger.Printf("Got $d friends for %s from Cache", len(currentFriendIDs), dbUser.ID)
+	c.logger.Printf("Got %d friends for %s from Cache", len(currentFriendIDs), dbUser.ID)
 	allFriendIDs := c.getFacebookFriendsForUser(dbUser, "", nil)
-	c.logger.Printf("Got $d friends for %s from Graph API", len(allFriendIDs), dbUser.ID)
+	c.logger.Printf("Got %d friends for %s from Graph API", len(allFriendIDs), dbUser.ID)
 	for _, fID := range allFriendIDs {
 		if !utils.IsIn(fID, currentFriendIDs) {
 			// Save new bidirectional friendship
@@ -123,6 +123,12 @@ func (c *Consumer) Process(d amqp.Delivery) {
 			// Add to current friends as they are now saved
 			currentFriendIDs = append(currentFriendIDs, fID)
 		}
+
+		// Calculate tie-strength for friend
+		c.tieStrengthPublisher.Publish(domain.QueueFriendship{
+			From: dbUser.ID,
+			To:   fID,
+		})
 	}
 
 	// 2.
