@@ -10,3 +10,10 @@ This will auto-reload when changes are made to Go files.
 ### Building
 
 1. `make build`
+
+
+### Database Backup from AWS
+
+```
+pg_dump -h <hostname> -p <port> -U <user> <db_name> > <YYYYMMDD>.sql
+```
