@@ -4,12 +4,13 @@ import "github.com/satori/go.uuid"
 
 // DBConflict - Represents a conflict stored in the database.
 type DBConflict struct {
-	ID      string  `gorm:"primary_key"`
-	Photo   DBPhoto `gorm:"ForeignKey:PhotoID"`
-	PhotoID string
-	Target  DBUser   `gorm:"many2many:conflict_target"`
-	Parties []DBUser `gorm:"many2many:conflict_parties"`
-	Result  string
+	ID       string  `gorm:"primary_key"`
+	Photo    DBPhoto `gorm:"ForeignKey:PhotoID"`
+	PhotoID  string
+	Target   DBUser `gorm:"ForeignKey:TargetID"`
+	TargetID string
+	Parties  []DBUser `gorm:"many2many:conflict_parties"`
+	Result   string
 }
 
 // NewDBConflict - Returns a new DBConflict.
@@ -47,7 +48,7 @@ func CacheConflictFromDBConflict(dbConflict DBConflict) CacheConflict {
 	cC := CacheConflict{
 		ID:        dbConflict.ID,
 		Reasoning: []Reason{},
-		Target:    dbConflict.Target.ID,
+		Target:    dbConflict.TargetID,
 	}
 
 	for _, user := range dbConflict.Parties {

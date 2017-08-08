@@ -168,6 +168,7 @@ func (c *ConflictConsumer) process(d amqp.Delivery) {
 							dbConflict = domain.NewDBConflict()
 							allowedUser, _ := c.userDB.FindByID(allowedUserID)
 							dbConflict.Target = *allowedUser
+							dbConflict.TargetID = allowedUser.ID
 							dbConflict.Photo = dbPhoto
 							dbConflict.PhotoID = dbPhoto.ID
 							taggedUserAllowed, _ := c.userDB.FindByID(taggedUserIDAllowed)
