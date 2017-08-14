@@ -37,7 +37,7 @@ resource "aws_ecs_service" "worker-tie-strength" {
   name            = "worker-tie-strength_${var.environment}"
   cluster         = "${var.cluster_name}"
   task_definition = "${aws_ecs_task_definition.worker-tie-strength.arn}"
-  desired_count   = 2
+  desired_count   = 1
 
   placement_strategy {
     type  = "spread"
