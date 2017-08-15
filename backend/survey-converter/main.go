@@ -22,8 +22,8 @@ func main() {
 	defer file.Close()
 
 	generalSheet := [][]string{[]string{"FacebookID", "Gender", "AgeRange", "Q1", "Q2", "Q4", "Q5", "Q7", "Q8"}}
-	generalQ3 := [][]string{[]string{"untag", "crop", "remove", "blur", "nothing", "other"}}
-	generalQ6 := [][]string{[]string{"politics", "religion", "work", "sports", "family", "location", "education", "favourite-teams", "inspirational-people", "languages", "music", "movies", "likes", "groups", "events"}}
+	generalQ3 := [][]string{[]string{"FacebookID", "untag", "crop", "remove", "blur", "nothing", "other"}}
+	generalQ6 := [][]string{[]string{"FacebookID", "politics", "religion", "work", "sports", "family", "location", "education", "favourite-teams", "inspirational-people", "languages", "music", "movies", "likes", "groups", "events"}}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
