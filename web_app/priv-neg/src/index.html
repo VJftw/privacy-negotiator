@@ -42,7 +42,12 @@ if (Modernizr.cors &&
   ) {
    console.log("Browser supported");
  } else {
-   var message = '<div class="col s12 red white-text center-align card-panel"><p class="flow-text">Your browser is not supported. <br />Please visit <a class="white-text" style="text-decoration: underline;" href="http://outdatedbrowser.com/en">outdatedbrowser.com</a> to upgrade.</p></div>'
+   var message = '<div class="container">' +
+                  '<div style="margin-top: 2em;" class="col s12 center-align"><img src="https://media.giphy.com/media/XJCL959KwYbE4/giphy.gif"></img></div>' +
+                  '<div class="col s12 red white-text center-align card-panel">' +
+                    '<p class="flow-text">Sorry! Your browser is not supported. <br /> Please use a more recent <a class="white-text" style="text-decoration: underline;" target="_blank" href="http://outdatedbrowser.com/en">browser</a> for the best experience. </p>'+
+                  '</div>' +
+                  '</div>';
    document.body.innerHTML = message;
  }
   </script>
