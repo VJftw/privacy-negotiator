@@ -78,7 +78,7 @@ func processGeneralQ6(userID string, responses generalJSON, headingOrder []strin
 	for _, part := range responses.Q6Parts {
 		for i, headerID := range headingOrder {
 			if part.ID == headerID {
-				results[i] = strconv.Itoa(part.Value)
+				results[i-1] = strconv.Itoa(part.Value)
 				break
 			}
 		}
