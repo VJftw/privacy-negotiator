@@ -29,6 +29,23 @@
 <body class="blue darken-2">
   <app-root>Loading...</app-root>
 
+  <script type="text/javascript">
+  /*! modernizr 3.5.0 (Custom Build) | MIT *
+   * https://modernizr.com/download/?-arrow-cors-es6object-json-promises-websockets-setclasses !*/
+  !function(window,document,undefined){function is(e,n){return typeof e===n}function testRunner(){var e,n,o,s,i,r,t;for(var d in tests)if(tests.hasOwnProperty(d)){if(e=[],n=tests[d],n.name&&(e.push(n.name.toLowerCase()),n.options&&n.options.aliases&&n.options.aliases.length))for(o=0;o<n.options.aliases.length;o++)e.push(n.options.aliases[o].toLowerCase());for(s=is(n.fn,"function")?n.fn():n.fn,i=0;i<e.length;i++)r=e[i],t=r.split("."),1===t.length?Modernizr[t[0]]=s:(!Modernizr[t[0]]||Modernizr[t[0]]instanceof Boolean||(Modernizr[t[0]]=new Boolean(Modernizr[t[0]])),Modernizr[t[0]][t[1]]=s),classes.push((s?"":"no-")+t.join("-"))}}function setClasses(e){var n=docElement.className,o=Modernizr._config.classPrefix||"";if(isSVG&&(n=n.baseVal),Modernizr._config.enableJSClass){var s=new RegExp("(^|\\s)"+o+"no-js(\\s|$)");n=n.replace(s,"$1"+o+"js$2")}Modernizr._config.enableClasses&&(n+=" "+o+e.join(" "+o),isSVG?docElement.className.baseVal=n:docElement.className=n)}var classes=[],tests=[],ModernizrProto={_version:"3.5.0",_config:{classPrefix:"",enableClasses:!0,enableJSClass:!0,usePrefixes:!0},_q:[],on:function(e,n){var o=this;setTimeout(function(){n(o[e])},0)},addTest:function(e,n,o){tests.push({name:e,fn:n,options:o})},addAsyncTest:function(e){tests.push({name:null,fn:e})}},Modernizr=function(){};Modernizr.prototype=ModernizrProto,Modernizr=new Modernizr,Modernizr.addTest("cors","XMLHttpRequest"in window&&"withCredentials"in new XMLHttpRequest),Modernizr.addTest("json","JSON"in window&&"parse"in JSON&&"stringify"in JSON);var supports=!1;try{supports="WebSocket"in window&&2===window.WebSocket.CLOSING}catch(e){}Modernizr.addTest("websockets",supports),Modernizr.addTest("arrow",function(){try{eval("()=>{}")}catch(e){return!1}return!0}),Modernizr.addTest("es6object",!!(Object.assign&&Object.is&&Object.setPrototypeOf)),Modernizr.addTest("promises",function(){return"Promise"in window&&"resolve"in window.Promise&&"reject"in window.Promise&&"all"in window.Promise&&"race"in window.Promise&&function(){var e;return new window.Promise(function(n){e=n}),"function"==typeof e}()});var docElement=document.documentElement,isSVG="svg"===docElement.nodeName.toLowerCase();testRunner(),setClasses(classes),delete ModernizrProto.addTest,delete ModernizrProto.addAsyncTest;for(var i=0;i<Modernizr._q.length;i++)Modernizr._q[i]();window.Modernizr=Modernizr}(window,document);
+if (Modernizr.cors &&
+    Modernizr.json &&
+    Modernizr.websockets &&
+    Modernizr.arrow &&
+    Modernizr.es6object &&
+    Modernizr.promises
+  ) {
+   console.log("Browser supported");
+ } else {
+   var message = '<div class="col s12 red white-text center-align card-panel"><p class="flow-text">Your browser is not supported. <br />Please visit <a class="white-text" style="text-decoration: underline;" href="http://outdatedbrowser.com/en">outdatedbrowser.com</a> to upgrade.</p></div>'
+   document.body.innerHTML = message;
+ }
+  </script>
   <script type="text/javascript" src="https://connect.facebook.net/en_US/sdk.js"></script>
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -38,7 +55,6 @@
 
     ga('create', 'UA-97913793-2', 'auto');
     ga('send', 'pageview');
-
   </script>
 </body>
 </html>
