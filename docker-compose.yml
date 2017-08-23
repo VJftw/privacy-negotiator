@@ -286,11 +286,11 @@ services:
         - "cache:redis"
 
   # Angular 4 Web App
-  # web:
-  #   image: node:8
-  #   command: node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check
-  #   working_dir: /app
-  #   volumes:
-  #     - "./web_app/priv-neg:/app"
-  #   ports:
-  #     - "4200:4200"
+  web:
+    image: node:8
+    command: node_modules/.bin/ng serve --host=0.0.0.0 --disable-host-check
+    working_dir: /app
+    volumes:
+      - "./web_app/priv-neg:/app"
+    ports:
+      - "4200:4200"
