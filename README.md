@@ -22,14 +22,19 @@ An Angular 4 web application to interact with the API via a User Interface.
 
 To get started with a built application locally:
 
-1. Add the following to your `/etc/hosts` file:
+1. Run
+```
+make build
+```
+
+2. Add the following to your `/etc/hosts` file:
 ```
 127.0.0.1	alpha.privacymanager.social
 ```
 
-2. Run
+3. Run
 ```
 docker-compose up
 ```
 
-3. Open your web browser and navigate to http://alpha.privacymanager.social:4200
+4. Open your web browser and navigate to http://alpha.privacymanager.social:4200
